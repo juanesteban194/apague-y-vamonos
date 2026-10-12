@@ -5,25 +5,23 @@ La sección **Tarea actual** dice qué hacer ahora; todo lo demás describe haci
 
 ---
 
-## Tarea actual — Fase de andamiaje (SOLO carpetas)
+## Tarea actual — Cierre de la Fase 3 y arranque de la Fase 4
 
-Crea la estructura de carpetas del repositorio definida en **Estructura del repositorio**. Nada más.
+Estado de las fases (detalle y decisiones en `docs/decisiones/`, historias en `docs/historias-usuario/`):
 
-Permitido:
-- Crear todas las carpetas del árbol.
-- Un archivo `.gitkeep` en cada carpeta que quede vacía.
-- `README.md` corto (3–6 líneas) en `apps/mobile/`, `services/api/`, `services/agent/`, `infra/` y `docs/`, que diga qué irá ahí, citando la sección de este archivo.
-- `.gitignore` en la raíz (Node, Expo, Python, `.env`, `devices.json`, `*.sqlite`, `.venv/`, `node_modules/`, `ios/`, `android/`).
-- `.env.example` en la raíz con los nombres de variables de **Variables de entorno**, sin valores.
+| Fase | Estado |
+| --- | --- |
+| Andamiaje | Hecha |
+| 0 Hardware | Hecha: BSD04 por LAN (protocolo 3.5), escalas confirmadas (ADR 0001) |
+| 1 Backend base | Hecha: API en Render + Neon; el agente escribe lecturas en la nube |
+| 2 Consumo y tiempo real | Hecha: retraso enchufe → app máx 0,44 s (ADR 0003) |
+| 3 App base | Construida (tsc, bundle Android/iOS y 29 pruebas). **Falta la prueba en teléfonos reales** |
+| Agente local | Hecho (cola SQLite, reintentos, redescubre IP); falta `commands/` (Fase 4) |
 
-Prohibido en esta fase:
-- Escribir código de la aplicación (ni Python, ni TypeScript, ni SQL).
-- Instalar dependencias o ejecutar `npm`, `npx`, `pip`, `uv`, `create-expo-app`, `alembic` o similares.
-- Crear `package.json`, `pyproject.toml`, `app.json` o archivos de configuración de herramientas.
+Pendiente del usuario: probar la app en Android e iPhone; confirmar con una factura la columna de propiedad de la tarifa EPM (ADR 0002);
+rotar la contraseña de Neon y el Access Secret de Tuya (quedaron expuestos en el chat).
 
-Al terminar:
-1. Muestra el árbol resultante (`find . -path ./.git -prune -o -print | sort`).
-2. Detente y espera confirmación antes de pasar a la Fase 0.
+Siguiente: Fase 4 (alertas y control, push Android, rutinas y tareas programadas). No avanzar sin confirmación del usuario.
 
 ---
 
@@ -104,6 +102,7 @@ Regla de oro: **la app nunca habla con Tuya**. Todo pasa por la API.
 ├── README.md
 ├── .gitignore
 ├── .env.example
+├── render.yaml                     # Blueprint de Render (Render lo busca en la raíz)
 ├── docs/
 │   ├── decisiones/                 # ADR: una decisión por archivo
 │   └── historias-usuario/          # HU-01 … HU-08 con criterios de aceptación
@@ -156,11 +155,12 @@ Regla de oro: **la app nunca habla con Tuya**. Todo pasa por la API.
 │       │   ├── buffer/             # cola SQLite sin internet
 │       │   ├── commands/           # encender/apagar recibidos por WSS
 │       │   └── config/             # lee devices.json (gitignored)
+│       │   (enviador.py y principal.py: envío a la API y programa principal)
 │       ├── tools/                  # scripts de verificación de Fase 0
 │       └── tests/
 └── infra/
     ├── local/                      # docker-compose con PostgreSQL para desarrollo
-    └── render/                     # definición del servicio en Render
+    └── render/                     # (el blueprint está en render.yaml, en la raíz)
 ```
 
 Convención de cada módulo del backend (se crea en Fase 1, no ahora): `router.py`, `schemas.py`, `models.py`, `service.py`.
