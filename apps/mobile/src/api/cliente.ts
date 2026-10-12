@@ -1,7 +1,23 @@
 import { API_URL } from "@/lib/config";
 
 import { cerrarSesion, guardarTokens, renovarTokens, tokenAccesoVigente } from "./sesion";
-import type { Consumo, Hogar, Periodo, Resumen, Tarifa, Tokens } from "./tipos";
+import type {
+  Agente,
+  AgenteCreado,
+  Consumo,
+  Dispositivo,
+  DispositivoCambios,
+  DispositivoNuevo,
+  Hogar,
+  HogarCambios,
+  HogarNuevo,
+  Perfil,
+  Periodo,
+  Registro,
+  Resumen,
+  Tarifa,
+  Tokens,
+} from "./tipos";
 
 // Render gratuito tarda hasta ~1 min en despertar tras 15 min sin tráfico.
 const TIEMPO_MAXIMO_MS = 60_000;
@@ -53,8 +69,12 @@ async function api<T>(ruta: string, metodo = "GET", cuerpo?: unknown): Promise<T
     respuesta = await enviar(ruta, metodo, cuerpo, nuevo);
   }
   if (!respuesta.ok) throw new ErrorApi(respuesta.status, await detalle(respuesta));
+  if (respuesta.status === 204) return undefined as T;
   return (await respuesta.json()) as T;
 }
+
+/** El backend responde 403 "consentimiento_requerido" hasta que la persona acepta el tratamiento de datos. */
+export const CONSENTIMIENTO_REQUERIDO = "consentimiento_requerido";
 
 export async function iniciarSesion(email: string, contrasena: string): Promise<void> {
   const r = await enviar("/auth/login", "POST", { email: email.trim(), contrasena }, null);
@@ -63,7 +83,35 @@ export async function iniciarSesion(email: string, contrasena: string): Promise<
   await guardarTokens((await r.json()) as Tokens);
 }
 
+/** Crea la cuenta (con consentimiento) y entra. Los errores del servidor (correo repetido, clave corta) llegan con su mensaje. */
+export async function registrarCuenta(datos: Registro): Promise<void> {
+  const r = await enviar("/auth/registro", "POST", { ...datos, email: datos.email.trim() }, null);
+  if (r.status === 409) throw new ErrorApi(409, "Ese correo ya tiene una cuenta. Entra o usa otro correo.");
+  if (!r.ok) throw new ErrorApi(r.status, await detalle(r));
+  await iniciarSesion(datos.email, datos.contrasena);
+}
+
+/** Paso final del inicio con Google: canjea el código de un solo uso con el verificador PKCE y guarda la sesión. */
+export async function canjearGoogle(code: string, codeVerifier: string): Promise<void> {
+  const r = await enviar("/auth/google/canje", "POST", { code, code_verifier: codeVerifier }, null);
+  if (!r.ok) throw new ErrorApi(r.status, "No se pudo completar el inicio de sesión con Google. Intenta de nuevo.");
+  await guardarTokens((await r.json()) as Tokens);
+}
+
 export { cerrarSesion };
+export const obtenerPerfil = () => api<Perfil>("/auth/yo");
+export const aceptarConsentimiento = () => api<Perfil>("/auth/consentimiento", "POST");
+export const crearHogar = (datos: HogarNuevo) => api<Hogar>("/hogares", "POST", datos);
+export const actualizarHogar = (hogarId: string, cambios: HogarCambios) => api<Hogar>(`/hogares/${hogarId}`, "PATCH", cambios);
+export const listarDispositivos = (hogarId: string) => api<Dispositivo[]>(`/hogares/${hogarId}/dispositivos`);
+export const crearDispositivo = (hogarId: string, datos: DispositivoNuevo) =>
+  api<Dispositivo>(`/hogares/${hogarId}/dispositivos`, "POST", datos);
+export const actualizarDispositivo = (hogarId: string, id: string, cambios: DispositivoCambios) =>
+  api<Dispositivo>(`/hogares/${hogarId}/dispositivos/${id}`, "PATCH", cambios);
+export const borrarDispositivo = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/dispositivos/${id}`, "DELETE");
+export const listarAgentes = (hogarId: string) => api<Agente[]>(`/hogares/${hogarId}/agentes`);
+export const crearAgente = (hogarId: string, nombre: string) => api<AgenteCreado>(`/hogares/${hogarId}/agentes`, "POST", { nombre });
+export const revocarAgente = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/agentes/${id}`, "DELETE");
 export const obtenerHogares = () => api<Hogar[]>("/hogares");
 export const obtenerResumen = (hogarId: string) => api<Resumen>(`/hogares/${hogarId}/resumen`);
 export const obtenerTarifa = (hogarId: string) => api<Tarifa>(`/hogares/${hogarId}/tarifa`);
