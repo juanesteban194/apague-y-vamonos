@@ -1,22 +1,14 @@
+import { Link } from "expo-router";
 import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Platform, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View } from "react-native";
 
 import { ErrorApi, iniciarSesion } from "@/api/cliente";
 import { Boton } from "@/components/Boton";
+import { BotonGoogle } from "@/components/BotonGoogle";
+import { Campo } from "@/components/Campo";
+import { PantallaFormulario } from "@/components/PantallaCompleta";
 import { Texto } from "@/components/Texto";
 import { AREA_TOQUE_MIN, colores, espacio } from "@/theme";
-
-const estiloCampo = {
-  minHeight: AREA_TOQUE_MIN + 8,
-  borderWidth: 2,
-  borderColor: colores.borde,
-  borderRadius: 12,
-  paddingHorizontal: 14,
-  fontSize: 17,
-  color: colores.texto,
-  backgroundColor: colores.tarjeta,
-} as const;
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -36,7 +28,7 @@ export default function Login() {
     setError(null);
     setCargando(true);
     try {
-      await iniciarSesion(email, contrasena); // al guardar la sesión, el layout cambia de pantalla solo
+      await iniciarSesion(email, contrasena); // al guardar la sesión, la navegación cambia sola
     } catch (e) {
       setError(e instanceof ErrorApi ? e.message : "No se pudo entrar. Intenta de nuevo.");
       setCargando(false);
@@ -44,46 +36,48 @@ export default function Login() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colores.fondo }}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, justifyContent: "center", padding: espacio.xl, gap: espacio.l }}>
-        <View style={{ gap: espacio.s }}>
-          <Texto variante="titulo">Apague y vámonos</Texto>
-          <Texto color={colores.textoSecundario}>Entra para ver cuánto gasta cada aparato de tu casa.</Texto>
-        </View>
-        <View style={{ gap: espacio.m }}>
-          <TextInput
-            accessibilityLabel="Correo"
-            placeholder="Correo"
-            placeholderTextColor={colores.textoSecundario}
-            autoCapitalize="none"
-            autoComplete="email"
-            keyboardType="email-address"
-            textContentType="emailAddress"
-            value={email}
-            onChangeText={setEmail}
-            style={estiloCampo}
-          />
-          <TextInput
-            accessibilityLabel="Contraseña"
-            placeholder="Contraseña"
-            placeholderTextColor={colores.textoSecundario}
-            secureTextEntry
-            autoComplete="password"
-            textContentType="password"
-            value={contrasena}
-            onChangeText={setContrasena}
-            onSubmitEditing={entrar}
-            style={estiloCampo}
-          />
-        </View>
-        {error && (
-          <Texto accessibilityRole="alert" color={colores.rojo} style={{ fontWeight: "600" }}>
-            {error}
-          </Texto>
-        )}
-        {tardando && <Texto variante="secundario" color={colores.textoSecundario}>Despertando el servidor, puede tardar hasta un minuto…</Texto>}
-        <Boton titulo="Entrar" onPress={entrar} cargando={cargando} deshabilitado={!email || !contrasena} />
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <PantallaFormulario>
+      <View style={{ gap: espacio.s }}>
+        <Texto variante="titulo">Apague y vámonos</Texto>
+        <Texto color={colores.textoSecundario}>Mira cuánto gasta cada aparato de tu casa, en pesos.</Texto>
+      </View>
+
+      <BotonGoogle />
+      <Texto variante="secundario" color={colores.textoSecundario} style={{ textAlign: "center" }}>
+        o con tu correo
+      </Texto>
+
+      <View style={{ gap: espacio.m }}>
+        <Campo
+          etiqueta="Correo"
+          autoCapitalize="none"
+          autoComplete="email"
+          keyboardType="email-address"
+          textContentType="emailAddress"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <Campo
+          etiqueta="Contraseña"
+          secureTextEntry
+          autoComplete="password"
+          textContentType="password"
+          value={contrasena}
+          onChangeText={setContrasena}
+          onSubmitEditing={entrar}
+        />
+      </View>
+      {error && (
+        <Texto accessibilityRole="alert" color={colores.rojo} style={{ fontWeight: "600" }}>
+          {error}
+        </Texto>
+      )}
+      {tardando && <Texto variante="secundario" color={colores.textoSecundario}>Despertando el servidor, puede tardar hasta un minuto…</Texto>}
+      <Boton titulo="Entrar" onPress={entrar} cargando={cargando} deshabilitado={!email || !contrasena} />
+
+      <Link href="/registro" accessibilityRole="link" style={{ minHeight: AREA_TOQUE_MIN, textAlign: "center", paddingVertical: 12, fontSize: 17, fontWeight: "600", color: colores.primario }}>
+        ¿No tienes cuenta? Crear cuenta
+      </Link>
+    </PantallaFormulario>
   );
 }
