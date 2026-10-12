@@ -35,7 +35,9 @@ class LectorEnchufe:
         self.nombre: str = dispositivo.get("name", self.tuya_id)
         self._clave: str = dispositivo["key"]
         self._ip: str | None = dispositivo.get("ip") or None
-        self._version = float(dispositivo["ver"]) if dispositivo.get("ver") else None
+        # El asistente de TinyTuya guarda la versión como "version"; "ver" es el nombre que usa su escaneo.
+        version = dispositivo.get("version") or dispositivo.get("ver")
+        self._version = float(version) if version else None
         self._fabrica = fabrica
         self._escanear = escanear
         self._dev = None

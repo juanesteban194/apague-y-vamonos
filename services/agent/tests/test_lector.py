@@ -109,3 +109,18 @@ def test_si_el_escaneo_falla_no_se_cae():
     for _ in range(4):
         with pytest.raises(ErrorEnchufe):
             lector.leer()
+
+
+@pytest.mark.parametrize("campo", ["version", "ver"])
+def test_usa_la_version_de_devices_json_sin_probar_otras(campo):
+    versiones = []
+
+    class Enchufe(EnchufeFalso):
+        def set_version(self, v):
+            versiones.append(v)
+            super().set_version(v)
+
+    d = {"id": "id1", "key": "k", "ip": "10.0.0.5", campo: "3.5"}
+    lector = LectorEnchufe(d, fabrica=lambda *a: Enchufe([{"dps": DPS}]))
+    assert lector.leer() is not None
+    assert versiones == [3.5]
