@@ -13,6 +13,17 @@ class Settings(BaseSettings):
     jwt_access_minutes: int = 15
     jwt_refresh_days: int = 30
 
+    # Inicio de sesión con Google (cliente OAuth tipo "Aplicación web" de Google Cloud). Sin ellos, el botón responde 503.
+    google_client_id: str | None = None
+    google_client_secret: str | None = None
+    # URL pública de la API, para el redirect de Google. Render la entrega sola en RENDER_EXTERNAL_URL.
+    api_public_url: str | None = None
+    render_external_url: str | None = None
+
+    @property
+    def url_publica(self) -> str:
+        return (self.api_public_url or self.render_external_url or "http://localhost:8000").rstrip("/")
+
     @field_validator("database_url")
     @classmethod
     def usar_psycopg3(cls, v: str) -> str:
