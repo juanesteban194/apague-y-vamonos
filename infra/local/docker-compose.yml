@@ -1,0 +1,19 @@
+# PostgreSQL local para desarrollo. Credenciales solo para esta base desechable en localhost.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: energia
+      POSTGRES_PASSWORD: energia_local
+      POSTGRES_DB: energia
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U energia -d energia"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  pgdata:
