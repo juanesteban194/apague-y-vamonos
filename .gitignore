@@ -34,3 +34,7 @@ snapshot.json
 tuya-raw.json
 lecturas_fase0*.csv
 *.egg-info/
+
+# Cola SQLite del agente (WAL)
+*.sqlite-wal
+*.sqlite-shm
