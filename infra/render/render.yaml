@@ -1,0 +1,19 @@
+# Blueprint de Render para la API. Neon aporta la base: DATABASE_URL se pega a mano en el panel.
+services:
+  - type: web
+    name: gestion-consumo-api
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: services/api
+    buildCommand: pip install .
+    # Las migraciones corren al arrancar: el plan gratuito no tiene preDeployCommand.
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /salud
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
