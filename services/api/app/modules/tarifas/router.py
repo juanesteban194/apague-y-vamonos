@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import usuario_actual_id
+from app.modules.auth.dependencias import usuario_con_consentimiento
 from app.modules.hogares.models import Hogar
 from app.modules.hogares.service import exigir_miembro
 from app.modules.tarifas import service
@@ -20,7 +20,7 @@ BOGOTA = ZoneInfo("America/Bogota")
 def tarifa_del_hogar(
     hogar_id: uuid.UUID,
     db: Session = Depends(get_db),
-    usuario_id: uuid.UUID = Depends(usuario_actual_id),
+    usuario_id: uuid.UUID = Depends(usuario_con_consentimiento),
 ):
     exigir_miembro(db, usuario_id, hogar_id)
     hogar = db.get(Hogar, hogar_id)

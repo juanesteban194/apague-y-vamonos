@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import usuario_actual_id
+from app.modules.auth.dependencias import usuario_con_consentimiento
 from app.modules.consumo import service
 from app.modules.consumo.schemas import ConsumoOut, ResumenOut
 from app.modules.dispositivos.models import Dispositivo
@@ -16,7 +16,7 @@ router = APIRouter(tags=["consumo"])
 
 
 @router.get("/hogares/{hogar_id}/resumen", response_model=ResumenOut)
-def resumen(hogar_id: uuid.UUID, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_actual_id)):
+def resumen(hogar_id: uuid.UUID, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)):
     exigir_miembro(db, usuario_id, hogar_id)
     return service.resumen_hogar(db, db.get(Hogar, hogar_id))
 
@@ -26,7 +26,7 @@ def consumo(
     dispositivo_id: uuid.UUID,
     periodo: Literal["dia", "semana", "mes"] = Query(),
     db: Session = Depends(get_db),
-    usuario_id: uuid.UUID = Depends(usuario_actual_id),
+    usuario_id: uuid.UUID = Depends(usuario_con_consentimiento),
 ):
     dispositivo = db.get(Dispositivo, dispositivo_id)
     if dispositivo is None:
