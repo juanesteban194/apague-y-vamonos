@@ -349,8 +349,8 @@ Cada fase termina con su prueba. No avanzar de fase sin confirmación del usuari
    Prueba: retraso medido ≤ 5 s del enchufe al evento WebSocket.
 3. **App base**: Expo, navegación, Inicio y Dispositivo con datos reales.
    Prueba: Android y iPhone muestran el mismo costo en vivo.
-4. **Alertas y control**: HU-02, HU-03, HU-07, push Android, encender/apagar, rutinas HU-08.
-   Prueba: el aviso llega y "Apagar" corta la corriente.
+4. **Alertas y control**: HU-02, HU-03, HU-07, push Android, encender/apagar, rutinas HU-08, y las tareas programadas (APScheduler): consolidar `consumo_horario` cada hora y purgar lecturas crudas de más de 30 días (pendiente de la Fase 2).
+   Prueba: el aviso llega y "Apagar" corta la corriente; `consumo_horario` coincide con la integración directa de las lecturas.
 5. **Consejos y RETIQ**: simulador HU-05, semáforo y equivalencias HU-04.
    Prueba: el simulador reproduce un cálculo de VPN hecho a mano.
 6. **Pruebas y ensayo**: verificar cada criterio de calidad; ensayo de 30 min; video de respaldo.
