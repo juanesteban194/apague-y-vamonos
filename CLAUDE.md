@@ -18,7 +18,7 @@ Estado de las fases (detalle y decisiones en `docs/decisiones/`, historias en `d
 | 3 App base | Construida (tsc, bundle Android/iOS y 29 pruebas). **Falta la prueba en teléfonos reales** |
 | Agente local | Hecho (cola SQLite, reintentos, redescubre IP); falta `commands/` (Fase 4) |
 
-Pendiente del usuario: probar la app en Android e iPhone; confirmar con una factura la columna de propiedad de la tarifa EPM (ADR 0002);
+Pendiente del usuario: probar la app en Android e iPhone; (hecho) factura de EPM verificada (ADR 0002);
 rotar la contraseña de Neon y el Access Secret de Tuya (quedaron expuestos en el chat).
 
 Siguiente: Fase 4 (alertas y control, push Android, rutinas y tareas programadas). No avanzar sin confirmación del usuario.
