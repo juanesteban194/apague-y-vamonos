@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.security import generar_token_agente, hash_token_agente
 from app.modules.alertas.models import PreferenciaAlertas
 from app.modules.hogares.models import Agente, Hogar, MiembroHogar
-from app.modules.hogares.schemas import AgenteIn, HogarIn
+from app.modules.hogares.schemas import AgenteIn, HogarActualizarIn, HogarIn
 
 
 def exigir_miembro(db: Session, usuario_id: uuid.UUID, hogar_id: uuid.UUID, rol: str | None = None) -> MiembroHogar:
@@ -44,3 +44,24 @@ def crear_agente(db: Session, hogar_id: uuid.UUID, datos: AgenteIn) -> tuple[Age
     db.add(agente)
     db.commit()
     return agente, token
+
+
+def actualizar_hogar(db: Session, hogar: Hogar, datos: HogarActualizarIn) -> Hogar:
+    for campo, valor in datos.model_dump(exclude_unset=True).items():
+        if valor is None and campo in ("nombre", "estrato"):
+            continue  # obligatorios: null no los borra
+        setattr(hogar, campo, valor)
+    db.commit()
+    return hogar
+
+
+def listar_agentes(db: Session, hogar_id: uuid.UUID) -> list[Agente]:
+    return list(db.scalars(select(Agente).where(Agente.hogar_id == hogar_id).order_by(Agente.creado_en)))
+
+
+def revocar_agente(db: Session, hogar_id: uuid.UUID, agente_id: uuid.UUID) -> None:
+    agente = db.get(Agente, agente_id)
+    if agente is None or agente.hogar_id != hogar_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Agente no encontrado")
+    db.delete(agente)
+    db.commit()
