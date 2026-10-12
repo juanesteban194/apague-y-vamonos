@@ -7,11 +7,6 @@ import Inicio from "../app/(tabs)/index";
 
 import { CONSUMO_DIA, HOGAR, iniciarSesionDePrueba, jwtFalso, renderizar, respuestaJson, RESUMEN, WebSocketFalso } from "./auxiliares";
 
-jest.mock("expo-router", () => ({
-  router: { push: jest.fn() },
-  useLocalSearchParams: () => ({ id: "d1" }),
-}));
-
 const fetchMock = jest.fn();
 
 function simularApi(extra: Record<string, unknown> = {}) {
@@ -30,6 +25,7 @@ function simularApi(extra: Record<string, unknown> = {}) {
 }
 
 beforeEach(async () => {
+  (globalThis as { __parametros?: object }).__parametros = { id: "d1" };
   fetchMock.mockReset();
   WebSocketFalso.instancias = [];
   global.fetch = fetchMock as unknown as typeof fetch;
