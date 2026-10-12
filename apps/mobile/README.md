@@ -12,9 +12,13 @@ npm start                         # escanea el QR con Expo Go (Android) o la cá
 ```
 El teléfono y el Mac en la misma WiFi. La API está en la nube: no hay que levantar nada local. Si Render está dormido,
 el primer inicio de sesión tarda hasta ~1 min (la pantalla lo avisa). Usuario de demo: ver `.env.demo` (no versionado).
+Si Expo Go no abre el proyecto: (1) iPhone: *Ajustes > Expo Go > Red local* activado; (2) el teléfono en la misma WiFi
+que el Mac y sin datos móviles; (3) prueba abrir `http://<IP del Mac>:8081` en el navegador del teléfono: debe mostrar un JSON.
+Si la red aísla los dispositivos (WiFi de la universidad, invitados), usa `npm run start:tunnel`.
 Expo Go no recibe push en Android: eso llega en la Fase 4 con un *development build*.
 
 ## Comandos
+- `npm run start:tunnel`: como `start`, pero por un túnel de internet (funciona aunque la WiFi aísle los dispositivos; más lento).
 - `npm test`: Jest (formato, cliente con renovación de token, tiempo real, pantallas con API y WebSocket simulados).
 - `npm run typecheck`: `tsc --noEmit`.
 - `npm run api:types`: regenera `src/api/schema.d.ts` desde el OpenAPI de la API (usa `EXPO_PUBLIC_API_URL`).
