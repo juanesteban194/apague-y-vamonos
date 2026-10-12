@@ -21,10 +21,14 @@ API en Render (Oregon, plan gratuito): https://gestion-consumo-api.onrender.com 
 Base en Neon. Tras 15 min sin tráfico se apaga: despertarla 2 min antes de la demo.
 Blueprint en [render.yaml](../../render.yaml) (raíz del repo: Render lo busca ahí).
 
-## Estado (Fase 1, cerrada)
+## Estado
 Implementado: `auth` (registro con consentimiento, login, renovar), `hogares`, `dispositivos`, `ingesta`
 (`POST /ingesta/lecturas`, idempotente) y los modelos de las 17 tablas.
 Prueba de la fase: el agente envió lecturas reales del enchufe a la API en Render y quedaron en Neon
 (12 lecturas, intervalo máximo 5,5 s).
-Pendiente de fases siguientes: consumo/costos, WebSocket, alertas, prepago, rutinas, RETIQ.
+Fase 2: `tarifas` (seed EPM sep-2026 en `seeds/tarifas.py`), energía y costo en COP
+(`GET /hogares/{id}/resumen`, `GET /dispositivos/{id}/consumo?periodo=dia|semana|mes`, `GET /hogares/{id}/tarifa`) y
+WebSocket `/ws/hogares/{id}` (eventos `lectura` y `estado_enchufe`). Retraso medido enchufe → app: máx 0,44 s.
+Decisiones de cálculo en [ADR 0003](../../docs/decisiones/0003-calculo-de-energia-y-costo.md).
+Pendiente de fases siguientes: alertas, control encender/apagar, prepago, rutinas, RETIQ, equivalencias.
 Datos pendientes: tarifa EPM por estrato y mes (tabla `tarifas` vacía), tabla RETIQ, equivalencias.
