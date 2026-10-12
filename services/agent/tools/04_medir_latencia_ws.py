@@ -1,6 +1,6 @@
 """Fase 2 (prueba): mide el retraso entre que el agente lee el enchufe y la app recibe el evento `lectura` por WebSocket.
 
-Criterio (CLAUDE.md): ≤ 5 s. Hace de agente (lee por LAN y envía a la API) y de app (login + WebSocket) a la vez,
+Criterio (CLAUDE.md): ≤ 5 s. Hace de agente (usa el lector del agente y envía a la API) y de app (login + WebSocket) a la vez,
 en la misma máquina, así que no hay desfase de relojes. Requiere AGENT_API_URL, AGENT_TOKEN (en .env) y
 DEMO_EMAIL, DEMO_PASSWORD, DEMO_HOGAR_ID (en .env.demo).
 
@@ -18,11 +18,13 @@ from datetime import UTC, datetime
 
 import httpx
 import websockets
-from _comun import cargar_env, conectar, lectura_desde_dps
+from agent.collector.lector import ErrorEnchufe, LectorEnchufe
+from agent.config.ajustes import cargar_env
 
 
 async def main() -> None:
-    cargar_env(".env", ".env.demo")
+    cargar_env()
+    cargar_env(".env.demo")
     p = argparse.ArgumentParser()
     p.add_argument("--devices", default="devices.json")
     p.add_argument("--lecturas", type=int, default=30)
@@ -34,7 +36,7 @@ async def main() -> None:
     api = os.environ["AGENT_API_URL"].rstrip("/")
     segundos = float(os.environ.get("AGENT_POLL_SECONDS") or 5)
     d = json.load(open(args.devices))[0]
-    dev = conectar(d)
+    lector = LectorEnchufe(d)
     bucle = asyncio.get_running_loop()
     retrasos: list[float] = []
 
@@ -60,11 +62,16 @@ async def main() -> None:
                     print(f"[{len(retrasos)}/{args.lecturas}] {ev['potencia_w']} W  retraso {retraso:.2f} s")
 
             oyente = asyncio.create_task(escuchar())
-            dps: dict = {}
             for _ in range(args.lecturas):
                 t0 = time.time()
-                dps.update((await bucle.run_in_executor(None, dev.status)).get("dps") or {})
-                lectura = lectura_desde_dps(d["id"], dps, datetime.now(UTC).isoformat())
+                try:
+                    lectura = await bucle.run_in_executor(None, lector.leer)
+                except ErrorEnchufe as e:
+                    print("enchufe sin respuesta:", e)
+                    lectura = None
+                if lectura is None:
+                    await asyncio.sleep(max(0, segundos - (time.time() - t0)))
+                    continue
                 resp = await http.post(
                     "/ingesta/lecturas", json={"lecturas": [lectura]}, headers={"Authorization": f"Bearer {os.environ['AGENT_TOKEN']}"}
                 )
