@@ -15,7 +15,8 @@ Estado: implementado y verificado contra cálculos a mano (`services/api/tests/t
 - El bloque se decide con la **energía medida de todo el hogar** (suma de sus enchufes) en el mes. Los enchufes no miden toda la casa, así que es una aproximación: HU-07 usará `lecturas_medidor` para la línea de subsistencia real.
 - Se calcula el costo del mes del hogar por bloques y se obtiene un **precio medio** (COP/kWh) que se aplica a cada enchufe y a cada día. Con consumo bajo la subsistencia, el precio medio es exactamente la tarifa del primer bloque, así que el costo es kWh × tarifa.
 - Tarifa del mes: si aún no se carga la del mes actual, se usa la más reciente anterior y la API lo indica (`es_del_mes_actual`), para mostrar el mes en la app. Sin ninguna tarifa, el costo es `null` (no se inventa).
-- Dinero en `Decimal`, redondeo a centavos (`ROUND_HALF_UP`).
+- Dinero en `Decimal`, redondeo a centavos (`ROUND_HALF_UP`). El costo del mes se calcula como la factura de EPM: toda la energía al CU menos el subsidio
+  de los kWh dentro del límite, cada concepto redondeado (ADR 0002). El *precio medio* por aparato se calcula sin redondear.
 
 ## Tiempo real
 - `WS /ws/hogares/{id}`; el primer mensaje es `{"token": "<acceso>"}` (el token no va en la URL). Cierres: 4401 sin autenticar, 4403 sin acceso al hogar.

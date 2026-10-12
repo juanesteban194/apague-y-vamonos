@@ -89,3 +89,16 @@ def test_precio_medio_y_costo_de():
     assert precio_medio(50, 130, sub, sobre) == sub  # bajo la subsistencia = tarifa exacta
     assert precio_medio(0, 130, sub, sobre) == sub
     assert costo_de(0.1, sub) == Decimal("81.46")  # 0,1 kWh × 814,63 = 81,463
+
+
+def test_reproduce_una_factura_real_de_epm_al_centavo():
+    """Factura EPM de junio de 2026, estrato 3, 250 kWh: energía a 876,970 = $219.242,50, subsidio $-17.100,92,
+    total energía $202.141,58. La tarifa de subsistencia es el 85 % del costo unitario (subsidio de 15 % en estrato 3)."""
+    cu = Decimal("876.970")
+    sub = cu * Decimal("0.85")
+    assert costo_por_bloques(250, 130, sub, cu) == Decimal("202141.58")
+
+
+def test_sin_subsidio_el_costo_es_kwh_por_tarifa():
+    # estratos 4, 5 y 6: la misma tarifa en los dos bloques → sin subsidio
+    assert costo_por_bloques(200, 130, Decimal("958.38"), Decimal("958.38")) == Decimal("191676.00")
