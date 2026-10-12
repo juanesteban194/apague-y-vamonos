@@ -8,3 +8,31 @@ jest.mock("expo-secure-store", () => {
     deleteItemAsync: async (k: string) => void guardado.delete(k),
   };
 });
+
+// Navegación: las pantallas se prueban sin el árbol real de Expo Router. Cada prueba fija los parámetros de la ruta.
+jest.mock("expo-router", () => {
+  const { createElement } = require("react");
+  const { Text } = require("react-native");
+  return {
+    router: { push: jest.fn(), back: jest.fn(), dismissAll: jest.fn(), replace: jest.fn() },
+    useLocalSearchParams: () => (globalThis as { __parametros?: object }).__parametros ?? {},
+    Link: ({ children, ...props }: { children: unknown }) => createElement(Text, props, children),
+  };
+});
+
+jest.mock("expo-crypto", () => {
+  const nodo = require("crypto");
+  return {
+    CryptoDigestAlgorithm: { SHA256: "SHA-256" },
+    CryptoEncoding: { BASE64: "base64" },
+    getRandomBytes: (n: number) => Uint8Array.from(nodo.randomBytes(n)),
+    digestStringAsync: async (_algoritmo: string, texto: string) => nodo.createHash("sha256").update(texto).digest("base64"),
+  };
+});
+
+jest.mock("expo-web-browser", () => ({ maybeCompleteAuthSession: jest.fn(), openAuthSessionAsync: jest.fn() }));
+jest.mock("expo-clipboard", () => ({ setStringAsync: jest.fn(async () => true) }));
+jest.mock("expo-linking", () => ({
+  createURL: (ruta: string) => `exp://127.0.0.1:8081/--/${ruta}`,
+  parse: (url: string) => ({ queryParams: Object.fromEntries(new URL(url).searchParams) }),
+}));
