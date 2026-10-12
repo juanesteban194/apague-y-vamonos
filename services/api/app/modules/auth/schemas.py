@@ -32,3 +32,17 @@ class TokensOut(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+
+
+class PerfilOut(BaseModel):
+    id: uuid.UUID
+    email: EmailStr
+    nombre: str
+    tiene_consentimiento: bool
+    tiene_contrasena: bool
+    tiene_google: bool
+
+
+class CanjeGoogleIn(BaseModel):
+    code: str = Field(min_length=10, max_length=2000)
+    code_verifier: str = Field(min_length=43, max_length=128)
