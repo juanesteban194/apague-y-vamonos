@@ -1,0 +1,35 @@
+# Secretos y datos locales
+.env
+.env.*
+!.env.example
+devices.json
+*.sqlite
+*.sqlite3
+
+# Node / Expo
+node_modules/
+.expo/
+dist/
+web-build/
+npm-debug.log*
+ios/
+android/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# SO / editores
+.DS_Store
+.idea/
+
+# TinyTuya (el asistente guarda secretos y claves locales)
+tinytuya.json
+snapshot.json
+tuya-raw.json
+lecturas_fase0*.csv
