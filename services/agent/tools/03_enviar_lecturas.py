@@ -13,33 +13,9 @@ import os
 import sys
 import time
 from datetime import UTC, datetime
-from pathlib import Path
 
 import httpx
-import tinytuya
-
-PROTOCOLOS = [3.5, 3.4, 3.3]  # el BSD04 responde con 3.5
-
-
-def cargar_env() -> None:
-    for ruta in (Path(".env"), Path("../../.env")):
-        if ruta.is_file():
-            for linea in ruta.read_text().splitlines():
-                clave, sep, valor = linea.partition("=")
-                if sep and not linea.lstrip().startswith("#"):
-                    os.environ.setdefault(clave.strip(), valor.strip())
-
-
-def conectar(d: dict) -> tinytuya.OutletDevice:
-    for v in [d.get("ver")] if d.get("ver") else PROTOCOLOS:
-        dev = tinytuya.OutletDevice(d["id"], d["ip"], d["key"])
-        dev.set_version(float(v))
-        dev.set_socketTimeout(4)
-        if dev.status().get("dps"):
-            dev.set_socketPersistent(True)
-            return dev
-    sys.exit("El enchufe no responde por LAN (¿IP o clave cambiaron?)")
-
+from _comun import cargar_env, conectar, lectura_desde_dps
 
 def main() -> None:
     cargar_env()
@@ -63,16 +39,7 @@ def main() -> None:
             t0 = time.time()
             dps.update(dev.status().get("dps") or {})
             if {"1", "18", "19", "20"} <= dps.keys():
-                pendientes.append(
-                    {
-                        "tuya_id": d["id"],
-                        "fecha_hora": datetime.now(UTC).isoformat(),
-                        "potencia_w": dps["19"] / 10,
-                        "voltaje_v": dps["20"] / 10,
-                        "corriente_ma": dps["18"],
-                        "encendido": bool(dps["1"]),
-                    }
-                )
+                pendientes.append(lectura_desde_dps(d["id"], dps, datetime.now(UTC).isoformat()))
             try:
                 r = http.post("/ingesta/lecturas", json={"lecturas": pendientes[:1000]})
                 r.raise_for_status()
