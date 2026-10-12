@@ -1,8 +1,8 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from fastapi import Depends, HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.dialects.postgresql import distinct_on, insert
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -21,8 +21,49 @@ def agente_actual(token: str = Depends(token_bearer), db: Session = Depends(get_
     return agente
 
 
-def guardar_lecturas(db: Session, agente: Agente, datos: LecturasIn) -> LecturasOut:
-    """Guarda lecturas del hogar del agente. Idempotente: reenviar una lectura no la duplica."""
+# Solo lo reciente es "en vivo": al reenviar lo acumulado tras una caída no se inunda a la app.
+VIGENCIA_EN_VIVO = timedelta(seconds=60)
+
+
+def _evento_lectura(fila: dict) -> dict:
+    return {
+        "tipo": "lectura",
+        "dispositivo_id": str(fila["dispositivo_id"]),
+        "fecha_hora": fila["fecha_hora"].isoformat(),
+        "potencia_w": fila["potencia_w"],
+        "voltaje_v": fila["voltaje_v"],
+        "corriente_ma": fila["corriente_ma"],
+        "encendido": fila["encendido"],
+    }
+
+
+def _eventos_en_vivo(nuevas: list[dict], previo: dict) -> list[dict]:
+    """`estado_enchufe` si cambió el encendido respecto de lo último guardado, y `lectura` con la más reciente."""
+    ahora = datetime.now(UTC)
+    eventos: list[dict] = []
+    por_dispositivo: dict = {}
+    for fila in sorted(nuevas, key=lambda f: f["fecha_hora"]):
+        por_dispositivo.setdefault(fila["dispositivo_id"], []).append(fila)
+    for dispositivo_id, filas in por_dispositivo.items():
+        ultima_fecha, estado = previo.get(dispositivo_id, (None, None))
+        for fila in filas:
+            if ultima_fecha is not None and fila["fecha_hora"] <= ultima_fecha:
+                continue  # lectura atrasada (reenvío): no cambia el estado actual
+            if estado is not None and fila["encendido"] != estado and ahora - fila["fecha_hora"] <= VIGENCIA_EN_VIVO:
+                eventos.append(
+                    {"tipo": "estado_enchufe", "dispositivo_id": str(dispositivo_id),
+                     "encendido": fila["encendido"], "fecha_hora": fila["fecha_hora"].isoformat()}
+                )
+            estado = fila["encendido"]
+        if ahora - filas[-1]["fecha_hora"] <= VIGENCIA_EN_VIVO:
+            eventos.append(_evento_lectura(filas[-1]))
+    return eventos
+
+
+def guardar_lecturas(db: Session, agente: Agente, datos: LecturasIn) -> tuple[LecturasOut, list[dict]]:
+    """Guarda lecturas del hogar del agente. Idempotente: reenviar una lectura no la duplica.
+
+    Devuelve también los eventos en vivo a publicar por WebSocket."""
     ids = {l.tuya_id for l in datos.lecturas}
     dispositivos = dict(
         db.execute(
@@ -43,16 +84,30 @@ def guardar_lecturas(db: Session, agente: Agente, datos: LecturasIn) -> Lecturas
         for l in datos.lecturas
         if l.tuya_id in dispositivos
     ]
-    guardadas = 0
+    guardadas, nuevas, previo = 0, [], {}
     if filas:
-        resultado = db.execute(
-            insert(Lectura).values(filas).on_conflict_do_nothing().returning(Lectura.dispositivo_id)
-        )
-        guardadas = len(resultado.all())
+        previo = {
+            l.dispositivo_id: (l.fecha_hora, l.encendido)
+            for l in db.scalars(
+                select(Lectura)
+                .ext(distinct_on(Lectura.dispositivo_id))
+                .where(Lectura.dispositivo_id.in_(set(dispositivos.values())))
+                .order_by(Lectura.dispositivo_id, Lectura.fecha_hora.desc())
+            )
+        }
+        insertadas = {
+            (d, f)
+            for d, f in db.execute(
+                insert(Lectura).values(filas).on_conflict_do_nothing().returning(Lectura.dispositivo_id, Lectura.fecha_hora)
+            )
+        }
+        nuevas = [f for f in filas if (f["dispositivo_id"], f["fecha_hora"]) in insertadas]
+        guardadas = len(nuevas)
     db.commit()
-    return LecturasOut(
+    salida = LecturasOut(
         recibidas=len(datos.lecturas),
         guardadas=guardadas,
         duplicadas=len(filas) - guardadas,
         desconocidas=len(datos.lecturas) - len(filas),
     )
+    return salida, (_eventos_en_vivo(nuevas, previo) if nuevas else [])

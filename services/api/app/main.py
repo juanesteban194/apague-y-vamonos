@@ -6,6 +6,7 @@ from app.modules.dispositivos.router import router as dispositivos_router
 from app.modules.hogares.router import router as hogares_router
 from app.modules.ingesta.router import router as ingesta_router
 from app.modules.tarifas.router import router as tarifas_router
+from app.realtime.router import router as realtime_router
 
 app = FastAPI(title="Gestión de Consumo Energético", version="0.1.0")
 
@@ -15,6 +16,7 @@ app.include_router(dispositivos_router)
 app.include_router(ingesta_router)
 app.include_router(tarifas_router)
 app.include_router(consumo_router)
+app.include_router(realtime_router)
 
 
 @app.get("/salud", tags=["salud"])
