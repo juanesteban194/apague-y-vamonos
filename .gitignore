@@ -33,3 +33,4 @@ tinytuya.json
 snapshot.json
 tuya-raw.json
 lecturas_fase0*.csv
+*.egg-info/
