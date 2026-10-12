@@ -55,6 +55,103 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/yo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Yo
+         * @description Quién soy y si ya acepté el tratamiento de datos (la app decide qué pantalla mostrar con esto).
+         */
+        get: operations["yo_auth_yo_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/consentimiento": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Consentimiento */
+        post: operations["consentimiento_auth_consentimiento_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/google/inicio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Google Inicio
+         * @description Paso 1: la app abre esta URL en el navegador. Redirige a Google.
+         */
+        get: operations["google_inicio_auth_google_inicio_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/google/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Google Callback
+         * @description Paso 2: Google vuelve aquí. Se verifica a la persona y se regresa a la app con un código de un solo uso.
+         */
+        get: operations["google_callback_auth_google_callback_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/google/canje": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Google Canje
+         * @description Paso 3: la app canjea el código con su code_verifier y recibe los tokens de la API.
+         */
+        post: operations["google_canje_auth_google_canje_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/hogares": {
         parameters: {
             query?: never;
@@ -80,11 +177,46 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Agentes */
+        get: operations["agentes_hogares__hogar_id__agentes_get"];
         put?: never;
         /** Crear Agente */
         post: operations["crear_agente_hogares__hogar_id__agentes_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hogares/{hogar_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Actualizar */
+        patch: operations["actualizar_hogares__hogar_id__patch"];
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/agentes/{agente_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revocar Agente */
+        delete: operations["revocar_agente_hogares__hogar_id__agentes__agente_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -106,6 +238,24 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/dispositivos/{dispositivo_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Borrar */
+        delete: operations["borrar_hogares__hogar_id__dispositivos__dispositivo_id__delete"];
+        options?: never;
+        head?: never;
+        /** Actualizar */
+        patch: operations["actualizar_hogares__hogar_id__dispositivos__dispositivo_id__patch"];
         trace?: never;
     };
     "/ingesta/lecturas": {
@@ -217,6 +367,30 @@ export interface components {
             /** Nombre */
             nombre: string;
         };
+        /** AgenteOut */
+        AgenteOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Nombre */
+            nombre: string;
+            /** Ultima Conexion */
+            ultima_conexion: string | null;
+            /**
+             * Creado En
+             * Format: date-time
+             */
+            creado_en: string;
+        };
+        /** CanjeGoogleIn */
+        CanjeGoogleIn: {
+            /** Code */
+            code: string;
+            /** Code Verifier */
+            code_verifier: string;
+        };
         /** ConsumoOut */
         ConsumoOut: {
             /**
@@ -247,6 +421,20 @@ export interface components {
             costo_total_cop: number | null;
             /** Serie */
             serie: components["schemas"]["PuntoConsumo"][];
+        };
+        /**
+         * DispositivoActualizarIn
+         * @description El ID de Tuya no se cambia: es el vínculo con el enchufe físico.
+         */
+        DispositivoActualizarIn: {
+            /** Nombre */
+            nombre?: string | null;
+            /** Tipo Aparato */
+            tipo_aparato?: string | null;
+            /** Alto Riesgo */
+            alto_riesgo?: boolean | null;
+            /** Umbral Minutos Encendido */
+            umbral_minutos_encendido?: number | null;
         };
         /** DispositivoIn */
         DispositivoIn: {
@@ -315,6 +503,17 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HogarActualizarIn */
+        HogarActualizarIn: {
+            /** Nombre */
+            nombre?: string | null;
+            /** Barrio */
+            barrio?: string | null;
+            /** Estrato */
+            estrato?: number | null;
+            /** Tipo Medidor */
+            tipo_medidor?: string | null;
         };
         /** HogarIn */
         HogarIn: {
@@ -390,6 +589,27 @@ export interface components {
             email: string;
             /** Contrasena */
             contrasena: string;
+        };
+        /** PerfilOut */
+        PerfilOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Nombre */
+            nombre: string;
+            /** Tiene Consentimiento */
+            tiene_consentimiento: boolean;
+            /** Tiene Contrasena */
+            tiene_contrasena: boolean;
+            /** Tiene Google */
+            tiene_google: boolean;
         };
         /** PuntoConsumo */
         PuntoConsumo: {
@@ -612,6 +832,145 @@ export interface operations {
             };
         };
     };
+    yo_auth_yo_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerfilOut"];
+                };
+            };
+        };
+    };
+    consentimiento_auth_consentimiento_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerfilOut"];
+                };
+            };
+        };
+    };
+    google_inicio_auth_google_inicio_get: {
+        parameters: {
+            query: {
+                redirect_uri: string;
+                code_challenge: string;
+                state: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    google_callback_auth_google_callback_get: {
+        parameters: {
+            query: {
+                state: string;
+                code?: string | null;
+                error?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    google_canje_auth_google_canje_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CanjeGoogleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokensOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_hogares_get: {
         parameters: {
             query?: never;
@@ -665,6 +1024,37 @@ export interface operations {
             };
         };
     };
+    agentes_hogares__hogar_id__agentes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgenteOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     crear_agente_hogares__hogar_id__agentes_post: {
         parameters: {
             query?: never;
@@ -688,6 +1078,71 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AgenteCreadoOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    actualizar_hogares__hogar_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HogarActualizarIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HogarOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revocar_agente_hogares__hogar_id__agentes__agente_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+                agente_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -748,6 +1203,72 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DispositivoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    borrar_hogares__hogar_id__dispositivos__dispositivo_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+                dispositivo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    actualizar_hogares__hogar_id__dispositivos__dispositivo_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+                dispositivo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DispositivoActualizarIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
