@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 
 import { AREA_TOQUE_MIN, colores } from "@/theme";
@@ -13,13 +14,15 @@ type Props = {
   deshabilitado?: boolean;
   flex?: boolean;
   indicador?: string; // punto de color a la izquierda (estado de un enchufe)
+  icono?: ReactNode; // ícono a la izquierda del título
 };
 
-export function Boton({ titulo, onPress, variante = "primario", seleccionado, cargando, deshabilitado, flex, indicador }: Props) {
+export function Boton({ titulo, onPress, variante = "primario", seleccionado, cargando, deshabilitado, flex, indicador, icono }: Props) {
   const lleno = variante === "primario" || seleccionado;
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={titulo} // el ícono es decorativo: el lector dice solo el título
       accessibilityState={{ disabled: !!deshabilitado || !!cargando, selected: seleccionado }}
       disabled={deshabilitado || cargando}
       onPress={onPress}
@@ -34,6 +37,7 @@ export function Boton({ titulo, onPress, variante = "primario", seleccionado, ca
         <ActivityIndicator color={lleno ? colores.sobrePrimario : colores.primario} />
       ) : (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          {icono}
           {indicador && <View style={{ width: 11, height: 11, borderRadius: 6, backgroundColor: indicador }} />}
           <Texto variante="subtitulo" color={lleno ? colores.sobrePrimario : colores.primario} style={{ flexShrink: 1 }}>
             {titulo}
