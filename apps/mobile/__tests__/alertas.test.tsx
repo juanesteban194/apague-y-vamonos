@@ -84,13 +84,18 @@ describe("Avisos", () => {
   });
 
   it("muestra la sensibilidad elegida y guarda el cambio", async () => {
-    api({ "PUT /hogares/h1/preferencias-alertas": (init) => respuestaJson(JSON.parse(String(init.body))) });
+    api({ "PUT /hogares/h1/preferencias-alertas": (init: RequestInit) => {
+        estado.sensibilidad = JSON.parse(String(init.body)).sensibilidad; // el servidor guarda lo que le mandan
+        return respuestaJson({ sensibilidad: estado.sensibilidad });
+      },
+    });
     await renderizar(<Avisos />);
     const normales = await screen.findByRole("radio", { name: /Normales/ });
     await waitFor(() => expect(normales.props.accessibilityState.checked).toBe(true));
     await fireEvent.press(screen.getByRole("radio", { name: /Muchas/ }));
     await waitFor(() => expect(llamadas("PUT")).toEqual([["/hogares/h1/preferencias-alertas", { sensibilidad: "todos" }]]));
-    expect(screen.getByRole("radio", { name: /Muchas/ }).props.accessibilityState.checked).toBe(true);
+    await waitFor(() => expect(screen.getByRole("radio", { name: /Muchas/ }).props.accessibilityState.checked).toBe(true));
+    expect(screen.getByRole("radio", { name: /Normales/ }).props.accessibilityState.checked).toBe(false);
   });
 
   it("el aviso de alto riesgo trae el botón para apagar, y avisa cómo salió", async () => {
