@@ -8,6 +8,12 @@ import { Alert } from "react-native";
 
 import { pasoDeNavegacion } from "@/api/cuenta";
 import { cerrarSesion, useSesion } from "@/api/sesion";
+import { BotonAyuda } from "@/components/BotonAyuda";
+import { SelectorCasa } from "@/components/SelectorCasa";
+import { SugerenciaAyuda } from "@/components/SugerenciaAyuda";
+import { elegirCasa, useCasaSeleccionada } from "@/features/casas/seleccion";
+import { reiniciarAyuda, useAyudaVista } from "@/features/ayuda/estado";
+import { ORDEN_TEMAS, TEMAS } from "@/features/ayuda/temas";
 import { haceCuanto } from "@/lib/fechas";
 import VincularAgente from "../app/agente/nuevo";
 import Login from "../app/(auth)/login";
@@ -16,7 +22,17 @@ import Consentimiento from "../app/(onboarding)/consentimiento";
 import CrearHogar from "../app/(onboarding)/hogar";
 import EditarEnchufe from "../app/enchufe/[id]";
 import NuevoEnchufe from "../app/enchufe/nuevo";
-import MiCasa from "../app/(tabs)/mi-casa";
+import Ajustes from "../app/(tabs)/ajustes";
+import Explorar from "../app/(tabs)/explorar";
+import Inicio from "../app/(tabs)/index";
+import Agentes from "../app/agentes";
+import PantallaAyuda from "../app/ayuda/[tema]";
+import NuevaCasa from "../app/casa/nueva";
+import Casas from "../app/casas";
+import Enchufes from "../app/enchufes";
+import Facturas from "../app/facturas";
+import Instrucciones from "../app/instrucciones";
+import Rutinas from "../app/rutinas";
 
 import { HOGAR, iniciarSesionDePrueba, jwtFalso, renderizar, respuestaJson, RESUMEN, TARIFA } from "./auxiliares";
 
@@ -42,6 +58,8 @@ const enviado = (clave: string) => {
 
 beforeEach(async () => {
   fetchMock.mockReset();
+  useCasaSeleccionada.setState({ id: null });
+  useAyudaVista.setState({ cargada: true, vistas: [...ORDEN_TEMAS] }); // sin sugerencias de primera vez, salvo en las pruebas de ayuda
   abrirNavegador.mockReset();
   (Clipboard.setStringAsync as jest.Mock).mockClear();
   (router.push as jest.Mock).mockClear();
@@ -216,7 +234,7 @@ describe("Consentimiento y hogar", () => {
   });
 });
 
-describe("Mi casa", () => {
+describe("Categorías de la casa", () => {
   const PREPAGO = { estado: "sin_registros", saldo_cop: null, registrado_en: null, promedio_diario_cop: null, dias_restantes: null, se_acaba_el: null, nivel: null, registros: [] };
   const RUTINA = { id: "r1", dispositivo_id: "d1", dispositivo_nombre: "Nevera", dias: [0, 1, 2, 3, 4], hora_apagado: "22:00:00", hora_encendido: "06:00:00", activa: true, ahorro_estimado_cop_mes: 14118.6, ultima_ejecucion: null };
   const base = {
@@ -230,32 +248,88 @@ describe("Mi casa", () => {
     "GET /hogares/h1/agentes": [],
   };
 
-  it("muestra el hogar con sus datos, como en el mockup", async () => {
+  it("Casas: muestra la casa con sus datos, como en el mockup", async () => {
     await iniciarSesionDePrueba();
     simular(base);
-    await renderizar(<MiCasa />);
-    expect(await screen.findByText("Casa demo")).toBeTruthy();
-    expect(screen.getByText("CD")).toBeTruthy(); // iniciales en el avatar
+    await renderizar(<Casas />);
+    expect(await screen.findByText("Datos de Casa demo")).toBeTruthy();
     expect(await screen.findByText("$814,63 por kWh")).toBeTruthy();
     expect(screen.getByText(/Tarifa EPM de septiembre de 2026 \(falta cargar la de este mes\)/)).toBeTruthy();
     expect(screen.getByText("Sin indicar")).toBeTruthy();
-    expect(await screen.findByText(/ana@example.com/)).toBeTruthy();
   });
 
-  it("lista los enchufes con su estado y cuántos están conectados", async () => {
+  it("Casas: con varias casas se elige cuál ver y los datos cambian", async () => {
+    await iniciarSesionDePrueba();
+    const otra = { ...HOGAR, id: "h2", nombre: "Casa de los papás", estrato: 2 };
+    simular({ ...base, "GET /hogares": [HOGAR, otra], "GET /hogares/h2/tarifa": { ...TARIFA, estrato: 2 } });
+    await renderizar(<Casas />);
+    expect(await screen.findByText("Datos de Casa demo")).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: /Casa de los papás/ }));
+    expect(await screen.findByText("Datos de Casa de los papás")).toBeTruthy();
+    expect(useCasaSeleccionada.getState().id).toBe("h2");
+    await fireEvent.press(screen.getByRole("button", { name: "Agregar otra casa" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Editar esta casa" }));
+    expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(["/casa/nueva", "/hogar/editar"]);
+  });
+
+  it("Casas: una casa elegida que ya no existe vuelve a la primera", async () => {
+    await iniciarSesionDePrueba();
+    await elegirCasa("borrada");
+    simular(base);
+    await renderizar(<Casas />);
+    expect(await screen.findByText("Datos de Casa demo")).toBeTruthy();
+  });
+
+  it("Nueva casa: se crea, queda elegida y se vuelve", async () => {
+    await iniciarSesionDePrueba();
+    simular({ ...base, "POST /hogares": () => respuestaJson({ ...HOGAR, id: "h9", nombre: "Finca" }, 201) });
+    await renderizar(<NuevaCasa />);
+    await fireEvent.changeText(screen.getByLabelText("Nombre del hogar"), "Finca");
+    await fireEvent.press(screen.getByRole("button", { name: "2" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Agregar casa" }));
+    await waitFor(() => expect(useCasaSeleccionada.getState().id).toBe("h9"));
+    expect(enviado("POST /hogares")).toMatchObject({ nombre: "Finca", estrato: 2 });
+    expect(router.back).toHaveBeenCalled();
+  });
+
+  it("Selector de casa: lista las casas, cambia y ofrece agregar otra", async () => {
+    await iniciarSesionDePrueba();
+    const otra = { ...HOGAR, id: "h2", nombre: "Casa de los papás" };
+    simular({ ...base, "GET /hogares": [HOGAR, otra] });
+    await renderizar(<SelectorCasa />);
+    await fireEvent.press(await screen.findByRole("button", { name: /Casa: Casa demo/ }));
+    await fireEvent.press(await screen.findByRole("button", { name: /Casa de los papás/ }));
+    await waitFor(() => expect(useCasaSeleccionada.getState().id).toBe("h2"));
+    expect(await screen.findByRole("button", { name: /Casa: Casa de los papás/ })).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: /Casa: Casa de los papás/ }));
+    await fireEvent.press(await screen.findByRole("button", { name: "Agregar otra casa" }));
+    expect(router.push).toHaveBeenCalledWith("/casa/nueva");
+  });
+
+  it("Enchufes: lista cada uno con su estado y cuántos están conectados", async () => {
     await iniciarSesionDePrueba();
     simular({
       ...base,
       "GET /hogares/h1/dispositivos": [ENCHUFE, { ...ENCHUFE, id: "d2", nombre: "Pasillo" }],
       "GET /hogares/h1/resumen": { ...RESUMEN, dispositivos: [...RESUMEN.dispositivos, { ...RESUMEN.dispositivos[0], id: "d2", en_linea: false, ultima_lectura: new Date(Date.now() - 2 * 3600_000).toISOString() }] },
     });
-    await renderizar(<MiCasa />);
-    expect(await screen.findByText("1 de 2")).toBeTruthy();
+    await renderizar(<Enchufes />);
+    expect(await screen.findByText("1 de 2 enviando datos ahora")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Nevera · Conectado" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Pasillo · Sin señal desde hace 2 h" })).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: /^Nevera · / }));
+    await fireEvent.press(screen.getByRole("button", { name: "Conectar un enchufe" }));
+    expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(["/enchufe/d1", "/enchufe/nuevo"]);
   });
 
-  it("el prepago aparece si el medidor es prepago y muestra el saldo y hasta cuándo alcanza", async () => {
+  it("Enchufes: sin enchufes lo explica", async () => {
+    await iniciarSesionDePrueba();
+    simular({ ...base, "GET /hogares/h1/dispositivos": [] });
+    await renderizar(<Enchufes />);
+    expect(await screen.findByText("Aún no tienes enchufes")).toBeTruthy();
+  });
+
+  it("Inicio: el prepago aparece si el medidor es prepago y muestra el saldo y hasta cuándo alcanza", async () => {
     await iniciarSesionDePrueba();
     const se_acaba_el = new Date(Date.now() + 8 * 86_400_000).toISOString();
     simular({
@@ -263,76 +337,156 @@ describe("Mi casa", () => {
       "GET /hogares": [{ ...HOGAR, tipo_medidor: "prepago" }],
       "GET /hogares/h1/prepago": { ...PREPAGO, estado: "ok", saldo_cop: 28500, promedio_diario_cop: 3500, dias_restantes: 8, se_acaba_el, nivel: "verde" },
     });
-    await renderizar(<MiCasa />);
+    await renderizar(<Inicio />);
     expect(await screen.findByText("$28.500")).toBeTruthy();
     expect(screen.getByText(/le alcanza hasta el .* Son unos 8 días\./)).toBeTruthy();
     await fireEvent.press(screen.getByRole("button", { name: "Actualizar saldo" }));
     expect(router.push).toHaveBeenCalledWith("/prepago");
   });
 
-  it("con medidor pospago no muestra el prepago", async () => {
+  it("Inicio: con medidor pospago no muestra el prepago", async () => {
     await iniciarSesionDePrueba();
     simular({ ...base, "GET /hogares": [{ ...HOGAR, tipo_medidor: "pospago" }] });
-    await renderizar(<MiCasa />);
-    await screen.findByText("Casa demo");
+    await renderizar(<Inicio />);
+    await screen.findByText("Tus aparatos");
     expect(screen.queryByText(/Medidor prepago/)).toBeNull();
   });
 
-  it("el prepago a punto de acabarse se ve en rojo y lo dice", async () => {
+  it("Inicio: el prepago a punto de acabarse se ve en rojo y lo dice", async () => {
     await iniciarSesionDePrueba();
     simular({
       ...base,
       "GET /hogares": [{ ...HOGAR, tipo_medidor: "prepago" }],
       "GET /hogares/h1/prepago": { ...PREPAGO, estado: "ok", saldo_cop: 5000, promedio_diario_cop: 3333, dias_restantes: 1.5, se_acaba_el: new Date(Date.now() + 36 * 3600_000).toISOString(), nivel: "rojo" },
     });
-    await renderizar(<MiCasa />);
-    expect(await screen.findByText("MEDIDOR PREPAGO · SE ACABA PRONTO".toLowerCase().replace("medidor", "Medidor"))).toBeTruthy();
+    await renderizar(<Inicio />);
+    expect(await screen.findByText("Medidor prepago · se acaba pronto")).toBeTruthy();
   });
 
-  it("lista las rutinas con su horario, días y ahorro estimado", async () => {
+  it("Rutinas: lista las rutinas con su horario, días y ahorro estimado", async () => {
     await iniciarSesionDePrueba();
     simular({ ...base, "GET /hogares/h1/rutinas": [RUTINA] });
-    await renderizar(<MiCasa />);
+    await renderizar(<Rutinas />);
     expect(await screen.findByText("Apaga a las 22:00 · prende a las 06:00")).toBeTruthy();
     expect(screen.getByText("Lun a Vie")).toBeTruthy();
     expect(screen.getByText("Ahorra unos $14.119 al mes")).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: /^Nevera\. Apaga a las 22:00/ }));
+    await fireEvent.press(screen.getByRole("button", { name: "Nueva rutina" }));
+    expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(["/rutina/r1", "/rutina/nueva"]);
   });
 
-  it("agente que nunca se ha conectado", async () => {
+  it("Agentes: explica qué hace y avisa que sin agente no llegan datos", async () => {
+    await iniciarSesionDePrueba();
+    simular(base);
+    await renderizar(<Agentes />);
+    expect(await screen.findByText("¿Qué hace un agente?")).toBeTruthy();
+    expect(await screen.findByText(/Sin agente vinculado/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: "Vincular agente" }));
+    expect(router.push).toHaveBeenCalledWith("/agente/nuevo");
+  });
+
+  it("Agentes: uno que nunca se ha conectado", async () => {
     await iniciarSesionDePrueba();
     simular({ ...base, "GET /hogares/h1/agentes": [{ id: "a1", nombre: "Mac", ultima_conexion: null, creado_en: "2026-10-12T00:00:00Z" }] });
-    await renderizar(<MiCasa />);
-    expect(await screen.findByText(/Mac:.*nunca se ha conectado/)).toBeTruthy();
+    await renderizar(<Agentes />);
+    expect(await screen.findByText("Mac")).toBeTruthy();
+    expect(screen.getByText("Nunca se ha conectado")).toBeTruthy();
   });
 
-  it("agente conectado hace segundos", async () => {
+  it("Agentes: uno conectado hace segundos", async () => {
     await iniciarSesionDePrueba();
     simular({ ...base, "GET /hogares/h1/agentes": [{ id: "a1", nombre: "Mac", ultima_conexion: new Date().toISOString(), creado_en: "2026-10-12T00:00:00Z" }] });
-    await renderizar(<MiCasa />);
-    expect(await screen.findByText(/Mac:.*conectado/)).toBeTruthy();
+    await renderizar(<Agentes />);
+    expect(await screen.findByText("Conectado")).toBeTruthy();
   });
 
-  it("sin agente avisa que no llegarán datos", async () => {
+  it("Facturas: lleva a anotar las facturas y la lectura del medidor", async () => {
     await iniciarSesionDePrueba();
-    simular({ ...base, "GET /hogares/h1/dispositivos": [] });
-    await renderizar(<MiCasa />);
-    expect(await screen.findByText(/Sin agente vinculado/)).toBeTruthy();
-    expect(await screen.findByText("Aún no has agregado enchufes.")).toBeTruthy();
+    simular({ ...base, "GET /hogares/h1/historial-consumo": { meses: [], meses_usados: 0, promedio_kwh: null, promedio_cop: null } });
+    await renderizar(<Facturas />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Anotar mis facturas" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Anotar lectura del medidor" }));
+    expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(["/historial", "/medidor"]);
   });
 
-  it("cada botón lleva a su pantalla", async () => {
+  it("Ajustes: muestra la cuenta, lleva a las casas y a las instrucciones", async () => {
     await iniciarSesionDePrueba();
-    simular({ ...base, "GET /hogares/h1/rutinas": [RUTINA] });
-    await renderizar(<MiCasa />);
-    const pulsar = async (nombre: string | RegExp) => fireEvent.press(await screen.findByRole("button", { name: nombre }));
-    await pulsar("Editar hogar");
-    await pulsar("Nueva rutina");
-    await pulsar(/^Nevera · /);
-    await pulsar("+ Conectar otro enchufe");
-    await pulsar("Vincular agente");
-    await pulsar("Anotar lectura del medidor");
-    await pulsar(/^Nevera\. Apaga a las 22:00/);
-    expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(["/hogar/editar", "/rutina/nueva", "/enchufe/d1", "/enchufe/nuevo", "/agente/nuevo", "/medidor", "/rutina/r1"]);
+    simular(base);
+    await renderizar(<Ajustes />);
+    expect(await screen.findByText(/ana@example.com/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: "Ver y cambiar de casa" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Instrucciones" }));
+    expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(["/casas", "/instrucciones"]);
+  });
+
+  it("Explorar: cada categoría lleva a su sección", async () => {
+    await renderizar(<Explorar />);
+    const destinos: [string, string][] = [
+      ["Enchufes", "/enchufes"], ["Agentes", "/agentes"], ["Rutinas", "/rutinas"], ["Facturas y medidor", "/facturas"], ["Saldo prepago", "/prepago"],
+      ["Consejos", "/consejos"], ["¿Cambiar un aparato?", "/simulador"], ["Mis casas", "/casas"], ["Instrucciones", "/instrucciones"],
+    ];
+    for (const [nombre] of destinos) await fireEvent.press(screen.getByRole("button", { name: nombre }));
+    expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(destinos.map(([, ruta]) => ruta));
+  });
+});
+
+describe("Ayuda", () => {
+  beforeEach(async () => {
+    useAyudaVista.setState({ cargada: true, vistas: [] });
+  });
+
+  it("la sugerencia sale la primera vez y no vuelve después de descartarla", async () => {
+    await renderizar(<SugerenciaAyuda tema="agentes" />);
+    expect(screen.getByText("¿Primera vez en Agentes?")).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: "Ahora no" }));
+    expect(screen.queryByText("¿Primera vez en Agentes?")).toBeNull();
+    expect(useAyudaVista.getState().vistas).toEqual(["agentes"]);
+  });
+
+  it("«Ver cómo funciona» abre la explicación y tampoco vuelve a molestar", async () => {
+    await renderizar(<SugerenciaAyuda tema="rutinas" />);
+    await fireEvent.press(screen.getByRole("button", { name: "Ver cómo funciona" }));
+    expect(router.push).toHaveBeenCalledWith("/ayuda/rutinas");
+    expect(screen.queryByText("¿Primera vez en Rutinas?")).toBeNull();
+  });
+
+  it("no sale hasta saber qué ya se vio (así no parpadea)", async () => {
+    useAyudaVista.setState({ cargada: false, vistas: [] });
+    await renderizar(<SugerenciaAyuda tema="enchufes" />);
+    expect(screen.queryByText(/Primera vez/)).toBeNull();
+  });
+
+  it("el botón «?» abre la ayuda de su sección", async () => {
+    await renderizar(<BotonAyuda tema="prepago" />);
+    await fireEvent.press(screen.getByRole("button", { name: "Ayuda de esta sección" }));
+    expect(router.push).toHaveBeenCalledWith("/ayuda/prepago");
+  });
+
+  it("la pantalla de ayuda explica qué es, para qué sirve y cómo se usa", async () => {
+    (globalThis as { __parametros?: object }).__parametros = { tema: "agentes" };
+    await renderizar(<PantallaAyuda />);
+    expect(screen.getByText("Qué es")).toBeTruthy();
+    expect(screen.getByText("Para qué sirve")).toBeTruthy();
+    expect(screen.getByText("Cómo se usa")).toBeTruthy();
+    expect(screen.getByText("Ojo")).toBeTruthy();
+  });
+
+  it("un tema que no existe no rompe", async () => {
+    (globalThis as { __parametros?: object }).__parametros = { tema: "inventado" };
+    await renderizar(<PantallaAyuda />);
+    expect(screen.getByText("No encontramos esa ayuda.")).toBeTruthy();
+  });
+
+  it("Instrucciones lista todos los temas", async () => {
+    await renderizar(<Instrucciones />);
+    for (const id of ORDEN_TEMAS) await fireEvent.press(screen.getByRole("button", { name: new RegExp(TEMAS[id].titulo.replace(/[?¿]/g, "\\$&")) }));
+    expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(ORDEN_TEMAS.map((id) => `/ayuda/${id}`));
+  });
+
+  it("desde Ajustes se pueden volver a mostrar las sugerencias", async () => {
+    useAyudaVista.setState({ cargada: true, vistas: ["agentes", "enchufes"] });
+    await reiniciarAyuda();
+    expect(useAyudaVista.getState().vistas).toEqual([]);
   });
 });
 
