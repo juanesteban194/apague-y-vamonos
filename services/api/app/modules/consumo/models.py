@@ -17,7 +17,8 @@ class ConsumoHorario(Base):
     )
     hora: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
     kwh: Mapped[float] = mapped_column(Float)
-    costo_cop: Mapped[float] = mapped_column(Numeric(12, 2))
+    # Nulo si cuando se consolidó la hora aún no había tarifa cargada: se corrige en la siguiente pasada.
+    costo_cop: Mapped[float | None] = mapped_column(Numeric(12, 2))
 
 
 class Equivalencia(Base):

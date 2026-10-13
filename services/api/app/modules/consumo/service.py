@@ -10,7 +10,7 @@ from app.modules.consumo.costo import costo_de, precio_medio
 from app.modules.consumo.energia import (
     BOGOTA,
     HUECO_MAX_S,
-    energia_por_cubeta,
+    energia_hibrida,
     inicio_dia_bogota,
     inicio_mes_bogota,
 )
@@ -38,7 +38,7 @@ def precio_del_mes(db: Session, hogar: Hogar, ids: list[uuid.UUID], mes_ini: dat
     tarifa = tarifa_vigente(db, hogar.estrato, mes_ini.astimezone(BOGOTA).date())
     if tarifa is None:
         return None, None
-    kwh_hogar = sum(energia_por_cubeta(db, ids, mes_ini, _mes_siguiente(mes_ini), "day").values())
+    kwh_hogar = sum(energia_hibrida(db, ids, mes_ini, _mes_siguiente(mes_ini), "day").values())
     precio = precio_medio(
         kwh_hogar, float(hogar.limite_subsistencia_kwh), tarifa.cop_kwh_subsistencia, tarifa.cop_kwh_sobre_subsistencia
     )
@@ -78,7 +78,7 @@ def resumen_hogar(db: Session, hogar: Hogar) -> ResumenOut:
     dispositivos = list(db.scalars(select(Dispositivo).where(Dispositivo.hogar_id == hogar.id).order_by(Dispositivo.creado_en)))
     ids = [d.id for d in dispositivos]
 
-    por_dia = energia_por_cubeta(db, ids, mes_ini, ahora, "day")
+    por_dia = energia_hibrida(db, ids, mes_ini, ahora, "day")
     clave_hoy = hoy_ini.astimezone(BOGOTA)
     kwh_mes = {d: 0.0 for d in ids}
     kwh_hoy = {d: 0.0 for d in ids}
@@ -133,7 +133,7 @@ def consumo_dispositivo(db: Session, hogar: Hogar, dispositivo: Dispositivo, per
         cubeta, paso = "day", timedelta(days=1)
     hasta = desde + paso * n
 
-    energia = energia_por_cubeta(db, [dispositivo.id], desde, hasta, cubeta)
+    energia = energia_hibrida(db, [dispositivo.id], desde, hasta, cubeta)
     ids_hogar = list(db.scalars(select(Dispositivo.id).where(Dispositivo.hogar_id == hogar.id)))
     precios: dict[datetime, tuple[Decimal | None, Tarifa | None]] = {}
 
