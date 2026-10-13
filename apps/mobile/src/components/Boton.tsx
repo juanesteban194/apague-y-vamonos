@@ -41,7 +41,7 @@ export function Boton({ titulo, onPress, variante = "primario", seleccionado, ca
 }
 
 const estilos = StyleSheet.create({
-  base: { minHeight: AREA_TOQUE_MIN + 4, paddingHorizontal: 20, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 2 },
+  base: { minHeight: AREA_TOQUE_MIN + 4, paddingHorizontal: 20, borderRadius: 14, alignItems: "center", justifyContent: "center", borderWidth: 2 },
   lleno: { backgroundColor: colores.primario, borderColor: colores.primario },
   contorno: { backgroundColor: colores.tarjeta, borderColor: colores.primario },
 });
