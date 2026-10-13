@@ -19,7 +19,7 @@ ACTUAL = timedelta(seconds=HUECO_MAX_S)  # una lectura más vieja que esto no si
 def duracion_en_texto(minutos: float) -> str:
     minutos = int(minutos)
     if minutos < 60:
-        return f"{minutos} minutos"
+        return "1 minuto" if minutos == 1 else f"{minutos} minutos"
     horas, resto = divmod(minutos, 60)
     unidad = "hora" if horas == 1 else "horas"
     return f"{horas} {unidad}" if resto < 5 else f"{horas} {unidad} y {resto} minutos"
@@ -48,7 +48,7 @@ def evaluar_alto_riesgo(db: Session, ahora: datetime) -> list[Alerta]:
         hogar = db.get(Hogar, d.hogar_id)
         ids = list(db.scalars(select(Dispositivo.id).where(Dispositivo.hogar_id == hogar.id)))
         precio = precio_del_mes(db, hogar, ids, inicio_mes_bogota(ahora))[0]
-        cuerpo = f"Es más de los {duracion_en_texto(d.umbral_minutos_encendido)} que usted definió."
+        cuerpo = f"Superó el tiempo que usted definió ({duracion_en_texto(d.umbral_minutos_encendido)})."
         if precio:
             cuerpo += f" Si no hay nadie, apagarlo le ahorra unos {_pesos(ultima.potencia_w / 1000 * float(precio))} por hora."
         alerta = service.crear(
