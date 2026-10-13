@@ -6,8 +6,10 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.modules.auth.dependencias import usuario_con_consentimiento
-from app.modules.consumo import historial, service
-from app.modules.consumo.schemas import ConsumoOut, ResumenOut
+from datetime import UTC, datetime
+
+from app.modules.consumo import consejos, historial, service
+from app.modules.consumo.schemas import ConsejoOut, ConsumoOut, ResumenOut
 from app.modules.dispositivos.models import Dispositivo
 from app.modules.hogares.models import Hogar
 from app.modules.hogares.service import exigir_miembro
@@ -48,3 +50,9 @@ def guardar_historial(
     """Reemplaza el histórico con los meses de la factura (kWh y, si quiere, lo pagado). Con ≥ 3 meses se calcula el promedio."""
     exigir_miembro(db, usuario_id, hogar_id)
     return historial.reemplazar(db, hogar_id, datos)
+
+
+@router.get("/hogares/{hogar_id}/consejos", response_model=list[ConsejoOut])
+def ver_consejos(hogar_id: uuid.UUID, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)):
+    exigir_miembro(db, usuario_id, hogar_id)
+    return [ConsejoOut(**vars(c)) for c in consejos.generar(db, db.get(Hogar, hogar_id), datetime.now(UTC))]
