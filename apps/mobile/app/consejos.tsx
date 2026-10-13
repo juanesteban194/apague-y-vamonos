@@ -4,6 +4,7 @@ import { View } from "react-native";
 import { useHogarActual } from "@/api/hogar";
 import type { Consejo } from "@/api/tipos";
 import { Pantalla } from "@/components/Pantalla";
+import { SugerenciaAyuda } from "@/components/SugerenciaAyuda";
 import { Tarjeta } from "@/components/Tarjeta";
 import { TarjetaConsejo } from "@/components/TarjetaConsejo";
 import { Texto } from "@/components/Texto";
@@ -31,6 +32,7 @@ export default function Consejos() {
 
   return (
     <Pantalla refrescando={isFetching && !isLoading} alRefrescar={() => void refetch()}>
+      <SugerenciaAyuda tema="consejos" />
       <View>
         <Texto variante="titulo">Consejos para su casa</Texto>
         <Texto color={colores.textoSecundario}>Hechos con lo que miden sus enchufes y con su factura de EPM.</Texto>

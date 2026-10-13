@@ -7,6 +7,7 @@ import { useHogarActual } from "@/api/hogar";
 import { Boton } from "@/components/Boton";
 import { Campo } from "@/components/Campo";
 import { PantallaFormulario } from "@/components/PantallaCompleta";
+import { SugerenciaAyuda } from "@/components/SugerenciaAyuda";
 import { Tarjeta } from "@/components/Tarjeta";
 import { TarjetaPrepago } from "@/components/TarjetaPrepago";
 import { Texto } from "@/components/Texto";
@@ -42,6 +43,7 @@ export default function Prepago() {
 
   return (
     <PantallaFormulario>
+      <SugerenciaAyuda tema="prepago" />
       <Texto variante="titulo">Saldo prepago</Texto>
       <TarjetaPrepago prepago={prepago} alActualizar={() => {}} />
       <Campo

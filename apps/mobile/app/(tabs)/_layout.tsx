@@ -1,17 +1,15 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
 import { useHogarActual } from "@/api/hogar";
+import { Icono, type NombreIcono } from "@/components/Icono";
 import { useAlertas } from "@/features/alertas/hooks";
 import { colores } from "@/theme";
 
-type Icono = keyof typeof Ionicons.glyphMap;
-
-const pestanas: { nombre: string; titulo: string; icono: Icono }[] = [
-  { nombre: "index", titulo: "Inicio", icono: "home" },
-  { nombre: "avisos", titulo: "Avisos", icono: "notifications" },
-  { nombre: "consejos", titulo: "Consejos", icono: "bulb" },
-  { nombre: "mi-casa", titulo: "Mi casa", icono: "settings" },
+const pestanas: { nombre: string; titulo: string; icono: NombreIcono }[] = [
+  { nombre: "index", titulo: "Inicio", icono: "inicio" },
+  { nombre: "explorar", titulo: "Explorar", icono: "explorar" },
+  { nombre: "avisos", titulo: "Avisos", icono: "avisos" },
+  { nombre: "ajustes", titulo: "Ajustes", icono: "ajustes" },
 ];
 
 export default function TabsLayout() {
@@ -35,7 +33,7 @@ export default function TabsLayout() {
           name={p.nombre}
           options={{
             title: p.titulo,
-            tabBarIcon: ({ color }) => <Ionicons name={p.icono} size={26} color={color} />,
+            tabBarIcon: ({ color }) => <Icono nombre={p.icono} tamano={26} color={String(color)} />,
             tabBarBadge: p.nombre === "avisos" && sinLeer > 0 ? sinLeer : undefined,
             tabBarBadgeStyle: { backgroundColor: colores.semaforoRojo, fontSize: 15 },
           }}

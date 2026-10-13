@@ -8,6 +8,10 @@ import { ActivityIndicator, View } from "react-native";
 import { cerrarSesion } from "@/api/cliente";
 import { pasoDeNavegacion, useHogares, usePerfil } from "@/api/cuenta";
 import { cargarSesion, useSesion } from "@/api/sesion";
+import { BotonAyuda } from "@/components/BotonAyuda";
+import { cargarAyudaVista } from "@/features/ayuda/estado";
+import type { NombreTema } from "@/features/ayuda/temas";
+import { cargarCasaSeleccionada, casaVigente, elegirCasa, useCasaSeleccionada } from "@/features/casas/seleccion";
 import { ProveedorTiempoReal } from "@/realtime/ProveedorTiempoReal";
 import { Boton } from "@/components/Boton";
 import { Texto } from "@/components/Texto";
@@ -20,6 +24,8 @@ export const clienteConsultas = new QueryClient({
 });
 
 const opcionesCabecera = { headerShown: true, headerBackTitle: "Atrás", headerTitleStyle: { fontSize: 18 } } as const;
+/** Cabecera de una sección con su botón «?». */
+const conAyuda = (title: string, tema: NombreTema) => ({ ...opcionesCabecera, title, headerRight: () => <BotonAyuda tema={tema} /> });
 
 function Cargando({ error, alReintentar }: { error: Error | null; alReintentar: () => void }) {
   return (
@@ -47,14 +53,21 @@ function Navegacion() {
   const hogares = useHogares(autenticado && perfil.data?.tiene_consentimiento === true);
   const paso = pasoDeNavegacion({ autenticado, perfil: perfil.data, hogares: hogares.data });
 
+  const casaElegida = useCasaSeleccionada((s) => s.id);
+
   useEffect(() => {
     void cargarSesion();
+    void cargarCasaSeleccionada();
+    void cargarAyudaVista();
   }, []);
   useEffect(() => {
     if (cargada) void SplashScreen.hideAsync();
   }, [cargada]);
   useEffect(() => {
-    if (cargada && !autenticado) clienteConsultas.clear(); // al salir no queda nada del hogar anterior
+    if (cargada && !autenticado) {
+      clienteConsultas.clear(); // al salir no queda nada del hogar anterior
+      void elegirCasa(null);
+    }
   }, [cargada, autenticado]);
 
   if (!cargada) return null;
@@ -63,11 +76,11 @@ function Navegacion() {
     return <Cargando error={error} alReintentar={() => void (perfil.data ? hogares.refetch() : perfil.refetch())} />;
   }
 
-  const hogarId = paso === "lista" ? hogares.data?.[0]?.id : undefined;
+  const hogarId = paso === "lista" ? casaVigente(hogares.data, casaElegida)?.id : undefined;
 
   return (
     <>
-      {hogarId && <ProveedorTiempoReal hogarId={hogarId} />}
+      {hogarId && <ProveedorTiempoReal key={hogarId} hogarId={hogarId} />}
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colores.fondo } }}>
         <Stack.Protected guard={paso === "sesion"}>
           <Stack.Screen name="(auth)/login" />
@@ -82,16 +95,25 @@ function Navegacion() {
         <Stack.Protected guard={paso === "lista"}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="dispositivo/[id]" options={{ ...opcionesCabecera, title: "Aparato", headerBackTitle: "Inicio" }} />
-          <Stack.Screen name="hogar/editar" options={{ ...opcionesCabecera, title: "Mi hogar" }} />
+          <Stack.Screen name="enchufes" options={conAyuda("Enchufes", "enchufes")} />
+          <Stack.Screen name="agentes" options={conAyuda("Agentes", "agentes")} />
+          <Stack.Screen name="rutinas" options={conAyuda("Rutinas", "rutinas")} />
+          <Stack.Screen name="facturas" options={conAyuda("Facturas y medidor", "facturas")} />
+          <Stack.Screen name="prepago" options={conAyuda("Saldo prepago", "prepago")} />
+          <Stack.Screen name="consejos" options={conAyuda("Consejos", "consejos")} />
+          <Stack.Screen name="simulador" options={conAyuda("¿Cambiar el aparato?", "simulador")} />
+          <Stack.Screen name="casas" options={conAyuda("Mis casas", "casas")} />
+          <Stack.Screen name="casa/nueva" options={{ ...opcionesCabecera, title: "Nueva casa" }} />
+          <Stack.Screen name="hogar/editar" options={{ ...opcionesCabecera, title: "Editar casa" }} />
           <Stack.Screen name="enchufe/nuevo" options={{ ...opcionesCabecera, title: "Agregar enchufe" }} />
           <Stack.Screen name="enchufe/[id]" options={{ ...opcionesCabecera, title: "Enchufe" }} />
-          <Stack.Screen name="agente/nuevo" options={{ ...opcionesCabecera, title: "Agente" }} />
-          <Stack.Screen name="prepago" options={{ ...opcionesCabecera, title: "Saldo prepago" }} />
+          <Stack.Screen name="agente/nuevo" options={{ ...opcionesCabecera, title: "Vincular agente" }} />
           <Stack.Screen name="medidor" options={{ ...opcionesCabecera, title: "Medidor de EPM" }} />
+          <Stack.Screen name="historial" options={{ ...opcionesCabecera, title: "Mis facturas" }} />
           <Stack.Screen name="rutina/nueva" options={{ ...opcionesCabecera, title: "Nueva rutina" }} />
           <Stack.Screen name="rutina/[id]" options={{ ...opcionesCabecera, title: "Rutina" }} />
-          <Stack.Screen name="historial" options={{ ...opcionesCabecera, title: "Mis facturas" }} />
-          <Stack.Screen name="simulador" options={{ ...opcionesCabecera, title: "¿Cambiar el aparato?" }} />
+          <Stack.Screen name="instrucciones" options={{ ...opcionesCabecera, title: "Instrucciones" }} />
+          <Stack.Screen name="ayuda/[tema]" options={{ ...opcionesCabecera, title: "Cómo funciona" }} />
         </Stack.Protected>
       </Stack>
     </>

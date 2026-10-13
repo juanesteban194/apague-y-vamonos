@@ -7,6 +7,7 @@ import type { Sensibilidad } from "@/api/tipos";
 import { Boton } from "@/components/Boton";
 import { OpcionRadio } from "@/components/OpcionRadio";
 import { Pantalla } from "@/components/Pantalla";
+import { SugerenciaAyuda } from "@/components/SugerenciaAyuda";
 import { Tarjeta } from "@/components/Tarjeta";
 import { TarjetaAviso } from "@/components/TarjetaAviso";
 import { Texto } from "@/components/Texto";
@@ -47,6 +48,7 @@ export default function Avisos() {
 
   return (
     <Pantalla refrescando={isFetching && !isLoading} alRefrescar={() => void refetch()}>
+      <SugerenciaAyuda tema="avisos" />
       <View>
         <Texto variante="titulo">Avisos</Texto>
         <Texto color={colores.textoSecundario}>Le contamos cuando algo se sale de lo normal.</Texto>

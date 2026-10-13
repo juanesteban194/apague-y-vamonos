@@ -8,6 +8,7 @@ import type { SimuladorResultado } from "@/api/tipos";
 import { Boton } from "@/components/Boton";
 import { Campo } from "@/components/Campo";
 import { PantallaFormulario } from "@/components/PantallaCompleta";
+import { SugerenciaAyuda } from "@/components/SugerenciaAyuda";
 import { Tarjeta } from "@/components/Tarjeta";
 import { Texto } from "@/components/Texto";
 import { formatoCOP, formatoNumero, leerPesos } from "@/lib/formato";
@@ -66,6 +67,7 @@ export default function Simulador() {
 
   return (
     <PantallaFormulario>
+      <SugerenciaAyuda tema="simulador" />
       <Texto variante="titulo">¿Le conviene cambiarlo?</Texto>
       <Texto color={colores.textoSecundario}>Comparamos lo que gasta hoy con lo que gastaría uno nuevo, usando la etiqueta de eficiencia (RETIQ) que traen los electrodomésticos en Colombia.</Texto>
 

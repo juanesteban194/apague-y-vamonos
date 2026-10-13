@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { cerrarSesion } from "@/api/sesion";
 import { fechaLarga, mesesAnteriores } from "@/lib/fechas";
 import Inicio from "../app/(tabs)/index";
-import Consejos from "../app/(tabs)/consejos";
+import Consejos from "../app/consejos";
 import Historial, { leerKwh } from "../app/historial";
 import NuevaRutina from "../app/rutina/nueva";
 import Simulador from "../app/simulador";

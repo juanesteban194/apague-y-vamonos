@@ -7,10 +7,14 @@ import { Boton } from "@/components/Boton";
 import { useHogarActual } from "@/api/hogar";
 import { EstadoConexion } from "@/components/EstadoConexion";
 import { Pantalla } from "@/components/Pantalla";
+import { SelectorCasa } from "@/components/SelectorCasa";
+import { SugerenciaAyuda } from "@/components/SugerenciaAyuda";
 import { Tarjeta } from "@/components/Tarjeta";
 import { TarjetaDispositivo } from "@/components/TarjetaDispositivo";
 import { Texto } from "@/components/Texto";
+import { TarjetaPrepago } from "@/components/TarjetaPrepago";
 import { useResumen } from "@/features/consumo/hooks";
+import { usePrepago } from "@/features/prepago/hooks";
 import { formatoCOP } from "@/lib/formato";
 import { FilaEquivalencia } from "@/components/FilaEquivalencia";
 import { TarjetaSemaforo } from "@/components/TarjetaSemaforo";
@@ -22,6 +26,8 @@ export default function Inicio() {
   const { hogar, error: errorHogar, isLoading: cargandoHogar, refetch: recargarHogar } = useHogarActual();
   const { data: resumen, error, isLoading, isFetching, refetch } = useResumen(hogar?.id);
   const conexion = useTiempoReal((t) => t.conexion);
+  const { data: prepago } = usePrepago(hogar?.id);
+  const mostrarPrepago = hogar?.tipo_medidor === "prepago" || (prepago && prepago.estado !== "sin_registros");
 
   const falla = errorHogar ?? error;
   const alRefrescar = () => (hogar ? void refetch() : void recargarHogar());
@@ -33,9 +39,7 @@ export default function Inicio() {
           <Texto variante="secundario" color={colores.textoSecundario} style={{ fontWeight: "600" }}>
             {fechaLarga(new Date())}
           </Texto>
-          <Texto variante="titulo" style={{ fontSize: 26, fontWeight: "800" }}>
-            {hogar ? hogar.nombre : "Inicio"}
-          </Texto>
+          {hogar ? <SelectorCasa /> : <Texto variante="titulo" style={{ fontSize: 26, fontWeight: "800" }}>Inicio</Texto>}
         </View>
         {hogar && (
           <View style={{ backgroundColor: colores.tarjeta, borderWidth: 1, borderColor: colores.borde, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 }}>
@@ -46,6 +50,7 @@ export default function Inicio() {
         )}
       </View>
       <EstadoConexion estado={conexion} />
+      <SugerenciaAyuda tema="inicio" />
 
       {(cargandoHogar || isLoading) && !falla && <Texto color={colores.textoSecundario}>Cargando…</Texto>}
       {falla && (
@@ -107,6 +112,8 @@ export default function Inicio() {
               </>
             )}
           </Tarjeta>
+
+          {mostrarPrepago && <TarjetaPrepago prepago={prepago} alActualizar={() => router.push("/prepago")} />}
 
           <Texto variante="subtitulo">Tus aparatos</Texto>
           {resumen.dispositivos.length === 0 && <Texto color={colores.textoSecundario}>Todavía no hay enchufes registrados.</Texto>}
