@@ -18,7 +18,7 @@ import EditarEnchufe from "../app/enchufe/[id]";
 import NuevoEnchufe from "../app/enchufe/nuevo";
 import MiCasa from "../app/(tabs)/mi-casa";
 
-import { HOGAR, iniciarSesionDePrueba, jwtFalso, renderizar, respuestaJson, TARIFA } from "./auxiliares";
+import { HOGAR, iniciarSesionDePrueba, jwtFalso, renderizar, respuestaJson, RESUMEN, TARIFA } from "./auxiliares";
 
 const fetchMock = jest.fn();
 const abrirNavegador = WebBrowser.openAuthSessionAsync as jest.Mock;
@@ -217,25 +217,95 @@ describe("Consentimiento y hogar", () => {
 });
 
 describe("Mi casa", () => {
+  const PREPAGO = { estado: "sin_registros", saldo_cop: null, registrado_en: null, promedio_diario_cop: null, dias_restantes: null, se_acaba_el: null, nivel: null, registros: [] };
+  const RUTINA = { id: "r1", dispositivo_id: "d1", dispositivo_nombre: "Nevera", dias: [0, 1, 2, 3, 4], hora_apagado: "22:00:00", hora_encendido: "06:00:00", activa: true, ahorro_estimado_cop_mes: 14118.6, ultima_ejecucion: null };
   const base = {
     "GET /auth/yo": PERFIL,
     "GET /hogares": [HOGAR],
     "GET /hogares/h1/tarifa": TARIFA,
     "GET /hogares/h1/dispositivos": [ENCHUFE],
+    "GET /hogares/h1/resumen": RESUMEN,
+    "GET /hogares/h1/prepago": PREPAGO,
+    "GET /hogares/h1/rutinas": [],
+    "GET /hogares/h1/agentes": [],
   };
 
-  it("muestra hogar, enchufes, agente sin conectar, tarifa y cuenta", async () => {
+  it("muestra el hogar con sus datos, como en el mockup", async () => {
     await iniciarSesionDePrueba();
-    simular({ ...base, "GET /hogares/h1/agentes": [{ id: "a1", nombre: "Mac", ultima_conexion: null, creado_en: "2026-10-12T00:00:00Z" }] });
+    simular(base);
     await renderizar(<MiCasa />);
     expect(await screen.findByText("Casa demo")).toBeTruthy();
-    expect(await screen.findByText("Nevera")).toBeTruthy();
-    expect(await screen.findByText(/Mac:.*nunca se ha conectado/)).toBeTruthy();
-    expect(await screen.findByText("Mes de la tarifa: septiembre de 2026")).toBeTruthy();
+    expect(screen.getByText("CD")).toBeTruthy(); // iniciales en el avatar
+    expect(await screen.findByText("$814,63 por kWh")).toBeTruthy();
+    expect(screen.getByText(/Tarifa EPM de septiembre de 2026 \(falta cargar la de este mes\)/)).toBeTruthy();
+    expect(screen.getByText("Sin indicar")).toBeTruthy();
     expect(await screen.findByText(/ana@example.com/)).toBeTruthy();
   });
 
-  it("agente conectado hace segundos aparece como conectado", async () => {
+  it("lista los enchufes con su estado y cuántos están conectados", async () => {
+    await iniciarSesionDePrueba();
+    simular({
+      ...base,
+      "GET /hogares/h1/dispositivos": [ENCHUFE, { ...ENCHUFE, id: "d2", nombre: "Pasillo" }],
+      "GET /hogares/h1/resumen": { ...RESUMEN, dispositivos: [...RESUMEN.dispositivos, { ...RESUMEN.dispositivos[0], id: "d2", en_linea: false, ultima_lectura: new Date(Date.now() - 2 * 3600_000).toISOString() }] },
+    });
+    await renderizar(<MiCasa />);
+    expect(await screen.findByText("1 de 2")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Nevera · Conectado" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Pasillo · Sin señal desde hace 2 h" })).toBeTruthy();
+  });
+
+  it("el prepago aparece si el medidor es prepago y muestra el saldo y hasta cuándo alcanza", async () => {
+    await iniciarSesionDePrueba();
+    const se_acaba_el = new Date(Date.now() + 8 * 86_400_000).toISOString();
+    simular({
+      ...base,
+      "GET /hogares": [{ ...HOGAR, tipo_medidor: "prepago" }],
+      "GET /hogares/h1/prepago": { ...PREPAGO, estado: "ok", saldo_cop: 28500, promedio_diario_cop: 3500, dias_restantes: 8, se_acaba_el, nivel: "verde" },
+    });
+    await renderizar(<MiCasa />);
+    expect(await screen.findByText("$28.500")).toBeTruthy();
+    expect(screen.getByText(/le alcanza hasta el .* Son unos 8 días\./)).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: "Actualizar saldo" }));
+    expect(router.push).toHaveBeenCalledWith("/prepago");
+  });
+
+  it("con medidor pospago no muestra el prepago", async () => {
+    await iniciarSesionDePrueba();
+    simular({ ...base, "GET /hogares": [{ ...HOGAR, tipo_medidor: "pospago" }] });
+    await renderizar(<MiCasa />);
+    await screen.findByText("Casa demo");
+    expect(screen.queryByText(/Medidor prepago/)).toBeNull();
+  });
+
+  it("el prepago a punto de acabarse se ve en rojo y lo dice", async () => {
+    await iniciarSesionDePrueba();
+    simular({
+      ...base,
+      "GET /hogares": [{ ...HOGAR, tipo_medidor: "prepago" }],
+      "GET /hogares/h1/prepago": { ...PREPAGO, estado: "ok", saldo_cop: 5000, promedio_diario_cop: 3333, dias_restantes: 1.5, se_acaba_el: new Date(Date.now() + 36 * 3600_000).toISOString(), nivel: "rojo" },
+    });
+    await renderizar(<MiCasa />);
+    expect(await screen.findByText("MEDIDOR PREPAGO · SE ACABA PRONTO".toLowerCase().replace("medidor", "Medidor"))).toBeTruthy();
+  });
+
+  it("lista las rutinas con su horario, días y ahorro estimado", async () => {
+    await iniciarSesionDePrueba();
+    simular({ ...base, "GET /hogares/h1/rutinas": [RUTINA] });
+    await renderizar(<MiCasa />);
+    expect(await screen.findByText("Apaga a las 22:00 · prende a las 06:00")).toBeTruthy();
+    expect(screen.getByText("Lun a Vie")).toBeTruthy();
+    expect(screen.getByText("Ahorra unos $14.119 al mes")).toBeTruthy();
+  });
+
+  it("agente que nunca se ha conectado", async () => {
+    await iniciarSesionDePrueba();
+    simular({ ...base, "GET /hogares/h1/agentes": [{ id: "a1", nombre: "Mac", ultima_conexion: null, creado_en: "2026-10-12T00:00:00Z" }] });
+    await renderizar(<MiCasa />);
+    expect(await screen.findByText(/Mac:.*nunca se ha conectado/)).toBeTruthy();
+  });
+
+  it("agente conectado hace segundos", async () => {
     await iniciarSesionDePrueba();
     simular({ ...base, "GET /hogares/h1/agentes": [{ id: "a1", nombre: "Mac", ultima_conexion: new Date().toISOString(), creado_en: "2026-10-12T00:00:00Z" }] });
     await renderizar(<MiCasa />);
@@ -244,22 +314,25 @@ describe("Mi casa", () => {
 
   it("sin agente avisa que no llegarán datos", async () => {
     await iniciarSesionDePrueba();
-    simular({ ...base, "GET /hogares/h1/agentes": [], "GET /hogares/h1/dispositivos": [] });
+    simular({ ...base, "GET /hogares/h1/dispositivos": [] });
     await renderizar(<MiCasa />);
     expect(await screen.findByText(/Sin agente vinculado/)).toBeTruthy();
     expect(await screen.findByText("Aún no has agregado enchufes.")).toBeTruthy();
   });
 
-  it("los botones llevan a agregar enchufe, editar y vincular agente", async () => {
+  it("cada botón lleva a su pantalla", async () => {
     await iniciarSesionDePrueba();
-    simular({ ...base, "GET /hogares/h1/agentes": [] });
+    simular({ ...base, "GET /hogares/h1/rutinas": [RUTINA] });
     await renderizar(<MiCasa />);
-    const nevera = await screen.findByRole("button", { name: "Nevera" }); // espera a que carguen los enchufes
-    await fireEvent.press(screen.getByRole("button", { name: "Agregar enchufe" }));
-    await fireEvent.press(screen.getByRole("button", { name: "Vincular agente" }));
-    await fireEvent.press(nevera);
-    await fireEvent.press(screen.getByRole("button", { name: "Editar hogar" }));
-    expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(["/enchufe/nuevo", "/agente/nuevo", "/enchufe/d1", "/hogar/editar"]);
+    const pulsar = async (nombre: string | RegExp) => fireEvent.press(await screen.findByRole("button", { name: nombre }));
+    await pulsar("Editar hogar");
+    await pulsar("Nueva rutina");
+    await pulsar(/^Nevera · /);
+    await pulsar("+ Conectar otro enchufe");
+    await pulsar("Vincular agente");
+    await pulsar("Anotar lectura del medidor");
+    await pulsar(/^Nevera\. Apaga a las 22:00/);
+    expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(["/hogar/editar", "/rutina/nueva", "/enchufe/d1", "/enchufe/nuevo", "/agente/nuevo", "/medidor", "/rutina/r1"]);
   });
 });
 
