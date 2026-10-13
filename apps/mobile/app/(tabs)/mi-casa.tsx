@@ -1,57 +1,109 @@
 import { router } from "expo-router";
 import { View } from "react-native";
 
-import { useAgentes, useDispositivos } from "@/api/cuenta";
 import { cerrarSesion } from "@/api/cliente";
+import { useAgentes, useDispositivos } from "@/api/cuenta";
 import { useHogarActual, useTarifa } from "@/api/hogar";
 import { usePerfilActual } from "@/api/perfil";
 import { Boton } from "@/components/Boton";
+import { FilaDato } from "@/components/FilaDato";
 import { Pantalla } from "@/components/Pantalla";
 import { Tarjeta } from "@/components/Tarjeta";
+import { TarjetaPrepago } from "@/components/TarjetaPrepago";
+import { TarjetaRutina } from "@/components/TarjetaRutina";
 import { Texto } from "@/components/Texto";
+import { useResumen } from "@/features/consumo/hooks";
+import { usePrepago } from "@/features/prepago/hooks";
+import { useRutinas } from "@/features/rutinas/hooks";
 import { haceCuanto, mesDeTarifa } from "@/lib/fechas";
 import { formatoTarifa } from "@/lib/formato";
 import { colores, espacio } from "@/theme";
 
 const EN_LINEA_S = 60;
 const estaConectado = (ultimaConexion: string | null) => !!ultimaConexion && Date.now() - Date.parse(ultimaConexion) < EN_LINEA_S * 1000;
+const iniciales = (nombre: string) => nombre.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join("");
+
+function Titulo({ texto, aparte }: { texto: string; aparte?: string }) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginTop: espacio.s }}>
+      <Texto variante="subtitulo" style={{ fontWeight: "800", fontSize: 19 }}>
+        {texto}
+      </Texto>
+      {aparte && (
+        <Texto variante="secundario" color={colores.textoSecundario} style={{ fontWeight: "700" }}>
+          {aparte}
+        </Texto>
+      )}
+    </View>
+  );
+}
 
 export default function MiCasa() {
   const { data: perfil } = usePerfilActual();
   const { hogar } = useHogarActual();
   const { data: tarifa, isError: sinTarifa } = useTarifa(hogar?.id);
   const { data: dispositivos } = useDispositivos(hogar?.id);
+  const { data: resumen } = useResumen(hogar?.id);
   const { data: agentes } = useAgentes(hogar?.id);
+  const { data: prepago } = usePrepago(hogar?.id);
+  const { data: rutinas } = useRutinas(hogar?.id);
+
+  const enLinea = (id: string) => resumen?.dispositivos.find((d) => d.id === id);
+  const conectados = dispositivos?.filter((d) => enLinea(d.id)?.en_linea).length ?? 0;
+  const mostrarPrepago = hogar?.tipo_medidor === "prepago" || (prepago && prepago.estado !== "sin_registros");
 
   return (
     <Pantalla>
-      <Texto variante="titulo">Mi casa</Texto>
-
       {hogar && (
-        <Tarjeta>
-          <Texto variante="subtitulo">{hogar.nombre}</Texto>
-          <Texto color={colores.textoSecundario}>
-            Estrato {hogar.estrato}
-            {hogar.barrio ? ` · ${hogar.barrio}` : ""}
-            {hogar.tipo_medidor ? ` · Medidor ${hogar.tipo_medidor}` : ""}
-          </Texto>
-          <View style={{ marginTop: espacio.s }}>
-            <Boton titulo="Editar hogar" variante="secundario" onPress={() => router.push("/hogar/editar")} />
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+          <View style={{ width: 56, height: 56, borderRadius: 18, backgroundColor: colores.primario, alignItems: "center", justifyContent: "center" }}>
+            <Texto variante="titulo" color={colores.sobrePrimario} style={{ fontWeight: "800" }}>
+              {iniciales(hogar.nombre)}
+            </Texto>
           </View>
-        </Tarjeta>
+          <View style={{ flex: 1 }}>
+            <Texto variante="titulo" style={{ fontSize: 24 }}>
+              {hogar.nombre}
+            </Texto>
+            {hogar.barrio && <Texto color={colores.textoSecundario}>{hogar.barrio}</Texto>}
+          </View>
+        </View>
       )}
 
-      <Tarjeta style={{ gap: espacio.s }}>
-        <Texto variante="subtitulo">Enchufes</Texto>
-        {dispositivos?.length === 0 && <Texto color={colores.textoSecundario}>Aún no has agregado enchufes.</Texto>}
-        {dispositivos?.map((d) => (
-          <Boton key={d.id} titulo={d.nombre} variante="secundario" onPress={() => router.push(`/enchufe/${d.id}`)} />
-        ))}
-        <Boton titulo="Agregar enchufe" onPress={() => router.push("/enchufe/nuevo")} />
-      </Tarjeta>
+      {hogar && (
+        <Tarjeta style={{ paddingVertical: 6 }}>
+          <FilaDato etiqueta="Estrato" detalle="Según su factura de EPM" valor={String(hogar.estrato)} />
+          <FilaDato
+            etiqueta="Lo que le cobran"
+            detalle={tarifa ? `Tarifa EPM de ${mesDeTarifa(tarifa.mes)}${tarifa.es_del_mes_actual ? "" : " (falta cargar la de este mes)"}` : sinTarifa ? "Aún no hay tarifa cargada" : "Cargando…"}
+            valor={tarifa ? formatoTarifa(tarifa.cop_kwh_subsistencia) : "—"}
+          />
+          <FilaDato etiqueta="Tipo de medidor" detalle="Cómo le llega la energía" valor={hogar.tipo_medidor ? hogar.tipo_medidor[0].toUpperCase() + hogar.tipo_medidor.slice(1) : "Sin indicar"} ultima />
+        </Tarjeta>
+      )}
+      <Boton titulo="Editar hogar" variante="secundario" onPress={() => router.push("/hogar/editar")} />
 
+      {mostrarPrepago && <TarjetaPrepago prepago={prepago} alActualizar={() => router.push("/prepago")} />}
+
+      <Titulo texto="Rutinas de apagado" />
+      {rutinas?.length === 0 && <Texto color={colores.textoSecundario}>Programe que un aparato se apague solo a cierta hora, por ejemplo la plancha o el calentador.</Texto>}
+      {rutinas?.map((r) => <TarjetaRutina key={r.id} rutina={r} alPulsar={() => router.push(`/rutina/${r.id}`)} />)}
+      <Boton titulo="Nueva rutina" variante={rutinas?.length ? "secundario" : "primario"} onPress={() => router.push("/rutina/nueva")} />
+
+      <Titulo texto="Enchufes conectados" aparte={dispositivos ? `${conectados} de ${dispositivos.length}` : undefined} />
+      {dispositivos?.length === 0 && <Texto color={colores.textoSecundario}>Aún no has agregado enchufes.</Texto>}
+      {dispositivos?.map((d) => {
+        const r = enLinea(d.id);
+        const punto = r?.en_linea ? colores.semaforoVerde : r?.ultima_lectura ? colores.semaforoAmbar : colores.interruptorApagado;
+        const detalle = r?.en_linea ? "Conectado" : r?.ultima_lectura ? `Sin señal desde ${haceCuanto(r.ultima_lectura)}` : "Todavía no ha enviado datos";
+        return (
+          <Boton key={d.id} titulo={`${d.nombre} · ${detalle}`} variante="secundario" onPress={() => router.push(`/enchufe/${d.id}`)} indicador={punto} />
+        );
+      })}
+      <Boton titulo="+ Conectar otro enchufe" variante="secundario" onPress={() => router.push("/enchufe/nuevo")} />
+
+      <Titulo texto="Agente de la casa" />
       <Tarjeta style={{ gap: espacio.s }}>
-        <Texto variante="subtitulo">Agente de la casa</Texto>
         <Texto color={colores.textoSecundario}>El programa que lee tus enchufes por WiFi y manda los datos a la nube.</Texto>
         {agentes?.length === 0 && <Texto color={colores.ambar} style={{ fontWeight: "600" }}>Sin agente vinculado: no llegarán datos.</Texto>}
         {agentes?.map((a) => (
@@ -63,35 +115,24 @@ export default function MiCasa() {
         <Boton titulo="Vincular agente" variante={agentes?.length ? "secundario" : "primario"} onPress={() => router.push("/agente/nuevo")} />
       </Tarjeta>
 
-      <Tarjeta>
-        <Texto variante="subtitulo">Tarifa de energía (EPM)</Texto>
-        {tarifa ? (
-          <>
-            <Texto color={colores.textoSecundario}>Mes de la tarifa: {mesDeTarifa(tarifa.mes)}</Texto>
-            <Texto>Hasta el consumo de subsistencia: {formatoTarifa(tarifa.cop_kwh_subsistencia)}</Texto>
-            <Texto>Por encima: {formatoTarifa(tarifa.cop_kwh_sobre_subsistencia)}</Texto>
-            {!tarifa.es_del_mes_actual && <Texto variante="secundario" color={colores.ambar}>Falta cargar la tarifa del mes actual.</Texto>}
-          </>
-        ) : (
-          <Texto color={sinTarifa ? colores.ambar : colores.textoSecundario}>{sinTarifa ? "Aún no hay tarifa cargada." : "Cargando…"}</Texto>
-        )}
+      <Titulo texto="Medidor de EPM" />
+      <Tarjeta style={{ gap: espacio.s }}>
+        <Texto color={colores.textoSecundario}>Anote la lectura de su medidor para saber cuánto lleva de toda la casa y no pasarse de la línea de subsistencia.</Texto>
+        <Boton titulo="Anotar lectura del medidor" variante="secundario" onPress={() => router.push("/medidor")} />
       </Tarjeta>
 
-      <Tarjeta>
-        <Texto variante="subtitulo">Cuenta</Texto>
+      <Titulo texto="Cuenta" />
+      <Tarjeta style={{ gap: espacio.s }}>
         {perfil && (
           <>
-            <Texto>{perfil.nombre}</Texto>
-            <Texto color={colores.textoSecundario}>{perfil.email}{perfil.tiene_google ? " · con Google" : ""}</Texto>
+            <Texto style={{ fontWeight: "700" }}>{perfil.nombre}</Texto>
+            <Texto color={colores.textoSecundario}>
+              {perfil.email}
+              {perfil.tiene_google ? " · con Google" : ""}
+            </Texto>
           </>
         )}
-        <View style={{ marginTop: espacio.s }}>
-          <Boton titulo="Cerrar sesión" variante="secundario" onPress={() => void cerrarSesion()} />
-        </View>
-      </Tarjeta>
-
-      <Tarjeta>
-        <Texto color={colores.textoSecundario}>Prepago y rutinas de apagado llegan en la siguiente fase.</Texto>
+        <Boton titulo="Cerrar sesión" variante="secundario" onPress={() => void cerrarSesion()} />
       </Tarjeta>
     </Pantalla>
   );

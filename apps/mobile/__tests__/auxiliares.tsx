@@ -61,6 +61,7 @@ export const RESUMEN = {
   tarifa: TARIFA,
   kwh_hoy: 0.01,
   kwh_mes: 0.01,
+  subsistencia: { limite_kwh: 130, consumo_kwh: 80, porcentaje: 80 / 130, fuente: "enchufes", nivel: "verde" },
   costo_hoy_cop: 8.15,
   costo_mes_cop: 8.15,
   dispositivos: [

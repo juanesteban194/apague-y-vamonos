@@ -1,4 +1,4 @@
-import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 
 import { AREA_TOQUE_MIN, colores } from "@/theme";
 
@@ -12,9 +12,10 @@ type Props = {
   cargando?: boolean;
   deshabilitado?: boolean;
   flex?: boolean;
+  indicador?: string; // punto de color a la izquierda (estado de un enchufe)
 };
 
-export function Boton({ titulo, onPress, variante = "primario", seleccionado, cargando, deshabilitado, flex }: Props) {
+export function Boton({ titulo, onPress, variante = "primario", seleccionado, cargando, deshabilitado, flex, indicador }: Props) {
   const lleno = variante === "primario" || seleccionado;
   return (
     <Pressable
@@ -32,9 +33,12 @@ export function Boton({ titulo, onPress, variante = "primario", seleccionado, ca
       {cargando ? (
         <ActivityIndicator color={lleno ? colores.sobrePrimario : colores.primario} />
       ) : (
-        <Texto variante="subtitulo" color={lleno ? colores.sobrePrimario : colores.primario}>
-          {titulo}
-        </Texto>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          {indicador && <View style={{ width: 11, height: 11, borderRadius: 6, backgroundColor: indicador }} />}
+          <Texto variante="subtitulo" color={lleno ? colores.sobrePrimario : colores.primario} style={{ flexShrink: 1 }}>
+            {titulo}
+          </Texto>
+        </View>
       )}
     </Pressable>
   );

@@ -86,6 +86,10 @@ function Navegacion() {
           <Stack.Screen name="enchufe/nuevo" options={{ ...opcionesCabecera, title: "Agregar enchufe" }} />
           <Stack.Screen name="enchufe/[id]" options={{ ...opcionesCabecera, title: "Enchufe" }} />
           <Stack.Screen name="agente/nuevo" options={{ ...opcionesCabecera, title: "Agente" }} />
+          <Stack.Screen name="prepago" options={{ ...opcionesCabecera, title: "Saldo prepago" }} />
+          <Stack.Screen name="medidor" options={{ ...opcionesCabecera, title: "Medidor de EPM" }} />
+          <Stack.Screen name="rutina/nueva" options={{ ...opcionesCabecera, title: "Nueva rutina" }} />
+          <Stack.Screen name="rutina/[id]" options={{ ...opcionesCabecera, title: "Rutina" }} />
         </Stack.Protected>
       </Stack>
     </>
