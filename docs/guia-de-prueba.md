@@ -80,6 +80,20 @@ Para datos **reales**, el Mac debe estar en la **misma WiFi que el enchufe** (la
 
 Usuario de demo ya cargado (con lecturas): correo y contraseña en `.env.demo` (no versionado).
 
+## 5b. Pruebas de la Fase 4 (avisos, control, rutinas, prepago)
+Con el agente corriendo (real, o simulado con `.venv/bin/python -m agent --simular SIM-001` y un enchufe con ese ID en la app):
+| # | Prueba | Debe pasar |
+| --- | --- | --- |
+| 13 | **Encender/apagar:** toca el aparato en Inicio y mueve el interruptor "Está prendido" | En 1–2 s el estado cambia (con el enchufe real, se corta la corriente). Si no hay agente, dice por qué |
+| 14 | **Aviso de alto riesgo:** Mi casa → toca el enchufe → marca "Avisarme si se queda encendido demasiado tiempo" con **2 minutos** → Guardar | A los ~2 min 20 s aparece el aviso en rojo en **Avisos** (pestaña con contador), con el botón **Apagar ahora** |
+| 15 | Toca **Apagar ahora** en ese aviso | "Listo, ya lo apagamos." y el enchufe pasa a apagado |
+| 16 | **Cuántos avisos:** en Avisos elige Pocas / Normales / Muchas | Queda guardado al volver a entrar |
+| 17 | **Rutina:** Mi casa → Nueva rutina → apagar a una hora de **dentro de 2 minutos** (24 h, ej. 15:42), días de hoy | A esa hora el aparato se apaga solo; la tarjeta dice "Se apagó hace…". Si no se pudo, sale un aviso amarillo |
+| 18 | **Prepago:** Editar hogar → medidor *Prepago*; luego "Anotar mi saldo" (ej. $30.000) y otra anotación otro día (ej. $26.000) | Con 2 anotaciones de días distintos aparece "Le alcanza hasta el …". Si quedan menos de 48 h, tarjeta roja y un aviso |
+| 19 | **Línea de subsistencia:** Inicio muestra la barra en porcentaje. Mi casa → "Anotar lectura del medidor": anota la lectura de tu factura | Con 2 lecturas la barra usa el medidor (toda la casa) en vez de solo los enchufes |
+Notas: el push con la app cerrada solo funciona en Android con una compilación propia (no en Expo Go). Con la app abierta recibes notificación del sistema
+si diste el permiso. Los avisos se evalúan cada 20 s en el servidor, y las rutinas cada minuto.
+
 ## 6. Si algo falla
 | Síntoma | Causa probable y qué hacer |
 | --- | --- |
@@ -95,5 +109,4 @@ Usuario de demo ya cargado (con lecturas): correo y contraseña en `.env.demo` (
 | Contraseña olvidada | Aún no existe la recuperación por correo (necesita un servicio de envío de correos); con Google no hace falta |
 
 ## 7. Lo que todavía no existe
-Alertas y notificaciones, encender/apagar desde la app, rutinas, prepago, línea de subsistencia, simulador RETIQ, semáforo y equivalencias
-(Fases 4 y 5), recuperación de contraseña y verificación del correo (necesitan un servicio de correo), y la compilación propia para instalar sin Expo Go.
+Simulador RETIQ, semáforo y equivalencias (Fase 5), el aviso de consumo anómalo, recuperación de contraseña y verificación del correo (necesitan un servicio de correo), y la compilación propia para instalar sin Expo Go.
