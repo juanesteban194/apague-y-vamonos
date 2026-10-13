@@ -27,14 +27,27 @@ def textos(costo, precio_kwh=890.0, ahora=AHORA, maximo=2):
         return [f.texto for f in equivalencias.para(db, costo, precio_kwh, ahora, maximo)]
 
 
-def test_el_seed_deja_solo_televisor_y_celular_activos_y_es_idempotente(client):
+def test_el_seed_deja_las_cuatro_activas_con_su_fuente_y_es_idempotente(client):
     cargar_seed()
     cargar_seed()
     with get_sessionmaker()() as db:
         filas = {e.nombre: e for e in db.scalars(select(Equivalencia))}
-    assert {n for n, e in filas.items() if e.activa} == {"televisor", "celular"}
+    assert {n for n, e in filas.items() if e.activa} == {"televisor", "celular", "hamburguesa", "leche"}
     assert (filas["televisor"].wh_por_unidad, filas["celular"].wh_por_unidad) == (70.0, 15.0)
-    assert filas["hamburguesa"].costo_cop is None and "PENDIENTE" in filas["hamburguesa"].fuente  # sin precio inventado
+    assert (float(filas["hamburguesa"].costo_cop), float(filas["leche"].costo_cop)) == (32900, 7500)  # precios de Rappi, con su fuente
+    assert all("Rappi" in filas[n].fuente for n in ("hamburguesa", "leche"))
+
+
+def test_una_equivalencia_pendiente_toma_el_precio_al_repetir_el_seed(client):
+    """Producción ya tenía hamburguesa y leche como PENDIENTE: al arrancar con los precios nuevos deben llenarse."""
+    cargar_seed()
+    with get_sessionmaker()() as db:
+        db.execute(update(Equivalencia).where(Equivalencia.nombre == "leche").values(costo_cop=None, activa=False, fuente="PENDIENTE: sin precio"))
+        db.commit()
+    cargar_seed()
+    with get_sessionmaker()() as db:
+        leche = db.scalar(select(Equivalencia).where(Equivalencia.nombre == "leche"))
+    assert (float(leche.costo_cop), leche.activa) == (7500, True) and "Rappi" in leche.fuente
 
 
 def test_repetir_el_seed_no_pisa_lo_que_el_equipo_cargo(client):
@@ -95,7 +108,7 @@ def test_las_de_precio_funcionan_cuando_el_equipo_carga_el_precio(client):
     with get_sessionmaker()() as db:
         db.execute(update(Equivalencia).where(Equivalencia.nombre == "hamburguesa").values(costo_cop=20000, activa=True))
         db.commit()
-    assert any(x.endswith("comerse 5 hamburguesas.") for x in textos(100000, precio_kwh=None, maximo=5))  # $100.000 / $20.000
+    assert any(x.endswith("comerse 5 Big Mac.") for x in textos(100000, precio_kwh=None, maximo=5))  # $100.000 / $20.000
 
 
 def test_el_resumen_trae_las_equivalencias_de_lo_que_se_gasto_hoy(client, auth, hogar, enchufe):
@@ -121,8 +134,8 @@ def test_sin_consumo_no_hay_equivalencias(client, auth, hogar, enchufe):
 def test_se_puede_consultar_de_donde_sale_cada_equivalencia(client, auth):
     cargar_seed()
     r = client.get("/equivalencias", headers=auth).json()
-    assert [(e["nombre"], e["activa"]) for e in r] == [("celular", True), ("hamburguesa", False), ("leche", False), ("televisor", True)]
-    assert "PENDIENTE" in next(e for e in r if e["nombre"] == "leche")["fuente"]
+    assert [(e["nombre"], e["activa"]) for e in r] == [("celular", True), ("hamburguesa", True), ("leche", True), ("televisor", True)]
+    assert "Rappi" in next(e for e in r if e["nombre"] == "leche")["fuente"]
     assert client.get("/equivalencias").status_code == 401
 
 
@@ -135,7 +148,7 @@ def test_la_api_carga_sola_sus_datos_de_referencia_al_arrancar(client):
     datos_referencia.cargar_todo()
     with get_sessionmaker()() as db:
         assert db.query(Tarifa).count() == 6 and db.query(Equivalencia).count() == 4
-        assert {e.nombre for e in db.query(Equivalencia).filter(Equivalencia.activa.is_(True))} == {"televisor", "celular"}
+        assert db.query(Equivalencia).filter(Equivalencia.activa.is_(True)).count() == 4
 
 
 def test_si_la_base_falla_el_arranque_no_se_cae(monkeypatch):

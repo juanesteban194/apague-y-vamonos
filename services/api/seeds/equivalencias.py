@@ -1,7 +1,7 @@
 """Carga las equivalencias cotidianas (idempotente). Los valores y su fuente viven en app/datos_referencia/equivalencias.py.
 
-Aprobadas por el equipo el 2026-10-13: televisor (70 W) y cargar el celular (≈ 15 Wh por carga). Pendientes de precio (no se inventan): hamburguesa y
-caja de leche; para activarlas basta poner `costo_cop`, la fuente y `activa=True` en la tabla. La API también las carga sola al arrancar.
+Aprobadas por el equipo el 2026-10-13: televisor (70 W) y cargar el celular (≈ 15 Wh por carga). Con precio de Rappi Medellín (2026-10-13): Big Mac y
+caja de leche. Para cambiar un precio, actualiza `costo_cop` y `fuente` en la tabla (el seed no pisa lo ya cargado). La API también las carga sola al arrancar.
 
 Uso (desde services/api):  .venv/bin/python seeds/equivalencias.py
 """
