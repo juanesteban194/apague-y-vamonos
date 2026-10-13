@@ -17,7 +17,7 @@ export function EstadoConexion({ estado }: { estado: Estado }) {
   const mensaje = MENSAJES[estado];
   if (!mensaje) return null;
   return (
-    <View accessibilityRole="alert" style={{ backgroundColor: "#FFF4D6", borderRadius: 12, padding: 12 }}>
+    <View accessibilityRole="alert" style={{ backgroundColor: colores.ambarFondo, borderRadius: 12, padding: 12 }}>
       <Texto variante="secundario" color={colores.ambar}>
         {mensaje}
       </Texto>

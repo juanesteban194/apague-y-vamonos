@@ -7,7 +7,7 @@ export function Tarjeta({ style, ...resto }: ViewProps) {
     <View
       {...resto}
       style={[
-        { backgroundColor: colores.tarjeta, borderRadius: 16, padding: espacio.l, borderWidth: 1, borderColor: colores.borde, gap: espacio.xs },
+        { backgroundColor: colores.tarjeta, borderRadius: 22, padding: 20, borderWidth: 1, borderColor: colores.borde, gap: espacio.xs },
         style,
       ]}
     />
