@@ -42,4 +42,4 @@ class TokenPush(Base):
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=nuevo_id)
     usuario_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), index=True)
     token_expo: Mapped[str] = mapped_column(String(255), unique=True)
-    plataforma: Mapped[str] = mapped_column(String(20))
+    plataforma: Mapped[str] = mapped_column(String(20))  # android | ios

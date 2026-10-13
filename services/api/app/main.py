@@ -7,7 +7,7 @@ from app.core.config import get_settings
 from app.jobs.planificador import crear_planificador
 
 from app.realtime.manager import gestor
-from app.modules.alertas.router import router as alertas_router
+from app.modules.alertas.router import router as alertas_router, tokens as tokens_router
 from app.modules.auth.router import router as auth_router
 from app.modules.consumo.router import router as consumo_router
 from app.modules.dispositivos.control import router as control_router
@@ -41,6 +41,7 @@ app.include_router(ingesta_router)
 app.include_router(tarifas_router)
 app.include_router(consumo_router)
 app.include_router(alertas_router)
+app.include_router(tokens_router)
 app.include_router(prepago_router)
 app.include_router(rutinas_router)
 app.include_router(realtime_router)

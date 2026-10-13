@@ -22,3 +22,8 @@ class AlertaOut(BaseModel):
 
 class PreferenciasAlertas(BaseModel):
     sensibilidad: Sensibilidad
+
+
+class TokenPushIn(BaseModel):
+    token: str
+    plataforma: Literal["android", "ios"]

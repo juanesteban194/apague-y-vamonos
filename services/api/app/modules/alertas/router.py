@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.modules.alertas import service
-from app.modules.alertas.schemas import AlertaOut, PreferenciasAlertas
+from app.integrations.expo_push.cliente import token_valido
+from app.modules.alertas.schemas import AlertaOut, PreferenciasAlertas, TokenPushIn
 from app.modules.auth.dependencias import usuario_con_consentimiento
 from app.modules.hogares.service import exigir_miembro
 
@@ -50,3 +51,22 @@ def guardar_preferencias(
 ):
     exigir_miembro(db, usuario_id, hogar_id)
     return PreferenciasAlertas(sensibilidad=service.guardar_sensibilidad(db, hogar_id, datos.sensibilidad))
+
+
+tokens = APIRouter(prefix="/usuarios/yo/tokens-push", tags=["notificaciones"])
+
+
+@tokens.put("", status_code=status.HTTP_204_NO_CONTENT)
+def registrar_token(datos: TokenPushIn, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)):
+    """El celular registra su token de Expo Push para recibir avisos aunque la app esté cerrada."""
+    if not token_valido(datos.token):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Token de notificaciones inválido")
+    service.guardar_token_push(db, usuario_id, datos.token, datos.plataforma)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@tokens.delete("", status_code=status.HTTP_204_NO_CONTENT)
+def quitar_token(datos: TokenPushIn, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)):
+    """Al cerrar sesión: este celular deja de recibir los avisos de esta cuenta."""
+    service.borrar_token_push(db, usuario_id, datos.token)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
