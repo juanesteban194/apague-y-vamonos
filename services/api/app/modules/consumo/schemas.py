@@ -72,3 +72,15 @@ class ConsumoOut(BaseModel):
     kwh_total: float
     costo_total_cop: float | None
     serie: list[PuntoConsumo]
+
+
+class ConsejoOut(BaseModel):
+    id: str
+    tipo: str  # completar | sobre_promedio | mayor_gasto | rutina | retiq
+    icono: str
+    titulo: str
+    mensaje: str
+    ahorro_cop_mes: float | None
+    accion: Literal["historial", "medidor", "enchufe", "rutina", "simulador"] | None  # a qué pantalla lleva el botón
+    dispositivo_id: uuid.UUID | None
+    consumo_kwh_mes: float | None  # lo que mide el enchufe (precarga el simulador)
