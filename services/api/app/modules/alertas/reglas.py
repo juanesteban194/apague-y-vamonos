@@ -90,3 +90,29 @@ def evaluar_todo(db: Session, ahora: datetime | None = None) -> list[Alerta]:
     for regla in REGLAS:
         nuevas += regla(db, ahora)
     return nuevas
+
+
+def evaluar_prepago(db: Session, ahora: datetime) -> list[Alerta]:
+    """HU-03: alerta roja cuando el saldo prepago alcanza para menos de 48 h. Una vez por registro de saldo."""
+    from app.modules.prepago import service as prepago
+    from app.modules.prepago.models import PrepagoSaldo
+
+    creadas: list[Alerta] = []
+    for hogar_id in db.scalars(select(PrepagoSaldo.hogar_id).distinct()):
+        p = prepago.estado(db, hogar_id, ahora)
+        if p.nivel != "rojo":
+            continue
+        horas = max(0, int(p.dias_restantes * 24))
+        titulo = "Su saldo prepago se está acabando"
+        cuerpo = (
+            f"Al ritmo de los últimos 3 días le alcanza para unas {horas} horas. Recargue para no quedarse sin energía."
+            if horas > 0
+            else "Al ritmo de los últimos 3 días el saldo ya debería haberse acabado. Revise su medidor y recargue."
+        )
+        alerta = service.crear(db, hogar_id, "prepago", "rojo", titulo, cuerpo, sin_repetir_desde=p.registrado_en, ahora=ahora)
+        if alerta:
+            creadas.append(alerta)
+    return creadas
+
+
+REGLAS = (evaluar_alto_riesgo, evaluar_subsistencia, evaluar_prepago)
