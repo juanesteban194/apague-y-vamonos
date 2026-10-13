@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     jwt_refresh_days: int = 30
     # Tareas programadas (APScheduler) dentro del proceso. Las pruebas las apagan y llaman las tareas a mano.
     jobs_activos: bool = True
+    # Cargar tarifas y equivalencias al arrancar (idempotente). Las pruebas lo apagan para partir de tablas vacías.
+    cargar_datos_referencia: bool = True
 
     # Inicio de sesión con Google (cliente OAuth tipo "Aplicación web" de Google Cloud). Sin ellos, el botón responde 503.
     google_client_id: str | None = None

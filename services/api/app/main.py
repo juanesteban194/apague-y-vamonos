@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.core.config import get_settings
+from app import datos_referencia
 from app.jobs.planificador import crear_planificador
 
 from app.realtime.manager import gestor
@@ -22,6 +23,8 @@ from app.realtime.router import router as realtime_router
 
 @asynccontextmanager
 async def ciclo_de_vida(_: FastAPI):
+    if get_settings().cargar_datos_referencia:
+        datos_referencia.cargar_todo()
     gestor.fijar_bucle(asyncio.get_running_loop())
     planificador = crear_planificador() if get_settings().jobs_activos else None
     if planificador:

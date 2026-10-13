@@ -124,3 +124,25 @@ def test_se_puede_consultar_de_donde_sale_cada_equivalencia(client, auth):
     assert [(e["nombre"], e["activa"]) for e in r] == [("celular", True), ("hamburguesa", False), ("leche", False), ("televisor", True)]
     assert "PENDIENTE" in next(e for e in r if e["nombre"] == "leche")["fuente"]
     assert client.get("/equivalencias").status_code == 401
+
+
+def test_la_api_carga_sola_sus_datos_de_referencia_al_arrancar(client):
+    """Lo que hace el arranque: sin tocar la base a mano, las tarifas y las equivalencias quedan cargadas (y repetirlo no cambia nada)."""
+    from app import datos_referencia
+    from app.modules.tarifas.models import Tarifa
+
+    datos_referencia.cargar_todo()
+    datos_referencia.cargar_todo()
+    with get_sessionmaker()() as db:
+        assert db.query(Tarifa).count() == 6 and db.query(Equivalencia).count() == 4
+        assert {e.nombre for e in db.query(Equivalencia).filter(Equivalencia.activa.is_(True))} == {"televisor", "celular"}
+
+
+def test_si_la_base_falla_el_arranque_no_se_cae(monkeypatch):
+    from app import datos_referencia
+
+    def sin_base():
+        raise RuntimeError("base no disponible")
+
+    monkeypatch.setattr(datos_referencia, "get_sessionmaker", sin_base)
+    datos_referencia.cargar_todo()  # solo lo registra
