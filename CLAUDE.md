@@ -5,7 +5,7 @@ La sección **Tarea actual** dice qué hacer ahora; todo lo demás describe haci
 
 ---
 
-## Tarea actual — Cierre de la Fase 3 y arranque de la Fase 4
+## Tarea actual — Fase 4 hecha; sigue la Fase 5 (consejos, RETIQ, semáforo y equivalencias)
 
 Estado de las fases (detalle y decisiones en `docs/decisiones/`, historias en `docs/historias-usuario/`):
 
@@ -16,12 +16,13 @@ Estado de las fases (detalle y decisiones en `docs/decisiones/`, historias en `d
 | 1 Backend base | Hecha: API en Render + Neon; el agente escribe lecturas en la nube |
 | 2 Consumo y tiempo real | Hecha: retraso enchufe → app máx 0,44 s (ADR 0003) |
 | 3 App base | Construida (tsc, bundle Android/iOS y 59 pruebas): Inicio, Dispositivo, Mi casa, registro con consentimiento, Google, onboarding. **Falta la prueba en teléfonos reales** ([guía](docs/guia-de-prueba.md)) |
-| Agente local | Hecho (cola SQLite, reintentos, redescubre IP); falta `commands/` (Fase 4) |
+| Agente local | Hecho: cola SQLite, reintentos, redescubre IP, canal de comandos y modo simulado |
+| 4 Alertas y control | Hecha (ADR 0005): avisos de alto riesgo, subsistencia y prepago; encender/apagar; rutinas; tareas programadas; push. Aviso a los 15 s, Apagar en 0,96 s. Falta el push real (development build) y la regla de consumo anómalo |
 
 Pendiente del usuario: crear el cliente OAuth de Google y poner `GOOGLE_CLIENT_ID/SECRET` en Render; revisar el despliegue en Render; probar la app en Android e iPhone; (hecho) factura de EPM verificada (ADR 0002);
 rotar la contraseña de Neon y el Access Secret de Tuya (quedaron expuestos en el chat).
 
-Siguiente: Fase 4 (alertas y control, push Android, rutinas y tareas programadas). No avanzar sin confirmación del usuario.
+Siguiente: Fase 5 (consejos, simulador RETIQ, semáforo y equivalencias). Necesita datos del equipo: umbrales del semáforo, equivalencias y su costo, tabla RETIQ con fuente, y qué es consumo "normal" para los avisos de consumo anómalo.
 
 ---
 
