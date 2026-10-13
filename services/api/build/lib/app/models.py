@@ -1,0 +1,10 @@
+from app.modules.auth import models  # noqa: F401
+from app.modules.hogares import models  # noqa: F401
+from app.modules.dispositivos import models  # noqa: F401
+from app.modules.ingesta import models  # noqa: F401
+from app.modules.consumo import models  # noqa: F401
+from app.modules.alertas import models  # noqa: F401
+from app.modules.prepago import models  # noqa: F401
+from app.modules.rutinas import models  # noqa: F401
+from app.modules.retiq import models  # noqa: F401
+from app.modules.tarifas import models  # noqa: F401

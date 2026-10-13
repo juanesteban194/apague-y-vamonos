@@ -1,0 +1,90 @@
+from urllib.parse import urlencode
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import RedirectResponse
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
+from app.modules.auth import google, service
+from app.modules.auth.dependencias import usuario_actual
+from app.modules.auth.models import Usuario
+from app.modules.auth.schemas import (
+    CanjeGoogleIn,
+    LoginIn,
+    PerfilOut,
+    RegistroIn,
+    RenovarIn,
+    TokensOut,
+    UsuarioOut,
+)
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+@router.post("/registro", response_model=UsuarioOut, status_code=status.HTTP_201_CREATED)
+def registro(datos: RegistroIn, db: Session = Depends(get_db)):
+    return service.registrar(db, datos)
+
+
+@router.post("/login", response_model=TokensOut)
+def login(datos: LoginIn, db: Session = Depends(get_db)):
+    return service.iniciar_sesion(db, datos.email, datos.contrasena)
+
+
+@router.post("/renovar", response_model=TokensOut)
+def renovar(datos: RenovarIn, db: Session = Depends(get_db)):
+    return service.renovar(db, datos.refresh_token)
+
+
+@router.get("/yo", response_model=PerfilOut)
+def yo(usuario: Usuario = Depends(usuario_actual)):
+    """Quién soy y si ya acepté el tratamiento de datos (la app decide qué pantalla mostrar con esto)."""
+    return service.perfil_de(usuario)
+
+
+@router.post("/consentimiento", response_model=PerfilOut)
+def consentimiento(usuario: Usuario = Depends(usuario_actual), db: Session = Depends(get_db)):
+    return service.perfil_de(service.aceptar_consentimiento(db, usuario))
+
+
+@router.get("/google/inicio", include_in_schema=True)
+def google_inicio(
+    redirect_uri: str,
+    code_challenge: str = Query(min_length=43, max_length=128),
+    state: str = Query(max_length=200),
+):
+    """Paso 1: la app abre esta URL en el navegador. Redirige a Google."""
+    google.exigir_configuracion()
+    if not google.redirect_valido(redirect_uri):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "redirect_uri no permitido")
+    state_firmado, nonce = google.crear_state(redirect_uri, code_challenge, state)
+    return RedirectResponse(google.url_autorizacion(state_firmado, nonce), status_code=status.HTTP_302_FOUND)
+
+
+@router.get("/google/callback")
+def google_callback(state: str, code: str | None = None, error: str | None = None, db: Session = Depends(get_db)):
+    """Paso 2: Google vuelve aquí. Se verifica a la persona y se regresa a la app con un código de un solo uso."""
+    google.exigir_configuracion()
+    datos = google.leer_state(state)
+
+    def volver(**parametros: str) -> RedirectResponse:
+        destino = datos["redirect_uri"]
+        separador = "&" if "?" in destino else "?"
+        return RedirectResponse(
+            destino + separador + urlencode({**parametros, "state": datos["state_app"]}), status_code=status.HTTP_302_FOUND
+        )
+
+    if error or not code:
+        return volver(error=error or "cancelado")
+    try:
+        perfil = google.obtener_perfil(code, datos["nonce"])
+    except google.ErrorGoogle:
+        return volver(error="google_fallo")
+    usuario = service.usuario_desde_google(db, perfil)
+    return volver(code=google.emitir_codigo(usuario.id, datos["challenge"]))
+
+
+@router.post("/google/canje", response_model=TokensOut)
+def google_canje(datos: CanjeGoogleIn, db: Session = Depends(get_db)):
+    """Paso 3: la app canjea el código con su code_verifier y recibe los tokens de la API."""
+    return service.tokens_de(db, google.canjear_codigo(datos.code, datos.code_verifier))
