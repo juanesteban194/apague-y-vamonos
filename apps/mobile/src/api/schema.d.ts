@@ -378,6 +378,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/hogares/{hogar_id}/historial-consumo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver Historial */
+        get: operations["ver_historial_hogares__hogar_id__historial_consumo_get"];
+        /**
+         * Guardar Historial
+         * @description Reemplaza el histórico con los meses de la factura (kWh y, si quiere, lo pagado). Con ≥ 3 meses se calcula el promedio.
+         */
+        put: operations["guardar_historial_hogares__hogar_id__historial_consumo_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/consejos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver Consejos */
+        get: operations["ver_consejos_hogares__hogar_id__consejos_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/hogares/{hogar_id}/alertas": {
         parameters: {
             query?: never;
@@ -486,6 +524,23 @@ export interface paths {
          */
         put: operations["registrar_hogares__hogar_id__prepago_put"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/simulador/retiq": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Simular */
+        post: operations["simular_simulador_retiq_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -638,6 +693,27 @@ export interface components {
              */
             via: "agente" | "nube";
         };
+        /** ConsejoOut */
+        ConsejoOut: {
+            /** Id */
+            id: string;
+            /** Tipo */
+            tipo: string;
+            /** Icono */
+            icono: string;
+            /** Titulo */
+            titulo: string;
+            /** Mensaje */
+            mensaje: string;
+            /** Ahorro Cop Mes */
+            ahorro_cop_mes: number | null;
+            /** Accion */
+            accion: ("historial" | "medidor" | "enchufe" | "rutina" | "simulador") | null;
+            /** Dispositivo Id */
+            dispositivo_id: string | null;
+            /** Consumo Kwh Mes */
+            consumo_kwh_mes: number | null;
+        };
         /** ConsumoOut */
         ConsumoOut: {
             /**
@@ -746,10 +822,33 @@ export interface components {
             /** Costo Mes Cop */
             costo_mes_cop: number | null;
         };
+        /** EquivalenciaOut */
+        EquivalenciaOut: {
+            /** Texto */
+            texto: string;
+            /** Icono */
+            icono: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HistorialIn */
+        HistorialIn: {
+            /** Meses */
+            meses: components["schemas"]["MesFactura"][];
+        };
+        /** HistorialOut */
+        HistorialOut: {
+            /** Meses */
+            meses: components["schemas"]["MesFactura"][];
+            /** Meses Usados */
+            meses_usados: number;
+            /** Promedio Kwh */
+            promedio_kwh: number | null;
+            /** Promedio Cop */
+            promedio_cop: number | null;
         };
         /** HogarActualizarIn */
         HogarActualizarIn: {
@@ -858,6 +957,18 @@ export interface components {
             email: string;
             /** Contrasena */
             contrasena: string;
+        };
+        /** MesFactura */
+        MesFactura: {
+            /**
+             * Mes
+             * Format: date
+             */
+            mes: string;
+            /** Kwh */
+            kwh: number;
+            /** Valor Cop */
+            valor_cop?: number | null;
         };
         /** PerfilOut */
         PerfilOut: {
@@ -973,6 +1084,9 @@ export interface components {
             /** Costo Mes Cop */
             costo_mes_cop: number | null;
             subsistencia: components["schemas"]["SubsistenciaOut"];
+            semaforo: components["schemas"]["SemaforoOut"];
+            /** Equivalencias */
+            equivalencias: components["schemas"]["EquivalenciaOut"][];
             /** Dispositivos */
             dispositivos: components["schemas"]["DispositivoResumen"][];
         };
@@ -1031,6 +1145,72 @@ export interface components {
         SaldoIn: {
             /** Saldo Cop */
             saldo_cop: number;
+        };
+        /** SemaforoOut */
+        SemaforoOut: {
+            /**
+             * Estado
+             * @enum {string}
+             */
+            estado: "ok" | "sin_historial" | "sin_medidor";
+            /** Nivel */
+            nivel: ("verde" | "amarillo" | "rojo") | null;
+            /** Titulo */
+            titulo: string;
+            /** Mensaje */
+            mensaje: string;
+            /** Promedio Kwh */
+            promedio_kwh: number | null;
+            /** Proyeccion Kwh */
+            proyeccion_kwh: number | null;
+            /** Diferencia Cop */
+            diferencia_cop: number | null;
+        };
+        /**
+         * SimuladorIn
+         * @description Reemplazo de un aparato. Los consumos salen de lo que MIDE el enchufe (actual) y de la etiqueta RETIQ del aparato nuevo (kWh/mes).
+         */
+        SimuladorIn: {
+            /**
+             * Hogar Id
+             * Format: uuid
+             */
+            hogar_id: string;
+            /** Consumo Actual Kwh Mes */
+            consumo_actual_kwh_mes: number;
+            /** Consumo Nuevo Kwh Mes */
+            consumo_nuevo_kwh_mes: number;
+            /** Precio Nuevo Cop */
+            precio_nuevo_cop: number;
+            /**
+             * Tasa Anual
+             * @description Tasa de descuento efectiva anual: 0,12 = 12 %
+             */
+            tasa_anual: number;
+            /**
+             * Anios
+             * @description Años en los que se cuentan los ahorros (vida útil del aparato nuevo)
+             */
+            anios: number;
+        };
+        /** SimuladorOut */
+        SimuladorOut: {
+            /** Ahorro Kwh Mes */
+            ahorro_kwh_mes: number;
+            /** Ahorro Cop Mes */
+            ahorro_cop_mes: number;
+            /** Precio Kwh Usado */
+            precio_kwh_usado: number | null;
+            /** Conviene */
+            conviene: boolean;
+            /** Meses Recuperacion */
+            meses_recuperacion: number | null;
+            /** Texto Recuperacion */
+            texto_recuperacion: string | null;
+            /** Vpn Cop */
+            vpn_cop: number | null;
+            /** Pagado En Vida Util */
+            pagado_en_vida_util: boolean;
         };
         /** SubsistenciaOut */
         SubsistenciaOut: {
@@ -1950,6 +2130,103 @@ export interface operations {
             };
         };
     };
+    ver_historial_hogares__hogar_id__historial_consumo_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistorialOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    guardar_historial_hogares__hogar_id__historial_consumo_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HistorialIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistorialOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ver_consejos_hogares__hogar_id__consejos_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsejoOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_hogares__hogar_id__alertas_get: {
         parameters: {
             query?: {
@@ -2223,6 +2500,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PrepagoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    simular_simulador_retiq_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimuladorIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimuladorOut"];
                 };
             };
             /** @description Validation Error */

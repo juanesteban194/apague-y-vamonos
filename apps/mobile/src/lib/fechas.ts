@@ -37,3 +37,21 @@ export function diaYNumero(iso: string): string {
   const f = new Date(iso);
   return `${DIAS_LARGOS[f.getDay()]} ${f.getDate()}`;
 }
+
+const DIAS_COMPLETOS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+const MESES_COMPLETOS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+
+/** "Martes, 13 de octubre" */
+export function fechaLarga(fecha: Date): string {
+  const dia = DIAS_COMPLETOS[fecha.getDay()];
+  return `${dia[0].toUpperCase()}${dia.slice(1)}, ${fecha.getDate()} de ${MESES_COMPLETOS[fecha.getMonth()]}`;
+}
+
+/** Los `n` meses anteriores al actual, del más reciente al más antiguo: [{ mes: "2026-09-01", nombre: "septiembre de 2026" }, …] */
+export function mesesAnteriores(n: number, hoy: Date = new Date()): { mes: string; nombre: string }[] {
+  return Array.from({ length: n }, (_, i) => {
+    const f = new Date(hoy.getFullYear(), hoy.getMonth() - 1 - i, 1);
+    const mes = `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, "0")}-01`;
+    return { mes, nombre: `${MESES_COMPLETOS[f.getMonth()]} de ${f.getFullYear()}` };
+  });
+}

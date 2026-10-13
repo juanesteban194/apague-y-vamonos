@@ -1,4 +1,5 @@
 import { router } from "expo-router";
+import { View } from "react-native";
 
 import { BarraProgreso, colorDelNivel } from "@/components/BarraProgreso";
 import { Boton } from "@/components/Boton";
@@ -11,7 +12,9 @@ import { TarjetaDispositivo } from "@/components/TarjetaDispositivo";
 import { Texto } from "@/components/Texto";
 import { useResumen } from "@/features/consumo/hooks";
 import { formatoCOP } from "@/lib/formato";
-import { mesDeTarifa } from "@/lib/fechas";
+import { FilaEquivalencia } from "@/components/FilaEquivalencia";
+import { TarjetaSemaforo } from "@/components/TarjetaSemaforo";
+import { fechaLarga, mesDeTarifa } from "@/lib/fechas";
 import { useTiempoReal } from "@/realtime/estado";
 import { colores } from "@/theme";
 
@@ -25,7 +28,23 @@ export default function Inicio() {
 
   return (
     <Pantalla refrescando={isFetching && !isLoading} alRefrescar={alRefrescar}>
-      <Texto variante="titulo">{hogar ? hogar.nombre : "Inicio"}</Texto>
+      <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+        <View style={{ flex: 1 }}>
+          <Texto variante="secundario" color={colores.textoSecundario} style={{ fontWeight: "600" }}>
+            {fechaLarga(new Date())}
+          </Texto>
+          <Texto variante="titulo" style={{ fontSize: 26, fontWeight: "800" }}>
+            {hogar ? hogar.nombre : "Inicio"}
+          </Texto>
+        </View>
+        {hogar && (
+          <View style={{ backgroundColor: colores.tarjeta, borderWidth: 1, borderColor: colores.borde, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 }}>
+            <Texto variante="secundario" color={colores.textoSecundario} style={{ fontWeight: "700" }}>
+              Estrato {hogar.estrato}
+            </Texto>
+          </View>
+        )}
+      </View>
       <EstadoConexion estado={conexion} />
 
       {(cargandoHogar || isLoading) && !falla && <Texto color={colores.textoSecundario}>Cargando…</Texto>}
@@ -38,10 +57,21 @@ export default function Inicio() {
 
       {resumen && (
         <>
+          <TarjetaSemaforo semaforo={resumen.semaforo} alAnotarFacturas={() => router.push("/historial")} alAnotarMedidor={() => router.push("/medidor")} />
+
           <Tarjeta>
-            <Texto variante="secundario" color={colores.textoSecundario}>Hoy llevas</Texto>
+            <Texto variante="secundario" color={colores.textoSecundario}>Lo que han medido sus enchufes hoy</Texto>
             <Texto variante="cifra">{formatoCOP(resumen.costo_hoy_cop)}</Texto>
-            <Texto color={colores.textoSecundario}>Este mes: {formatoCOP(resumen.costo_mes_cop)}</Texto>
+            {resumen.equivalencias.length > 0 && (
+              <View style={{ gap: 12, marginTop: 10, paddingTop: 14, borderTopWidth: 1, borderTopColor: colores.borde }}>
+                {resumen.equivalencias.map((e, i) => (
+                  <FilaEquivalencia key={e.texto} equivalencia={e} primera={i === 0} />
+                ))}
+              </View>
+            )}
+            <Texto color={colores.textoSecundario} style={{ marginTop: 8 }}>
+              Este mes: {formatoCOP(resumen.costo_mes_cop)}
+            </Texto>
             {resumen.tarifa == null ? (
               <Texto variante="secundario" color={colores.ambar}>Aún no hay tarifa cargada: no se puede calcular el costo.</Texto>
             ) : (

@@ -13,10 +13,11 @@ import { TarjetaPrepago } from "@/components/TarjetaPrepago";
 import { TarjetaRutina } from "@/components/TarjetaRutina";
 import { Texto } from "@/components/Texto";
 import { useResumen } from "@/features/consumo/hooks";
+import { useHistorial } from "@/features/consejos/hooks";
 import { usePrepago } from "@/features/prepago/hooks";
 import { useRutinas } from "@/features/rutinas/hooks";
 import { haceCuanto, mesDeTarifa } from "@/lib/fechas";
-import { formatoTarifa } from "@/lib/formato";
+import { formatoNumero, formatoTarifa } from "@/lib/formato";
 import { colores, espacio } from "@/theme";
 
 const EN_LINEA_S = 60;
@@ -47,6 +48,7 @@ export default function MiCasa() {
   const { data: agentes } = useAgentes(hogar?.id);
   const { data: prepago } = usePrepago(hogar?.id);
   const { data: rutinas } = useRutinas(hogar?.id);
+  const { data: facturas } = useHistorial(hogar?.id);
 
   const enLinea = (id: string) => resumen?.dispositivos.find((d) => d.id === id);
   const conectados = dispositivos?.filter((d) => enLinea(d.id)?.en_linea).length ?? 0;
@@ -115,9 +117,15 @@ export default function MiCasa() {
         <Boton titulo="Vincular agente" variante={agentes?.length ? "secundario" : "primario"} onPress={() => router.push("/agente/nuevo")} />
       </Tarjeta>
 
-      <Titulo texto="Medidor de EPM" />
+      <Titulo texto="Facturas y medidor de EPM" />
       <Tarjeta style={{ gap: espacio.s }}>
-        <Texto color={colores.textoSecundario}>Anote la lectura de su medidor para saber cuánto lleva de toda la casa y no pasarse de la línea de subsistencia.</Texto>
+        <Texto color={colores.textoSecundario}>
+          {facturas?.promedio_kwh != null
+            ? `Su promedio de las últimas facturas es de ${formatoNumero(facturas.promedio_kwh)} kWh al mes: contra ese número medimos cuánto ahorra.`
+            : "Anote el histórico de su factura: es lo que usamos para decirle si va por encima o por debajo de lo normal."}
+        </Texto>
+        <Boton titulo={facturas?.promedio_kwh != null ? "Revisar mis facturas" : "Anotar mis facturas"} variante="secundario" onPress={() => router.push("/historial")} />
+        <Texto color={colores.textoSecundario}>La lectura de su medidor nos dice cuánto lleva este mes toda la casa, no solo los enchufes.</Texto>
         <Boton titulo="Anotar lectura del medidor" variante="secundario" onPress={() => router.push("/medidor")} />
       </Tarjeta>
 

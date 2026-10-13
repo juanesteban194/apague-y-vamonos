@@ -90,6 +90,8 @@ function Navegacion() {
           <Stack.Screen name="medidor" options={{ ...opcionesCabecera, title: "Medidor de EPM" }} />
           <Stack.Screen name="rutina/nueva" options={{ ...opcionesCabecera, title: "Nueva rutina" }} />
           <Stack.Screen name="rutina/[id]" options={{ ...opcionesCabecera, title: "Rutina" }} />
+          <Stack.Screen name="historial" options={{ ...opcionesCabecera, title: "Mis facturas" }} />
+          <Stack.Screen name="simulador" options={{ ...opcionesCabecera, title: "¿Cambiar el aparato?" }} />
         </Stack.Protected>
       </Stack>
     </>
