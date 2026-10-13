@@ -16,7 +16,7 @@ La app nunca habla con Tuya: todo pasa por la API.
 | --- | --- | --- |
 | [services/api](services/api) | Backend FastAPI: auth, hogares, ingesta, consumo, tarifas, WebSocket | [README](services/api/README.md) |
 | [services/agent](services/agent) | Agente local: lee el enchufe, guarda sin internet, envía a la API | [README](services/agent/README.md) |
-| [apps/mobile](apps/mobile) | App Expo SDK 57 (Inicio, Dispositivo, Mi casa) | [README](apps/mobile/README.md) |
+| [apps/mobile](apps/mobile) | App Expo SDK 57 (Inicio, Explorar, Avisos, Ajustes) | [README](apps/mobile/README.md) |
 | [docs](docs) | ADR (decisiones) e historias de usuario | [HU](docs/historias-usuario/README.md) |
 | [infra](infra) · [render.yaml](render.yaml) | PostgreSQL local con Docker y blueprint de Render | — |
 

@@ -1,6 +1,6 @@
 # HU-03 — Días de saldo prepago
 
-Prioridad **media** · Pantalla: Mi casa · Módulos: prepago, alertas · En la demo: sí
+Prioridad **media** · Pantallas: Inicio y Saldo prepago · Módulos: prepago, alertas · En la demo: sí
 
 ## Criterios de aceptación (de CLAUDE.md)
 | Criterio | Meta |

@@ -1,6 +1,6 @@
 # HU-08 — Rutinas de apagado
 
-Prioridad **alta** · Pantalla: Mi casa (sección Rutinas) · Módulos: rutinas, agente · En la demo: sí
+Prioridad **alta** · Pantalla: Explorar › Rutinas · Módulos: rutinas, agente · En la demo: sí
 
 ## Criterios de aceptación (de CLAUDE.md)
 | Criterio | Meta |

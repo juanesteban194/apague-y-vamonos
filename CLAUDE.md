@@ -15,7 +15,7 @@ Estado de las fases (detalle y decisiones en `docs/decisiones/`, historias en `d
 | 0 Hardware | Hecha: BSD04 por LAN (protocolo 3.5), escalas confirmadas (ADR 0001) |
 | 1 Backend base | Hecha: API en Render + Neon; el agente escribe lecturas en la nube |
 | 2 Consumo y tiempo real | Hecha: retraso enchufe → app máx 0,44 s (ADR 0003) |
-| 3 App base | Construida (tsc, bundle Android/iOS y 59 pruebas): Inicio, Dispositivo, Mi casa, registro con consentimiento, Google, onboarding. **Falta la prueba en teléfonos reales** ([guía](docs/guia-de-prueba.md)) |
+| 3 App base | Construida (tsc, bundle Android/iOS y 59 pruebas): Inicio, Dispositivo, registro con consentimiento, Google, onboarding. **Falta la prueba en teléfonos reales** ([guía](docs/guia-de-prueba.md)) |
 | 5 Consejos y RETIQ | Hecha (ADR 0006): histórico de facturas, semáforo contra el promedio, equivalencias, consejos y simulador de reemplazo con VPN. Precios de Big Mac ($32.900) y caja de leche Colanta ($7.500) cargados desde Rappi Medellín el 2026-10-13; tasa 12 % y 10 años confirmadas por el equipo. Clases RETIQ de neveras: índice Ar (A ≥ 67, B 56–67, C 42–56; Res. 40285/2026, tabla 7.2.4.a) |
 | Agente local | Hecho: cola SQLite, reintentos, redescubre IP, canal de comandos y modo simulado |
 | 4 Alertas y control | Hecha (ADR 0005): avisos de alto riesgo, subsistencia y prepago; encender/apagar; rutinas; tareas programadas; push. Aviso a los 15 s, Apagar en 0,96 s. El push con la app cerrada se movió a la Fase 7 (lanzamiento); la regla de "consumo normal" se define con el promedio mensual de las facturas de EPM (ver Objetivo del producto) |
@@ -118,7 +118,7 @@ Regla de oro: **la app nunca habla con Tuya**. Todo pasa por la API.
 │   └── mobile/                     # App Expo (se inicializa en Fase 3)
 │       ├── app/                    # Expo Router: una ruta por archivo
 │       │   ├── (auth)/             # login
-│       │   ├── (tabs)/             # Inicio, Avisos, Consejos, Mi casa
+│       │   ├── (tabs)/             # Inicio, Explorar, Avisos, Ajustes
 │       │   └── dispositivo/        # detalle de un enchufe: [id].tsx
 │       ├── assets/
 │       └── src/
@@ -189,7 +189,10 @@ Al inicializar Expo en la Fase 3, no sobrescribir `apps/mobile/app/`, `src/` ni 
 | Gráficas | Victory Native (react-native-svg) |
 | Contrato | openapi-typescript desde el OpenAPI de FastAPI |
 
-Pantallas (del mockup): Inicio, Dispositivo, Avisos, Consejos + RETIQ, Mi casa. Rutinas (HU-08) va como sección de Mi casa.
+Navegación (decisión del equipo, 2026-10-13): cuatro pestañas, **Inicio · Explorar · Avisos · Ajustes**. Explorar es una pantalla de categorías, como en una app de banco (Mis aparatos: Enchufes, Agentes, Rutinas · Mi plata: Facturas y medidor, Saldo prepago · Ahorra: Consejos, ¿Cambiar un aparato? (simulador RETIQ) · Mi cuenta: Mis casas, Instrucciones). Ajustes: cuenta, casas, ayuda y cerrar sesión.
+- **Varias casas por cuenta:** el nombre de la casa en Inicio abre el selector; la elegida se recuerda y cada casa tiene sus enchufes, agente, facturas y avisos.
+- **Ayuda:** cada sección tiene una sugerencia de primera vez (se descarta y no vuelve), un botón «?» en la cabecera e Instrucciones con todos los temas (`src/features/ayuda/temas.ts`).
+- **Íconos:** `Icono` (Ionicons y Material Design Icons) y el logo oficial de Google; las pantallas piden el significado, no el glifo.
 
 Reglas de presentación:
 - No mostrar kWh salvo en configuración; el consumo se dice en pesos o en equivalencias.
@@ -247,8 +250,8 @@ E_kWh = (1 / 3.600.000) × Σ (P_i[W] × Δt_i[s])
 | `GET /hogares/{id}/alertas`, `PUT /hogares/{id}/preferencias-alertas` | Avisos |
 | `GET /hogares/{id}/consejos` | Consejos |
 | `POST /simulador/retiq` | Consejos |
-| `GET`/`PUT /hogares/{id}/prepago` | Mi casa |
-| `GET`/`POST`/`PUT`/`DELETE /hogares/{id}/rutinas` | Mi casa |
+| `GET`/`PUT /hogares/{id}/prepago` | Inicio, Saldo prepago |
+| `GET`/`POST`/`PUT`/`DELETE /hogares/{id}/rutinas` | Rutinas |
 | `POST /ingesta/lecturas` | Agente |
 | `WS /ws/hogares/{id}` | App |
 | `WS /ws/agente` | Agente |
@@ -294,8 +297,8 @@ Reglas:
 | HU-01 Consumo por aparato en kWh y COP | Alta | Inicio, Dispositivo | ingesta, consumo, tarifas | Sí |
 | HU-02 Aviso de aparato de alto riesgo | Alta | Avisos, notificación | alertas, dispositivos | Sí (push solo Android) |
 | HU-05 Simulador de reemplazo RETIQ | Alta | Consejos | retiq | Sí |
-| HU-08 Rutinas de apagado | Alta | Mi casa | rutinas, agente | Sí |
-| HU-03 Días de saldo prepago | Media | Mi casa | prepago, alertas | Sí |
+| HU-08 Rutinas de apagado | Alta | Explorar › Rutinas | rutinas, agente | Sí |
+| HU-03 Días de saldo prepago | Media | Inicio, Saldo prepago | prepago, alertas | Sí |
 | HU-04 Equivalencias y semáforo | Media | Inicio | consumo | Sí |
 | HU-07 Línea de subsistencia | Media | Inicio, Dispositivo | consumo, alertas | Sí |
 | HU-06 Excedentes solares | Baja | — | — | No |
@@ -377,7 +380,7 @@ Riesgo principal: si el BSD04 no responde por red local en la Fase 0, la ingesta
 | WiFi empresarial de la universidad | Hotspot de 2,4 GHz propio |
 | Render o Neon dormidos | Despertarlos 2 min antes |
 | Error de medición del enchufe | Calibrar con carga de referencia |
-| Tarifa EPM desactualizada | Carga mensual; mes de la tarifa visible en Mi casa |
+| Tarifa EPM desactualizada | Carga mensual; mes de la tarifa visible en Mis casas |
 | Varios hogares reales | Fuera de la demo; requiere compartir dispositivos o el SDK de app de Tuya |
 
 ## Reglas de trabajo para Claude Code

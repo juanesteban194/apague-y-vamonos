@@ -65,7 +65,7 @@ Para datos reales, el Mac debe estar en la **misma WiFi que el enchufe** (`192.1
 cd services/agent
 python3.12 -m venv .venv && .venv/bin/pip install -e ".[dev]"    # solo la primera vez
 ```
-1. En la app: **Mi casa → Vincular agente → Crear clave**. Copia `AGENT_API_URL` y `AGENT_TOKEN` (se muestran una sola vez) al `.env` de la raíz, reemplazando los que haya.
+1. En la app: **Explorar → Agentes → Vincular agente → Crear clave**. Copia `AGENT_API_URL` y `AGENT_TOKEN` (se muestran una sola vez) al `.env` de la raíz, reemplazando los que haya.
 2. Correr:
 ```
 .venv/bin/python -m agent                          # enchufe real (usa devices.json)
