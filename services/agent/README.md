@@ -10,7 +10,8 @@ cd services/agent
 python3.12 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/python -m tinytuya wizard      # una vez: genera devices.json (clave local). No repetir sin necesidad: gasta cuota de Tuya Cloud.
 # en el .env de la raíz: AGENT_API_URL, AGENT_TOKEN (de POST /hogares/{id}/agentes), AGENT_POLL_SECONDS
-.venv/bin/python -m agent
+.venv/bin/python -m agent                    # enchufe real (misma WiFi)
+.venv/bin/python -m agent --simular SIM-001  # enchufe simulado, para probar sin hardware
 .venv/bin/pytest
 ```
 
@@ -24,6 +25,7 @@ Dos hilos independientes: **lectura** (cada `AGENT_POLL_SECONDS`, horario fijo) 
 - `agent/enviador.py`: envía en orden, en lotes de 500. Sin red o con error del servidor: conserva todo y reintenta (espera creciente
   hasta 10 s). 401: conserva todo y avisa. 422: prueba las lecturas una por una para que una mala no atasque la cola.
 - La API es idempotente: reenviar una lectura no la duplica.
+- `agent/collector/simulador.py`: enchufe virtual (ventilador) con la misma interfaz que el lector real; pasa por la misma cola y envío. Solo para pruebas y respaldo de demostración.
 - `agent/commands`: encender/apagar por WSS (Fase 4).
 
 ## Herramientas de verificación (`tools/`)
