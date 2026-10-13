@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 dependencies = [
     "tinytuya>=1.17",
     "httpx>=0.27",
+    "websockets>=13",  # canal de comandos con la API (/ws/agente)
 ]
 
 [project.optional-dependencies]

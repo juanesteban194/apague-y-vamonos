@@ -12,6 +12,7 @@ import httpx
 from agent.buffer.cola import Cola
 from agent.collector.lector import ErrorEnchufe, LectorEnchufe
 from agent.collector.simulador import LectorSimulado
+from agent.commands.cliente import ClienteComandos
 from agent.config.ajustes import Ajustes, ErrorConfiguracion, cargar_ajustes, cargar_dispositivos, cargar_env
 from agent.enviador import Enviador, ErrorAutenticacion, ErrorRed
 
@@ -33,6 +34,7 @@ class Agente:
         hilos = [
             threading.Thread(target=self._bucle_lectura, args=(parar,), name="lectura", daemon=True),
             threading.Thread(target=self._bucle_envio, args=(parar,), name="envio", daemon=True),
+            threading.Thread(target=ClienteComandos(self._ajustes, self._lectores).correr, args=(parar,), name="comandos", daemon=True),
         ]
         for h in hilos:
             h.start()

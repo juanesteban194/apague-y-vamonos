@@ -28,8 +28,14 @@ class LectorSimulado:
         self._reloj = reloj
         self._inicio = reloj()
         self._azar = azar or random.Random()
+        self._forzado: bool | None = None  # una orden de la app (encender/apagar) manda sobre el ciclo automático
+
+    def poner_estado(self, encendido: bool) -> None:
+        self._forzado = encendido
 
     def _encendido(self) -> bool:
+        if self._forzado is not None:
+            return self._forzado
         if not self._apagar_cada_s:
             return True
         # Ciclo: encendido `apagar_cada_s` segundos y apagado `apagado_s`.
