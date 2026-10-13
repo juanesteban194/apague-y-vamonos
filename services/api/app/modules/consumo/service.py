@@ -14,8 +14,8 @@ from app.modules.consumo.energia import (
     inicio_dia_bogota,
     inicio_mes_bogota,
 )
-from app.modules.consumo import subsistencia
-from app.modules.consumo.schemas import ConsumoOut, DispositivoResumen, PuntoConsumo, ResumenOut, SubsistenciaOut
+from app.modules.consumo import semaforo, subsistencia
+from app.modules.consumo.schemas import ConsumoOut, DispositivoResumen, PuntoConsumo, ResumenOut, SemaforoOut, SubsistenciaOut
 from app.modules.dispositivos.models import Dispositivo
 from app.modules.hogares.models import Hogar
 from app.modules.ingesta.models import Lectura
@@ -118,6 +118,7 @@ def resumen_hogar(db: Session, hogar: Hogar) -> ResumenOut:
         costo_hoy_cop=round(sum(f.costo_hoy_cop for f in filas), 2) if precio else None,
         costo_mes_cop=round(sum(f.costo_mes_cop for f in filas), 2) if precio else None,
         subsistencia=SubsistenciaOut(**vars(subsistencia.calcular(db, hogar, ahora))),
+        semaforo=SemaforoOut(**vars(semaforo.calcular(db, hogar, ahora))),
         dispositivos=filas,
     )
 

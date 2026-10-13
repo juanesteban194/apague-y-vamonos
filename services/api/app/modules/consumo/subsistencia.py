@@ -30,8 +30,9 @@ def _nivel(porcentaje: float) -> Literal["verde", "amarillo", "rojo"]:
     return "amarillo" if porcentaje >= UMBRAL_AMARILLO else "verde"
 
 
-def _consumo_del_medidor(db: Session, hogar: Hogar, mes_ini: datetime) -> float | None:
-    """Consumo del mes según el medidor: última lectura menos la del inicio del mes (o la primera del mes si no hay anterior)."""
+def lecturas_del_mes(db: Session, hogar: Hogar, mes_ini: datetime) -> tuple[LecturaMedidor, LecturaMedidor] | None:
+    """(lectura base, última lectura) del mes: la base es la del inicio del mes o, si no hay, la primera del mes. None si no hay dos
+    lecturas de días distintos."""
     inicio = mes_ini.astimezone(BOGOTA).date()
     ultima = db.scalar(select(LecturaMedidor).where(LecturaMedidor.hogar_id == hogar.id).order_by(LecturaMedidor.fecha.desc(), LecturaMedidor.lectura_kwh.desc()).limit(1))
     if ultima is None:
@@ -41,7 +42,13 @@ def _consumo_del_medidor(db: Session, hogar: Hogar, mes_ini: datetime) -> float 
     ) or db.scalar(select(LecturaMedidor).where(LecturaMedidor.hogar_id == hogar.id, LecturaMedidor.fecha > inicio).order_by(LecturaMedidor.fecha, LecturaMedidor.lectura_kwh).limit(1))
     if base is None or ultima.fecha <= base.fecha:
         return None  # con una sola lectura no hay diferencia que calcular
-    return max(0.0, ultima.lectura_kwh - base.lectura_kwh)
+    return base, ultima
+
+
+def _consumo_del_medidor(db: Session, hogar: Hogar, mes_ini: datetime) -> float | None:
+    """Consumo del mes según el medidor: última lectura menos la base."""
+    par = lecturas_del_mes(db, hogar, mes_ini)
+    return None if par is None else max(0.0, par[1].lectura_kwh - par[0].lectura_kwh)
 
 
 def calcular(db: Session, hogar: Hogar, ahora: datetime) -> Subsistencia:
