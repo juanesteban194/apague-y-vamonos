@@ -1,10 +1,10 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
-from app.modules.alertas.models import Alerta, PreferenciaAlertas
+from app.modules.alertas.models import Alerta, PreferenciaAlertas, TokenPush
 from app.modules.alertas.schemas import AlertaOut
 from app.modules.dispositivos.models import Dispositivo
 
@@ -103,3 +103,18 @@ def marcar_todas_leidas(db: Session, hogar_id: uuid.UUID) -> int:
     n = db.execute(update(Alerta).where(Alerta.hogar_id == hogar_id, Alerta.leida.is_(False)).values(leida=True)).rowcount
     db.commit()
     return n
+
+
+def guardar_token_push(db: Session, usuario_id: uuid.UUID, token: str, plataforma: str) -> None:
+    """Un celular = un token. Si cambió de dueño (otra cuenta en el mismo teléfono), pasa a la cuenta actual."""
+    existente = db.scalar(select(TokenPush).where(TokenPush.token_expo == token))
+    if existente is None:
+        db.add(TokenPush(usuario_id=usuario_id, token_expo=token, plataforma=plataforma))
+    else:
+        existente.usuario_id, existente.plataforma = usuario_id, plataforma
+    db.commit()
+
+
+def borrar_token_push(db: Session, usuario_id: uuid.UUID, token: str) -> None:
+    db.execute(delete(TokenPush).where(TokenPush.token_expo == token, TokenPush.usuario_id == usuario_id))
+    db.commit()
