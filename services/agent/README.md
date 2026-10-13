@@ -26,7 +26,7 @@ Dos hilos independientes: **lectura** (cada `AGENT_POLL_SECONDS`, horario fijo) 
   hasta 10 s). 401: conserva todo y avisa. 422: prueba las lecturas una por una para que una mala no atasque la cola.
 - La API es idempotente: reenviar una lectura no la duplica.
 - `agent/collector/simulador.py`: enchufe virtual (ventilador) con la misma interfaz que el lector real; pasa por la misma cola y envío. Solo para pruebas y respaldo de demostración.
-- `agent/commands`: encender/apagar por WSS (Fase 4).
+- `agent/commands`: canal WSS con la API (`/ws/agente`): recibe órdenes de encender/apagar y las ejecuta por LAN (la lectura y el comando comparten el socket con un candado). Reconecta solo. Probado con el enchufe simulado: orden → cambio de estado en la app en 0,08 s.
 
 ## Herramientas de verificación (`tools/`)
 `01_escanear_red.py` (Fase 0) · `02_leer_local.py` (Fase 0, 10 min de lecturas) · `04_medir_latencia_ws.py` (Fase 2, enchufe → app).

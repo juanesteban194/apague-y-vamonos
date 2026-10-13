@@ -1,5 +1,6 @@
 """Lectura local del enchufe con TinyTuya: detecta el protocolo, reconecta y redescubre la IP si cambia (DHCP)."""
 import logging
+import threading
 from collections.abc import Callable
 from datetime import UTC, datetime
 
@@ -43,9 +44,25 @@ class LectorEnchufe:
         self._dev = None
         self._dps: dict = {}  # con conexión persistente el enchufe devuelve solo los DP que cambiaron
         self._fallos = 0
+        self._candado = threading.Lock()  # la lectura y los comandos comparten el mismo socket: nunca a la vez
 
     def leer(self) -> dict | None:
         """Una lectura lista para enviar. None si aún faltan DP. ErrorEnchufe si no responde."""
+        with self._candado:
+            return self._leer()
+
+    def poner_estado(self, encendido: bool) -> None:
+        """Enciende o apaga el enchufe por LAN (comando recibido de la API). ErrorEnchufe si no responde."""
+        with self._candado:
+            if self._dev is None:
+                self._conectar()
+            respuesta = self._dev.turn_on() if encendido else self._dev.turn_off()
+            if isinstance(respuesta, dict) and "Error" in respuesta:
+                self._registrar_fallo()
+                raise ErrorEnchufe(str(respuesta["Error"]))
+            self._dps["1"] = encendido  # lo siguiente que se lea ya parte del estado nuevo
+
+    def _leer(self) -> dict | None:
         # Al conectar, la propia consulta de prueba es la primera lectura (no se pide dos veces).
         respuesta = self._conectar() if self._dev is None else self._dev.status()
         if not isinstance(respuesta, dict) or "Error" in respuesta or not respuesta.get("dps"):
