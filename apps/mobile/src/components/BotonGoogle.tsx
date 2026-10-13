@@ -6,6 +6,7 @@ import { iniciarSesionConGoogle } from "@/api/google";
 import { espacio, colores } from "@/theme";
 
 import { Boton } from "./Boton";
+import { LogoGoogle } from "./Icono";
 import { Texto } from "./Texto";
 
 type Props = { titulo?: string };
@@ -29,7 +30,7 @@ export function BotonGoogle({ titulo = "Continuar con Google" }: Props) {
 
   return (
     <View style={{ gap: espacio.s }}>
-      <Boton titulo={titulo} variante="secundario" onPress={entrar} cargando={cargando} />
+      <Boton titulo={titulo} variante="secundario" onPress={entrar} cargando={cargando} icono={<LogoGoogle />} />
       {error && (
         <Texto accessibilityRole="alert" variante="secundario" color={colores.rojo} style={{ fontWeight: "600" }}>
           {error}
