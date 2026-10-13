@@ -38,6 +38,11 @@ class SemaforoOut(BaseModel):
     diferencia_cop: float | None  # > 0: pagaría de más que su promedio
 
 
+class EquivalenciaOut(BaseModel):
+    texto: str  # "Es como dejar el televisor de la sala prendido 21 horas."
+    icono: str
+
+
 class ResumenOut(BaseModel):
     hogar_id: uuid.UUID
     calculado_en: datetime
@@ -48,6 +53,7 @@ class ResumenOut(BaseModel):
     costo_mes_cop: float | None
     subsistencia: SubsistenciaOut
     semaforo: SemaforoOut
+    equivalencias: list[EquivalenciaOut]  # de lo que miden hoy los enchufes
     dispositivos: list[DispositivoResumen]
 
 
