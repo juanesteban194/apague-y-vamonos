@@ -1,6 +1,7 @@
 """Programa principal: un hilo lee el enchufe cada AGENT_POLL_SECONDS y otro envía la cola a la API.
 
 Están separados para que un servidor lento o sin internet nunca retrase la lectura: sin huecos mayores a 1 minuto."""
+import argparse
 import logging
 import signal
 import threading
@@ -10,6 +11,7 @@ import httpx
 
 from agent.buffer.cola import Cola
 from agent.collector.lector import ErrorEnchufe, LectorEnchufe
+from agent.collector.simulador import LectorSimulado
 from agent.config.ajustes import Ajustes, ErrorConfiguracion, cargar_ajustes, cargar_dispositivos, cargar_env
 from agent.enviador import Enviador, ErrorAutenticacion, ErrorRed
 
@@ -20,7 +22,7 @@ ESPERA_MAXIMA_REINTENTO_S = 10  # con la API caída se reintenta cada ≤ 10 s: 
 
 
 class Agente:
-    def __init__(self, ajustes: Ajustes, lectores: list[LectorEnchufe], cliente: httpx.Client):
+    def __init__(self, ajustes: Ajustes, lectores: list, cliente: httpx.Client):
         self._ajustes = ajustes
         self._lectores = lectores
         self._cliente = cliente
@@ -98,18 +100,29 @@ class Agente:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(prog="python -m agent", description="Agente local de consumo energético")
+    parser.add_argument("--simular", metavar="ID_TUYA", action="append",
+                        help="en vez del enchufe real, simula uno con este ID de Tuya (repetible); no usa devices.json")
+    parser.add_argument("--vatios", type=float, default=26.5, help="potencia del enchufe simulado (por defecto 26,5 W, un ventilador)")
+    args = parser.parse_args()
+
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s", datefmt="%H:%M:%S")
     cargar_env()
     try:
         ajustes = cargar_ajustes()
-        dispositivos = cargar_dispositivos(ajustes.ruta_devices)
+        lectores = (
+            [LectorSimulado(i, vatios=args.vatios) for i in args.simular]
+            if args.simular
+            else [LectorEnchufe(d) for d in cargar_dispositivos(ajustes.ruta_devices)]
+        )
     except ErrorConfiguracion as e:
         raise SystemExit(f"Configuración: {e}") from None
 
     cliente = httpx.Client(
         base_url=ajustes.api_url, headers={"Authorization": f"Bearer {ajustes.token}"}, timeout=httpx.Timeout(20.0, connect=10.0)
     )
-    lectores = [LectorEnchufe(d) for d in dispositivos]
+    if args.simular:
+        log.warning("MODO SIMULACIÓN: los datos NO vienen de un enchufe real (%s)", ", ".join(args.simular))
     log.info("Agente iniciado: %d enchufe(s), lectura cada %s s, API %s", len(lectores), ajustes.segundos, ajustes.api_url)
 
     parar = threading.Event()
