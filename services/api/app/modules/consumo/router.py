@@ -9,7 +9,8 @@ from app.modules.auth.dependencias import usuario_con_consentimiento
 from datetime import UTC, datetime
 
 from app.modules.consumo import consejos, historial, service
-from app.modules.consumo.schemas import ConsejoOut, ConsumoOut, ResumenOut
+from app.modules.consumo.models import Equivalencia
+from app.modules.consumo.schemas import ConsejoOut, ConsumoOut, EquivalenciaFuenteOut, ResumenOut
 from app.modules.dispositivos.models import Dispositivo
 from app.modules.hogares.models import Hogar
 from app.modules.hogares.service import exigir_miembro
@@ -56,3 +57,9 @@ def guardar_historial(
 def ver_consejos(hogar_id: uuid.UUID, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)):
     exigir_miembro(db, usuario_id, hogar_id)
     return [ConsejoOut(**vars(c)) for c in consejos.generar(db, db.get(Hogar, hogar_id), datetime.now(UTC))]
+
+
+@router.get("/equivalencias", response_model=list[EquivalenciaFuenteOut], tags=["consumo"])
+def fuentes_de_las_equivalencias(db: Session = Depends(get_db), _: uuid.UUID = Depends(usuario_con_consentimiento)):
+    """Qué equivalencias existen, cuáles están activas y de dónde sale su valor."""
+    return [EquivalenciaFuenteOut(nombre=e.nombre, tipo=e.tipo, activa=e.activa, fuente=e.fuente) for e in db.query(Equivalencia).order_by(Equivalencia.nombre)]
