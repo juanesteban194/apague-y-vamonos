@@ -50,7 +50,7 @@ Los nombres de los menús de Google cambian de vez en cuando; lo importante son 
 ## 4. El agente (lleva el consumo del enchufe a la app)
 Para datos **reales**, el Mac debe estar en la **misma WiFi que el enchufe** (la de `192.168.78.x`; si estás en otra red el agente dirá "no responde"). Ya tienes `services/agent/devices.json` (clave local del enchufe).
 **Sin el enchufe a la mano o en otra red:** usa el enchufe simulado (paso 3 de abajo).
-1. En la app, **Mi casa → Vincular agente → Crear clave del agente**. Copia las dos líneas (`AGENT_API_URL` y `AGENT_TOKEN`). Se muestran **una sola vez**.
+1. En la app, **Explorar → Agentes → Vincular agente → Crear clave del agente**. Copia las dos líneas (`AGENT_API_URL` y `AGENT_TOKEN`). Se muestran **una sola vez**.
 2. Pégalas en el archivo `.env` de la raíz del proyecto, **reemplazando** las líneas `AGENT_API_URL` y `AGENT_TOKEN` que ya existan (las del usuario demo).
 3. Corre el agente y déjalo abierto:
    ```
@@ -60,14 +60,14 @@ Para datos **reales**, el Mac debe estar en la **misma WiFi que el enchufe** (la
    ```
    Real: debe decir `conectado en 192.168.78.x (protocolo 3.5)`. Simulado: avisa `MODO SIMULACIÓN` y envía un ventilador virtual (26,5 W, se apaga 20 s cada 3 min; `--vatios 60` cambia la potencia).
    Usa el simulador solo en un hogar de pruebas: sus datos no son reales.
-4. En Mi casa, el agente pasa a **conectado** en menos de un minuto.
+4. En Explorar → Agentes, el agente pasa a **conectado** en menos de un minuto.
 
 ## 5. Qué probar (en este orden)
 | # | Prueba | Debe pasar |
 | --- | --- | --- |
 | 1 | **Crear cuenta** con correo, contraseña y la casilla de tratamiento de datos | Sin la casilla el botón queda deshabilitado; con ella entras directo |
 | 2 | **Tu hogar**: nombre, estrato, medidor | Pasa a Inicio vacío ("Todavía no hay enchufes") |
-| 3 | **Mi casa → Agregar enchufe**: nombre y el ID de Tuya (`eb182b7a119cf6aaeecf66`) | Aparece en la lista y en Inicio |
+| 3 | **Explorar → Enchufes → Conectar un enchufe**: nombre y el ID de Tuya (`eb182b7a119cf6aaeecf66`) | Aparece en la lista y en Inicio |
 | 4 | **Vincular agente** y correr el agente (sección 4) | "conectado"; en Inicio el aparato muestra su potencia |
 | 5 | Conecta el ventilador al enchufe | La potencia cambia en 1–2 s; el costo de hoy sube en pesos |
 | 6 | **Tocar el aparato** (Dispositivo) | Estado, potencia, costo de hoy y del mes; barras por Día/Semana/Mes |
@@ -75,7 +75,7 @@ Para datos **reales**, el Mac debe estar en la **misma WiFi que el enchufe** (la
 | 8 | **Cerrar sesión** y **Continuar con Google** | Si es tu primera vez con ese Gmail, pide el consentimiento y luego el hogar; si no, entra |
 | 9 | Entrar con Google con el correo de una cuenta ya creada por correo | Entra a **la misma cuenta** (se vinculan, no se duplica) |
 | 10 | Apaga el agente 1 min y préndelo | En Inicio sale "Dato con retraso"; al volver no hay huecos |
-| 11 | Mi casa → Editar hogar (cambia el estrato) | Los costos se recalculan con la tarifa del nuevo estrato |
+| 11 | Explorar → Mis casas → Editar esta casa (cambia el estrato) | Los costos se recalculan con la tarifa del nuevo estrato |
 | 12 | Quitar el enchufe | Pide confirmación y avisa que borra el historial |
 
 Usuario de demo ya cargado (con lecturas): correo y contraseña en `.env.demo` (no versionado).
@@ -85,12 +85,12 @@ Con el agente corriendo (real, o simulado con `.venv/bin/python -m agent --simul
 | # | Prueba | Debe pasar |
 | --- | --- | --- |
 | 13 | **Encender/apagar:** toca el aparato en Inicio y mueve el interruptor "Está prendido" | En 1–2 s el estado cambia (con el enchufe real, se corta la corriente). Si no hay agente, dice por qué |
-| 14 | **Aviso de alto riesgo:** Mi casa → toca el enchufe → marca "Avisarme si se queda encendido demasiado tiempo" con **2 minutos** → Guardar | A los ~2 min 20 s aparece el aviso en rojo en **Avisos** (pestaña con contador), con el botón **Apagar ahora** |
+| 14 | **Aviso de alto riesgo:** Explorar → Enchufes → toca el enchufe → marca "Avisarme si se queda encendido demasiado tiempo" con **2 minutos** → Guardar | A los ~2 min 20 s aparece el aviso en rojo en **Avisos** (pestaña con contador), con el botón **Apagar ahora** |
 | 15 | Toca **Apagar ahora** en ese aviso | "Listo, ya lo apagamos." y el enchufe pasa a apagado |
 | 16 | **Cuántos avisos:** en Avisos elige Pocas / Normales / Muchas | Queda guardado al volver a entrar |
-| 17 | **Rutina:** Mi casa → Nueva rutina → apagar a una hora de **dentro de 2 minutos** (24 h, ej. 15:42), días de hoy | A esa hora el aparato se apaga solo; la tarjeta dice "Se apagó hace…". Si no se pudo, sale un aviso amarillo |
+| 17 | **Rutina:** Explorar → Rutinas → Nueva rutina → apagar a una hora de **dentro de 2 minutos** (24 h, ej. 15:42), días de hoy | A esa hora el aparato se apaga solo; la tarjeta dice "Se apagó hace…". Si no se pudo, sale un aviso amarillo |
 | 18 | **Prepago:** Editar hogar → medidor *Prepago*; luego "Anotar mi saldo" (ej. $30.000) y otra anotación otro día (ej. $26.000) | Con 2 anotaciones de días distintos aparece "Le alcanza hasta el …". Si quedan menos de 48 h, tarjeta roja y un aviso |
-| 19 | **Línea de subsistencia:** Inicio muestra la barra en porcentaje. Mi casa → "Anotar lectura del medidor": anota la lectura de tu factura | Con 2 lecturas la barra usa el medidor (toda la casa) en vez de solo los enchufes |
+| 19 | **Línea de subsistencia:** Inicio muestra la barra en porcentaje. Explorar → Facturas y medidor → "Anotar lectura del medidor": anota la lectura de tu factura | Con 2 lecturas la barra usa el medidor (toda la casa) en vez de solo los enchufes |
 Notas: el push con la app cerrada solo funciona en Android con una compilación propia (no en Expo Go). Con la app abierta recibes notificación del sistema
 si diste el permiso. Los avisos se evalúan cada 20 s en el servidor, y las rutinas cada minuto.
 
@@ -98,13 +98,26 @@ si diste el permiso. Los avisos se evalúan cada 20 s en el servidor, y las ruti
 | # | Prueba | Debe pasar |
 | --- | --- | --- |
 | 20 | Inicio sin datos: mira la tarjeta de arriba | Dice "Falta su histórico" y no muestra ningún color; el botón lleva a anotar las facturas |
-| 21 | **Mi casa → Anotar mis facturas:** copia los 6 meses del cuadro "Histórico de consumos" de una factura de EPM | Muestra "Su promedio hoy" (con la factura de ejemplo: 179 kWh) |
-| 22 | **Mi casa → Anotar lectura del medidor** dos veces en días distintos (o la misma factura: lectura anterior y actual) | Inicio muestra el semáforo: verde "Vas bien", amarillo "Vas medio alto" o rojo "Vas alto", y cuántos pesos pagaría de menos o de más |
+| 21 | **Explorar → Facturas y medidor → Anotar mis facturas:** copia los 6 meses del cuadro "Histórico de consumos" de una factura de EPM | Muestra "Su promedio hoy" (con la factura de ejemplo: 179 kWh) |
+| 22 | **Explorar → Facturas y medidor → Anotar lectura del medidor** dos veces en días distintos (o la misma factura: lectura anterior y actual) | Inicio muestra el semáforo: verde "Vas bien", amarillo "Vas medio alto" o rojo "Vas alto", y cuántos pesos pagaría de menos o de más |
 | 23 | Con el enchufe midiendo, mira "Lo que han medido sus enchufes hoy" | Cuando el gasto da para una unidad entera aparecen "Es como dejar el televisor… / O cargar el celular…" |
 | 24 | Pestaña **Consejos** | Primero lo que falta (facturas, medidor, enchufe); luego el aparato que más gasta y, si de noche gasta, una rutina con el ahorro medido. Nunca sugiere apagar una nevera |
 | 25 | En Consejos toca **Comparar con uno nuevo** (aparece para neveras, lavadoras, aires y calentadores con 2 días de datos) | Abre el simulador con lo que midió el enchufe; escribe el kWh/mes de la etiqueta del aparato nuevo y su precio |
 | 26 | **Calcular** | "Sí/No le conviene", lo que gasta cada uno al mes, cuánto ahorra, en cuánto se paga y el balance a los años. Los supuestos (12 %, 10 años) se pueden cambiar |
 Los precios de la hamburguesa (Big Mac, $32.900) y la caja de leche (Colanta 1 L, $7.500) salen de Rappi en Medellín (2026-10-13); `GET /equivalencias` muestra la fuente de cada una.
+
+## 5d. Navegación por categorías, varias casas y ayuda
+| # | Prueba | Debe pasar |
+| --- | --- | --- |
+| 23 | Abre la app | Cuatro pestañas abajo: Inicio, Explorar, Avisos, Ajustes |
+| 24 | **Explorar** | Íconos redondos agrupados en Mis aparatos, Mi plata, Ahorra y Mi cuenta; cada uno abre su sección |
+| 25 | Entra a **Agentes** por primera vez | Sale una tarjeta verde «¿Primera vez en Agentes?». «Ahora no» la quita y no vuelve a salir |
+| 26 | Toca el **?** de la cabecera | Explica qué es, para qué sirve y cómo se usa |
+| 27 | **Ajustes → Volver a mostrar las sugerencias**, y entra a otra sección | Las sugerencias vuelven a salir una vez |
+| 28 | En Inicio toca el **nombre de la casa → Agregar otra casa** | Crea la casa con su estrato y pasa a verla; Inicio, enchufes, agentes y avisos quedan vacíos (son de la casa nueva) |
+| 29 | Vuelve a tocar el nombre y elige la primera casa | Vuelven sus enchufes y su consumo. Cierra y abre la app: recuerda la última casa |
+| 30 | **Explorar → Instrucciones** | Lista de todos los temas explicados |
+| 31 | Botón **Continuar con Google** | Lleva el logo de Google con sus colores |
 
 ## 6. Si algo falla
 | Síntoma | Causa probable y qué hacer |
