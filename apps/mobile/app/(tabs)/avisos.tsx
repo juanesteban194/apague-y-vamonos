@@ -39,7 +39,9 @@ export default function Avisos() {
   }
   async function elegir(sensibilidad: Sensibilidad) {
     if (!hogar) return;
-    cliente.setQueryData(["preferencias-alertas", hogar.id], { sensibilidad }); // responde al toque; si falla, se vuelve a pedir
+    const clave = ["preferencias-alertas", hogar.id];
+    await cliente.cancelQueries({ queryKey: clave }); // una respuesta vieja en camino no debe pisar lo que la persona acaba de elegir
+    cliente.setQueryData(clave, { sensibilidad }); // responde al toque; si falla, se vuelve a pedir
     await guardarPreferencias(hogar.id, sensibilidad).catch(() => cliente.invalidateQueries({ queryKey: ["preferencias-alertas", hogar.id] }));
   }
 
