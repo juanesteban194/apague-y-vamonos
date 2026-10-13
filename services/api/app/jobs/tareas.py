@@ -48,7 +48,10 @@ TAREAS_DIA: list[tuple[str, Callable[[Session, datetime], object]]] = []
 def _registrar() -> None:
     from app.modules.alertas import notificar
 
+    from app.modules.rutinas import ejecucion
+
     TAREAS_MINUTO.append(("alertas", notificar.evaluar_y_notificar))
+    TAREAS_MINUTO.append(("rutinas", lambda db, ahora: ejecucion.ejecutar_vencidas(db, ahora)))
 
 
 _registrar()
