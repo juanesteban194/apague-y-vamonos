@@ -94,6 +94,18 @@ Con el agente corriendo (real, o simulado con `.venv/bin/python -m agent --simul
 Notas: el push con la app cerrada solo funciona en Android con una compilación propia (no en Expo Go). Con la app abierta recibes notificación del sistema
 si diste el permiso. Los avisos se evalúan cada 20 s en el servidor, y las rutinas cada minuto.
 
+## 5c. Pruebas de la Fase 5 (semáforo, equivalencias, consejos, simulador)
+| # | Prueba | Debe pasar |
+| --- | --- | --- |
+| 20 | Inicio sin datos: mira la tarjeta de arriba | Dice "Falta su histórico" y no muestra ningún color; el botón lleva a anotar las facturas |
+| 21 | **Mi casa → Anotar mis facturas:** copia los 6 meses del cuadro "Histórico de consumos" de una factura de EPM | Muestra "Su promedio hoy" (con la factura de ejemplo: 179 kWh) |
+| 22 | **Mi casa → Anotar lectura del medidor** dos veces en días distintos (o la misma factura: lectura anterior y actual) | Inicio muestra el semáforo: verde "Vas bien", amarillo "Vas medio alto" o rojo "Vas alto", y cuántos pesos pagaría de menos o de más |
+| 23 | Con el enchufe midiendo, mira "Lo que han medido sus enchufes hoy" | Cuando el gasto da para una unidad entera aparecen "Es como dejar el televisor… / O cargar el celular…" |
+| 24 | Pestaña **Consejos** | Primero lo que falta (facturas, medidor, enchufe); luego el aparato que más gasta y, si de noche gasta, una rutina con el ahorro medido. Nunca sugiere apagar una nevera |
+| 25 | En Consejos toca **Comparar con uno nuevo** (aparece para neveras, lavadoras, aires y calentadores con 2 días de datos) | Abre el simulador con lo que midió el enchufe; escribe el kWh/mes de la etiqueta del aparato nuevo y su precio |
+| 26 | **Calcular** | "Sí/No le conviene", lo que gasta cada uno al mes, cuánto ahorra, en cuánto se paga y el balance a los años. Los supuestos (12 %, 10 años) se pueden cambiar |
+Pendiente: los precios de la hamburguesa y la caja de leche; mientras tanto esas equivalencias no aparecen.
+
 ## 6. Si algo falla
 | Síntoma | Causa probable y qué hacer |
 | --- | --- |
@@ -109,4 +121,4 @@ si diste el permiso. Los avisos se evalúan cada 20 s en el servidor, y las ruti
 | Contraseña olvidada | Aún no existe la recuperación por correo (necesita un servicio de envío de correos); con Google no hace falta |
 
 ## 7. Lo que todavía no existe
-Simulador RETIQ, semáforo y equivalencias (Fase 5), el aviso de consumo anómalo, recuperación de contraseña y verificación del correo (necesitan un servicio de correo), y la compilación propia para instalar sin Expo Go.
+El aviso de consumo anómalo por aparato, recuperación de contraseña y verificación del correo (necesitan un servicio de correo), y la compilación propia para instalar sin Expo Go.

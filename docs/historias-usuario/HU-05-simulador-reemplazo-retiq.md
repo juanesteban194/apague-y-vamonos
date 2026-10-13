@@ -9,8 +9,9 @@ Prioridad **alta** · Pantalla: Consejos · Módulo: retiq · En la demo: sí
 | Prueba de la Fase 5 | El simulador reproduce un cálculo de VPN hecho a mano |
 
 ## Notas
-- Simulador financiero: VPN y meses de recuperación (`POST /simulador/retiq`).
-- RETIQ no tiene API pública: `retiq_referencia` se arma a mano, con la fuente en cada fila (categoría, clase A–G, consumo mínimo y máximo en kWh/mes).
+- Simulador: ahorro mensual, meses de recuperación y VPN (`POST /simulador/retiq`). El consumo actual lo mide el enchufe; el del aparato nuevo es el kWh/mes de su etiqueta RETIQ.
+- La norma RETIQ no trae tablas de kWh por clase (ADR 0006): `retiq_referencia` queda vacía hasta conseguir los anexos oficiales.
+- Verificado: el VPN coincide con la suma mes a mes hecha a mano.
 
 ## Por definir
-Los datos de la tabla RETIQ, la tasa de descuento y el horizonte del VPN. No se inventan consumos RETIQ.
+Confirmar la tasa de descuento (hoy 12 % anual, editable) y los años de vida útil (hoy 10, editable).
