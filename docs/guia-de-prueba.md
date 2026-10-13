@@ -40,7 +40,7 @@ Los nombres de los menús de Google cambian de vez en cuando; lo importante son 
 1. Instala **Expo Go** (App Store / Google Play) en el iPhone y en el Android. Los dos en la misma WiFi del Mac, sin datos móviles.
 2. En el Mac:
    ```
-   cd apps/mobile
+   cd apps/mobile        # ¡la app está en esta carpeta, no en la raíz!
    npm install
    npm start
    ```
@@ -48,15 +48,18 @@ Los nombres de los menús de Google cambian de vez en cuando; lo importante son 
 3. Si no abre: `npm run start:tunnel` (funciona aunque la WiFi aísle los dispositivos; más lento). Ver [apps/mobile/README.md](../apps/mobile/README.md).
 
 ## 4. El agente (lleva el consumo del enchufe a la app)
-El enchufe y el Mac en la misma WiFi. Ya tienes `services/agent/devices.json` (clave local del enchufe).
+Para datos **reales**, el Mac debe estar en la **misma WiFi que el enchufe** (la de `192.168.78.x`; si estás en otra red el agente dirá "no responde"). Ya tienes `services/agent/devices.json` (clave local del enchufe).
+**Sin el enchufe a la mano o en otra red:** usa el enchufe simulado (paso 3 de abajo).
 1. En la app, **Mi casa → Vincular agente → Crear clave del agente**. Copia las dos líneas (`AGENT_API_URL` y `AGENT_TOKEN`). Se muestran **una sola vez**.
 2. Pégalas en el archivo `.env` de la raíz del proyecto, **reemplazando** las líneas `AGENT_API_URL` y `AGENT_TOKEN` que ya existan (las del usuario demo).
 3. Corre el agente y déjalo abierto:
    ```
    cd services/agent
-   .venv/bin/python -m agent
+   .venv/bin/python -m agent                      # enchufe real (misma WiFi)
+   .venv/bin/python -m agent --simular SIM-001    # enchufe simulado: en la app agrega un enchufe con ese ID
    ```
-   Debe decir `conectado en 192.168.78.x (protocolo 3.5)` y no mostrar errores.
+   Real: debe decir `conectado en 192.168.78.x (protocolo 3.5)`. Simulado: avisa `MODO SIMULACIÓN` y envía un ventilador virtual (26,5 W, se apaga 20 s cada 3 min; `--vatios 60` cambia la potencia).
+   Usa el simulador solo en un hogar de pruebas: sus datos no son reales.
 4. En Mi casa, el agente pasa a **conectado** en menos de un minuto.
 
 ## 5. Qué probar (en este orden)
