@@ -16,6 +16,17 @@ export type EventoEstadoEnchufe = {
   fecha_hora: string;
 };
 
-export type EventoEnVivo = EventoLectura | EventoEstadoEnchufe;
+export type EventoAlerta = {
+  tipo: "alerta";
+  id: string;
+  dispositivo_id: string | null;
+  alerta_tipo: string;
+  nivel: "rojo" | "amarillo" | "verde";
+  titulo: string;
+  mensaje: string;
+  fecha: string;
+};
+
+export type EventoEnVivo = EventoLectura | EventoEstadoEnchufe | EventoAlerta;
 
 export type EstadoConexion = "conectando" | "conectado" | "reconectando" | "sin_acceso";

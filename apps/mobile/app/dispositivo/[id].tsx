@@ -16,7 +16,7 @@ import { Texto } from "@/components/Texto";
 import { useConsumo, useResumen } from "@/features/consumo/hooks";
 import { aplicarEvento } from "@/features/consumo/tiempoReal";
 import { formatoCOP, formatoPotencia } from "@/lib/formato";
-import { useEventosHogar } from "@/realtime/useEventosHogar";
+import { useTiempoReal } from "@/realtime/estado";
 import { colores, espacio } from "@/theme";
 
 const PERIODOS: { valor: Periodo; titulo: string; resumen: string }[] = [
@@ -30,7 +30,7 @@ export default function Dispositivo() {
   const cliente = useQueryClient();
   const { hogar } = useHogarActual();
   const { data: resumen } = useResumen(hogar?.id);
-  const conexion = useEventosHogar(hogar?.id, (e) => hogar && aplicarEvento(cliente, hogar.id, e));
+  const conexion = useTiempoReal((t) => t.conexion);
   const [periodo, setPeriodo] = useState<Periodo>("dia");
   const { data: consumo, error, isLoading, isFetching, refetch } = useConsumo(id, periodo);
 

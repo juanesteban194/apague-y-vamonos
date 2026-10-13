@@ -8,7 +8,7 @@ let ultimoRecalculo = 0;
 
 /** Aplica un evento en vivo al resumen guardado (potencia y estado al instante). Los costos los calcula el
  *  backend: se vuelven a pedir como máximo cada 10 s mientras lleguen lecturas. */
-export function aplicarEvento(cliente: QueryClient, hogarId: string, evento: EventoEnVivo): void {
+export function aplicarEvento(cliente: QueryClient, hogarId: string, evento: Exclude<EventoEnVivo, { tipo: "alerta" }>): void {
   const clave = ["resumen", hogarId];
   cliente.setQueryData<Resumen>(clave, (resumen) => {
     if (!resumen) return resumen;

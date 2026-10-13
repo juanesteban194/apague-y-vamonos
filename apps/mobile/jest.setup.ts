@@ -36,3 +36,15 @@ jest.mock("expo-linking", () => ({
   createURL: (ruta: string) => `exp://127.0.0.1:8081/--/${ruta}`,
   parse: (url: string) => ({ queryParams: Object.fromEntries(new URL(url).searchParams) }),
 }));
+
+jest.mock("expo-notifications", () => ({
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn(async () => {}),
+  setNotificationCategoryAsync: jest.fn(async () => []),
+  getPermissionsAsync: jest.fn(async () => ({ granted: false, canAskAgain: true })),
+  requestPermissionsAsync: jest.fn(async () => ({ granted: false })),
+  getExpoPushTokenAsync: jest.fn(async () => ({ data: "ExponentPushToken[prueba]" })),
+  scheduleNotificationAsync: jest.fn(async () => "id"),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  AndroidImportance: { HIGH: 4 },
+}));

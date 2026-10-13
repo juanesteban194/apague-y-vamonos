@@ -222,6 +222,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/hogares/{hogar_id}/lecturas-medidor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lecturas Medidor */
+        get: operations["lecturas_medidor_hogares__hogar_id__lecturas_medidor_get"];
+        put?: never;
+        /** Registrar Lectura */
+        post: operations["registrar_lectura_hogares__hogar_id__lecturas_medidor_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/hogares/{hogar_id}/dispositivos": {
         parameters: {
             query?: never;
@@ -256,6 +274,40 @@ export interface paths {
         head?: never;
         /** Actualizar */
         patch: operations["actualizar_hogares__hogar_id__dispositivos__dispositivo_id__patch"];
+        trace?: never;
+    };
+    "/dispositivos/{dispositivo_id}/encender": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Encender */
+        post: operations["encender_dispositivos__dispositivo_id__encender_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dispositivos/{dispositivo_id}/apagar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apagar */
+        post: operations["apagar_dispositivos__dispositivo_id__apagar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/ingesta/lecturas": {
@@ -326,6 +378,156 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/hogares/{hogar_id}/alertas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_hogares__hogar_id__alertas_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/alertas/leidas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Marcar Todas */
+        post: operations["marcar_todas_hogares__hogar_id__alertas_leidas_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/alertas/{alerta_id}/leida": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Marcar Leida */
+        post: operations["marcar_leida_hogares__hogar_id__alertas__alerta_id__leida_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/preferencias-alertas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Leer Preferencias */
+        get: operations["leer_preferencias_hogares__hogar_id__preferencias_alertas_get"];
+        /** Guardar Preferencias */
+        put: operations["guardar_preferencias_hogares__hogar_id__preferencias_alertas_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usuarios/yo/tokens-push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Registrar Token
+         * @description El celular registra su token de Expo Push para recibir avisos aunque la app esté cerrada.
+         */
+        put: operations["registrar_token_usuarios_yo_tokens_push_put"];
+        post?: never;
+        /**
+         * Quitar Token
+         * @description Al cerrar sesión: este celular deja de recibir los avisos de esta cuenta.
+         */
+        delete: operations["quitar_token_usuarios_yo_tokens_push_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/prepago": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver */
+        get: operations["ver_hogares__hogar_id__prepago_get"];
+        /**
+         * Registrar
+         * @description Registra el saldo que muestra el medidor ahora. Cada registro afina la proyección.
+         */
+        put: operations["registrar_hogares__hogar_id__prepago_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/rutinas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_hogares__hogar_id__rutinas_get"];
+        put?: never;
+        /** Crear */
+        post: operations["crear_hogares__hogar_id__rutinas_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/rutinas/{rutina_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Actualizar */
+        put: operations["actualizar_hogares__hogar_id__rutinas__rutina_id__put"];
+        post?: never;
+        /** Borrar */
+        delete: operations["borrar_hogares__hogar_id__rutinas__rutina_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/salud": {
         parameters: {
             query?: never;
@@ -384,12 +586,57 @@ export interface components {
              */
             creado_en: string;
         };
+        /** AlertaOut */
+        AlertaOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Dispositivo Id */
+            dispositivo_id: string | null;
+            /** Dispositivo Nombre */
+            dispositivo_nombre: string | null;
+            /** Tipo */
+            tipo: string;
+            /**
+             * Nivel
+             * @enum {string}
+             */
+            nivel: "rojo" | "amarillo" | "verde";
+            /** Titulo */
+            titulo: string;
+            /** Mensaje */
+            mensaje: string;
+            /**
+             * Fecha
+             * Format: date-time
+             */
+            fecha: string;
+            /** Leida */
+            leida: boolean;
+        };
         /** CanjeGoogleIn */
         CanjeGoogleIn: {
             /** Code */
             code: string;
             /** Code Verifier */
             code_verifier: string;
+        };
+        /** ComandoOut */
+        ComandoOut: {
+            /**
+             * Dispositivo Id
+             * Format: uuid
+             */
+            dispositivo_id: string;
+            /** Encendido */
+            encendido: boolean;
+            /**
+             * Via
+             * @enum {string}
+             */
+            via: "agente" | "nube";
         };
         /** ConsumoOut */
         ConsumoOut: {
@@ -564,6 +811,28 @@ export interface components {
             /** Encendido */
             encendido: boolean;
         };
+        /** LecturaMedidorIn */
+        LecturaMedidorIn: {
+            /** Lectura Kwh */
+            lectura_kwh: number;
+            /** Fecha */
+            fecha?: string | null;
+        };
+        /** LecturaMedidorOut */
+        LecturaMedidorOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Lectura Kwh */
+            lectura_kwh: number;
+            /**
+             * Fecha
+             * Format: date
+             */
+            fecha: string;
+        };
         /** LecturasIn */
         LecturasIn: {
             /** Lecturas */
@@ -611,6 +880,36 @@ export interface components {
             /** Tiene Google */
             tiene_google: boolean;
         };
+        /** PreferenciasAlertas */
+        PreferenciasAlertas: {
+            /**
+             * Sensibilidad
+             * @enum {string}
+             */
+            sensibilidad: "pocos" | "normal" | "todos";
+        };
+        /** PrepagoOut */
+        PrepagoOut: {
+            /**
+             * Estado
+             * @enum {string}
+             */
+            estado: "sin_registros" | "datos_insuficientes" | "ok";
+            /** Saldo Cop */
+            saldo_cop: number | null;
+            /** Registrado En */
+            registrado_en: string | null;
+            /** Promedio Diario Cop */
+            promedio_diario_cop: number | null;
+            /** Dias Restantes */
+            dias_restantes: number | null;
+            /** Se Acaba El */
+            se_acaba_el: string | null;
+            /** Nivel */
+            nivel: ("rojo" | "verde") | null;
+            /** Registros */
+            registros: components["schemas"]["RegistroSaldo"][];
+        };
         /** PuntoConsumo */
         PuntoConsumo: {
             /**
@@ -636,6 +935,16 @@ export interface components {
             nombre: string;
             /** Acepta Tratamiento Datos */
             acepta_tratamiento_datos: boolean;
+        };
+        /** RegistroSaldo */
+        RegistroSaldo: {
+            /** Saldo Cop */
+            saldo_cop: number;
+            /**
+             * Registrado En
+             * Format: date-time
+             */
+            registrado_en: string;
         };
         /** RenovarIn */
         RenovarIn: {
@@ -663,8 +972,84 @@ export interface components {
             costo_hoy_cop: number | null;
             /** Costo Mes Cop */
             costo_mes_cop: number | null;
+            subsistencia: components["schemas"]["SubsistenciaOut"];
             /** Dispositivos */
             dispositivos: components["schemas"]["DispositivoResumen"][];
+        };
+        /** RutinaIn */
+        RutinaIn: {
+            /**
+             * Dispositivo Id
+             * Format: uuid
+             */
+            dispositivo_id: string;
+            /** Dias */
+            dias: number[];
+            /**
+             * Hora Apagado
+             * Format: time
+             */
+            hora_apagado: string;
+            /** Hora Encendido */
+            hora_encendido?: string | null;
+            /**
+             * Activa
+             * @default true
+             */
+            activa: boolean;
+        };
+        /** RutinaOut */
+        RutinaOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Dispositivo Id
+             * Format: uuid
+             */
+            dispositivo_id: string;
+            /** Dispositivo Nombre */
+            dispositivo_nombre: string;
+            /** Dias */
+            dias: number[];
+            /**
+             * Hora Apagado
+             * Format: time
+             */
+            hora_apagado: string;
+            /** Hora Encendido */
+            hora_encendido: string | null;
+            /** Activa */
+            activa: boolean;
+            /** Ahorro Estimado Cop Mes */
+            ahorro_estimado_cop_mes: number | null;
+            ultima_ejecucion: components["schemas"]["UltimaEjecucion"] | null;
+        };
+        /** SaldoIn */
+        SaldoIn: {
+            /** Saldo Cop */
+            saldo_cop: number;
+        };
+        /** SubsistenciaOut */
+        SubsistenciaOut: {
+            /** Limite Kwh */
+            limite_kwh: number;
+            /** Consumo Kwh */
+            consumo_kwh: number;
+            /** Porcentaje */
+            porcentaje: number;
+            /**
+             * Fuente
+             * @enum {string}
+             */
+            fuente: "medidor" | "enchufes";
+            /**
+             * Nivel
+             * @enum {string}
+             */
+            nivel: "verde" | "amarillo" | "rojo";
         };
         /** TarifaOut */
         TarifaOut: {
@@ -684,6 +1069,16 @@ export interface components {
             /** Es Del Mes Actual */
             es_del_mes_actual: boolean;
         };
+        /** TokenPushIn */
+        TokenPushIn: {
+            /** Token */
+            token: string;
+            /**
+             * Plataforma
+             * @enum {string}
+             */
+            plataforma: "android" | "ios";
+        };
         /** TokensOut */
         TokensOut: {
             /** Access Token */
@@ -695,6 +1090,18 @@ export interface components {
              * @default bearer
              */
             token_type: string;
+        };
+        /** UltimaEjecucion */
+        UltimaEjecucion: {
+            /**
+             * Cuando
+             * Format: date-time
+             */
+            cuando: string;
+            /** Accion */
+            accion: string;
+            /** Resultado */
+            resultado: string;
         };
         /** UsuarioOut */
         UsuarioOut: {
@@ -1155,6 +1562,72 @@ export interface operations {
             };
         };
     };
+    lecturas_medidor_hogares__hogar_id__lecturas_medidor_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LecturaMedidorOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    registrar_lectura_hogares__hogar_id__lecturas_medidor_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LecturaMedidorIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LecturaMedidorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_hogares__hogar_id__dispositivos_get: {
         parameters: {
             query?: never;
@@ -1287,6 +1760,68 @@ export interface operations {
             };
         };
     };
+    encender_dispositivos__dispositivo_id__encender_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dispositivo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComandoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apagar_dispositivos__dispositivo_id__apagar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dispositivo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComandoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     recibir_lecturas_ingesta_lecturas_post: {
         parameters: {
             query?: never;
@@ -1403,6 +1938,424 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ConsumoOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_hogares__hogar_id__alertas_get: {
+        parameters: {
+            query?: {
+                solo_no_leidas?: boolean;
+            };
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertaOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    marcar_todas_hogares__hogar_id__alertas_leidas_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    marcar_leida_hogares__hogar_id__alertas__alerta_id__leida_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+                alerta_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    leer_preferencias_hogares__hogar_id__preferencias_alertas_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferenciasAlertas"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    guardar_preferencias_hogares__hogar_id__preferencias_alertas_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferenciasAlertas"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferenciasAlertas"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    registrar_token_usuarios_yo_tokens_push_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TokenPushIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    quitar_token_usuarios_yo_tokens_push_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TokenPushIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ver_hogares__hogar_id__prepago_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrepagoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    registrar_hogares__hogar_id__prepago_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaldoIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrepagoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_hogares__hogar_id__rutinas_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RutinaOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    crear_hogares__hogar_id__rutinas_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RutinaIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RutinaOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    actualizar_hogares__hogar_id__rutinas__rutina_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+                rutina_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RutinaIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RutinaOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    borrar_hogares__hogar_id__rutinas__rutina_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+                rutina_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
