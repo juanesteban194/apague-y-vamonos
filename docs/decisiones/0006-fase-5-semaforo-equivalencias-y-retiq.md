@@ -29,6 +29,7 @@ porcentaje, (4) rutina de apagado nocturno con el ahorro **medido** de 11 p. m. 
 Se necesitan al menos 2 días de datos para extrapolar a un mes.
 
 ## Pendiente
-- Precio de la hamburguesa y de la caja de leche (y cualquier otra equivalencia divertida que quiera el equipo).
+- (Resuelto 2026-10-13) Big Mac $32.900 y caja de leche Colanta 1 L $7.500, de Rappi Medellín; son precios de domicilio y pueden ser mayores a los del local. Actualizar a mano en la tabla `equivalencias` cuando cambien. Tasa 12 % y 10 años confirmadas por el equipo.
+- Clases RETIQ de neveras (Res. 40285/2026, tabla 7.2.4.a, igual a la de 2020): se miden con el ahorro relativo Ar, no en kWh/mes. A ≥ 67; B 56–67; C 42–56. Vigente desde el 26-dic-2026. Solo informativo; el cálculo usa kWh reales.
 - Confirmar tasa y años del simulador.
 - Cargar tablas RETIQ solo si el equipo consigue los anexos oficiales con fuente.

@@ -104,7 +104,7 @@ si diste el permiso. Los avisos se evalúan cada 20 s en el servidor, y las ruti
 | 24 | Pestaña **Consejos** | Primero lo que falta (facturas, medidor, enchufe); luego el aparato que más gasta y, si de noche gasta, una rutina con el ahorro medido. Nunca sugiere apagar una nevera |
 | 25 | En Consejos toca **Comparar con uno nuevo** (aparece para neveras, lavadoras, aires y calentadores con 2 días de datos) | Abre el simulador con lo que midió el enchufe; escribe el kWh/mes de la etiqueta del aparato nuevo y su precio |
 | 26 | **Calcular** | "Sí/No le conviene", lo que gasta cada uno al mes, cuánto ahorra, en cuánto se paga y el balance a los años. Los supuestos (12 %, 10 años) se pueden cambiar |
-Pendiente: los precios de la hamburguesa y la caja de leche; mientras tanto esas equivalencias no aparecen.
+Los precios de la hamburguesa (Big Mac, $32.900) y la caja de leche (Colanta 1 L, $7.500) salen de Rappi en Medellín (2026-10-13); `GET /equivalencias` muestra la fuente de cada una.
 
 ## 6. Si algo falla
 | Síntoma | Causa probable y qué hacer |

@@ -16,7 +16,7 @@ Estado de las fases (detalle y decisiones en `docs/decisiones/`, historias en `d
 | 1 Backend base | Hecha: API en Render + Neon; el agente escribe lecturas en la nube |
 | 2 Consumo y tiempo real | Hecha: retraso enchufe → app máx 0,44 s (ADR 0003) |
 | 3 App base | Construida (tsc, bundle Android/iOS y 59 pruebas): Inicio, Dispositivo, Mi casa, registro con consentimiento, Google, onboarding. **Falta la prueba en teléfonos reales** ([guía](docs/guia-de-prueba.md)) |
-| 5 Consejos y RETIQ | Hecha (ADR 0006): histórico de facturas, semáforo contra el promedio, equivalencias, consejos y simulador de reemplazo con VPN. Pendiente: precios de hamburguesa y leche; confirmar tasa (12 %) y años (10) del simulador |
+| 5 Consejos y RETIQ | Hecha (ADR 0006): histórico de facturas, semáforo contra el promedio, equivalencias, consejos y simulador de reemplazo con VPN. Precios de Big Mac ($32.900) y caja de leche Colanta ($7.500) cargados desde Rappi Medellín el 2026-10-13; tasa 12 % y 10 años confirmadas por el equipo. Clases RETIQ de neveras: índice Ar (A ≥ 67, B 56–67, C 42–56; Res. 40285/2026, tabla 7.2.4.a) |
 | Agente local | Hecho: cola SQLite, reintentos, redescubre IP, canal de comandos y modo simulado |
 | 4 Alertas y control | Hecha (ADR 0005): avisos de alto riesgo, subsistencia y prepago; encender/apagar; rutinas; tareas programadas; push. Aviso a los 15 s, Apagar en 0,96 s. El push con la app cerrada se movió a la Fase 7 (lanzamiento); la regla de "consumo normal" se define con el promedio mensual de las facturas de EPM (ver Objetivo del producto) |
 
