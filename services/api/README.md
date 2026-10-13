@@ -30,5 +30,7 @@ Fase 2: `tarifas` (seed EPM sep-2026 en `seeds/tarifas.py`), energía y costo en
 (`GET /hogares/{id}/resumen`, `GET /dispositivos/{id}/consumo?periodo=dia|semana|mes`, `GET /hogares/{id}/tarifa`) y
 WebSocket `/ws/hogares/{id}` (eventos `lectura` y `estado_enchufe`). Retraso medido enchufe → app: máx 0,44 s.
 Decisiones de cálculo en [ADR 0003](../../docs/decisiones/0003-calculo-de-energia-y-costo.md).
-Pendiente de fases siguientes: alertas, control encender/apagar, prepago, rutinas, RETIQ, equivalencias.
+Fase 4: avisos (alto riesgo, subsistencia, prepago), encender/apagar por el agente con respaldo en Tuya Cloud, rutinas, saldo prepago, lecturas del
+medidor, push por Expo y tareas programadas (ADR 0005).
+Pendiente de fases siguientes: RETIQ, semáforo y equivalencias.
 Datos pendientes: tarifa EPM por estrato y mes (tabla `tarifas` vacía), tabla RETIQ, equivalencias.
