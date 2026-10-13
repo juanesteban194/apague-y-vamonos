@@ -10,6 +10,15 @@ class GestorConexiones:
 
     def __init__(self) -> None:
         self._por_hogar: dict[uuid.UUID, set[WebSocket]] = defaultdict(set)
+        self._bucle: asyncio.AbstractEventLoop | None = None
+
+    def fijar_bucle(self, bucle: asyncio.AbstractEventLoop | None) -> None:
+        """El bucle de eventos de FastAPI, para que las tareas programadas (que corren en otros hilos) puedan publicar."""
+        self._bucle = bucle
+
+    def publicar_desde_hilo(self, hogar_id: uuid.UUID, eventos: list[dict]) -> None:
+        if self._bucle is not None and not self._bucle.is_closed():
+            asyncio.run_coroutine_threadsafe(self.publicar(hogar_id, eventos), self._bucle)
 
     def conectar(self, hogar_id: uuid.UUID, ws: WebSocket) -> None:
         self._por_hogar[hogar_id].add(ws)

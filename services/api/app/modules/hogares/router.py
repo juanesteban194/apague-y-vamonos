@@ -7,7 +7,16 @@ from app.core.database import get_db
 from app.modules.auth.dependencias import usuario_con_consentimiento
 from app.modules.hogares import service
 from app.modules.hogares.models import Hogar
-from app.modules.hogares.schemas import AgenteCreadoOut, AgenteIn, AgenteOut, HogarActualizarIn, HogarIn, HogarOut
+from app.modules.hogares.schemas import (
+    AgenteCreadoOut,
+    AgenteIn,
+    AgenteOut,
+    HogarActualizarIn,
+    HogarIn,
+    HogarOut,
+    LecturaMedidorIn,
+    LecturaMedidorOut,
+)
 
 router = APIRouter(prefix="/hogares", tags=["hogares"])
 
@@ -73,3 +82,17 @@ def revocar_agente(
     service.exigir_miembro(db, usuario_id, hogar_id, rol="titular")
     service.revocar_agente(db, hogar_id, agente_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{hogar_id}/lecturas-medidor", response_model=LecturaMedidorOut, status_code=status.HTTP_201_CREATED)
+def registrar_lectura(
+    hogar_id: uuid.UUID, datos: LecturaMedidorIn, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)
+):
+    service.exigir_miembro(db, usuario_id, hogar_id)
+    return service.registrar_lectura_medidor(db, hogar_id, datos)
+
+
+@router.get("/{hogar_id}/lecturas-medidor", response_model=list[LecturaMedidorOut])
+def lecturas_medidor(hogar_id: uuid.UUID, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)):
+    service.exigir_miembro(db, usuario_id, hogar_id)
+    return service.listar_lecturas_medidor(db, hogar_id)
