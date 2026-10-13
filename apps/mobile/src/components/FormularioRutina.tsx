@@ -12,15 +12,23 @@ import { Selector } from "./Selector";
 import { SelectorDias } from "./SelectorDias";
 import { Texto } from "./Texto";
 
-type Props = { dispositivos: Dispositivo[]; inicial?: Rutina; etiquetaBoton: string; alEnviar: (datos: RutinaDatos) => Promise<void> };
+type Props = {
+  dispositivos: Dispositivo[];
+  inicial?: Rutina;
+  /** Valores de partida para una rutina nueva (p. ej. desde un consejo: apagar de 23:00 a 05:00). */
+  predeterminado?: { dispositivoId?: string; apagado?: string; encendido?: string };
+  etiquetaBoton: string;
+  alEnviar: (datos: RutinaDatos) => Promise<void>;
+};
 
 /** Rutina de apagado: qué aparato, qué días, a qué hora se apaga y (opcional) a qué hora se vuelve a prender. */
-export function FormularioRutina({ dispositivos, inicial, etiquetaBoton, alEnviar }: Props) {
-  const [dispositivoId, setDispositivoId] = useState<string | null>(inicial?.dispositivo_id ?? (dispositivos.length === 1 ? dispositivos[0].id : null));
+export function FormularioRutina({ dispositivos, inicial, predeterminado, etiquetaBoton, alEnviar }: Props) {
+  const inicialId = inicial?.dispositivo_id ?? (predeterminado?.dispositivoId && dispositivos.some((d) => d.id === predeterminado.dispositivoId) ? predeterminado.dispositivoId : undefined);
+  const [dispositivoId, setDispositivoId] = useState<string | null>(inicialId ?? (dispositivos.length === 1 ? dispositivos[0].id : null));
   const [dias, setDias] = useState<number[]>(inicial?.dias ?? [0, 1, 2, 3, 4, 5, 6]);
-  const [apagado, setApagado] = useState(inicial ? mostrarHora(inicial.hora_apagado) : "");
-  const [prenderDespues, setPrenderDespues] = useState(inicial ? inicial.hora_encendido != null : false);
-  const [encendido, setEncendido] = useState(inicial?.hora_encendido ? mostrarHora(inicial.hora_encendido) : "");
+  const [apagado, setApagado] = useState(inicial ? mostrarHora(inicial.hora_apagado) : (predeterminado?.apagado ?? ""));
+  const [prenderDespues, setPrenderDespues] = useState(inicial ? inicial.hora_encendido != null : !!predeterminado?.encendido);
+  const [encendido, setEncendido] = useState(inicial?.hora_encendido ? mostrarHora(inicial.hora_encendido) : (predeterminado?.encendido ?? ""));
   const [activa, setActiva] = useState(inicial?.activa ?? true);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);

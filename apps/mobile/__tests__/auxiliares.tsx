@@ -62,6 +62,8 @@ export const RESUMEN = {
   kwh_hoy: 0.01,
   kwh_mes: 0.01,
   subsistencia: { limite_kwh: 130, consumo_kwh: 80, porcentaje: 80 / 130, fuente: "enchufes", nivel: "verde" },
+  semaforo: { estado: "sin_historial", nivel: null, titulo: "Falta su histórico", mensaje: "Anote los meses de su factura de EPM para saber si va por encima o por debajo de lo normal.", promedio_kwh: null, proyeccion_kwh: null, diferencia_cop: null },
+  equivalencias: [],
   costo_hoy_cop: 8.15,
   costo_mes_cop: 8.15,
   dispositivos: [

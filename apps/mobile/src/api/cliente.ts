@@ -3,6 +3,11 @@ import { API_URL } from "@/lib/config";
 import { cerrarSesion, guardarTokens, renovarTokens, tokenAccesoVigente } from "./sesion";
 import type {
   Agente,
+  Consejo,
+  Historial,
+  MesFactura,
+  SimuladorDatos,
+  SimuladorResultado,
   Alerta,
   LecturaMedidor,
   Prepago,
@@ -145,3 +150,8 @@ export const registrarLecturaMedidor = (hogarId: string, lectura: number) =>
   api<LecturaMedidor>(`/hogares/${hogarId}/lecturas-medidor`, "POST", { lectura_kwh: lectura });
 export const registrarTokenPush = (token: string, plataforma: "android" | "ios") => api<void>("/usuarios/yo/tokens-push", "PUT", { token, plataforma });
 export const quitarTokenPush = (token: string, plataforma: "android" | "ios") => api<void>("/usuarios/yo/tokens-push", "DELETE", { token, plataforma });
+
+export const obtenerConsejos = (hogarId: string) => api<Consejo[]>(`/hogares/${hogarId}/consejos`);
+export const obtenerHistorial = (hogarId: string) => api<Historial>(`/hogares/${hogarId}/historial-consumo`);
+export const guardarHistorial = (hogarId: string, meses: MesFactura[]) => api<Historial>(`/hogares/${hogarId}/historial-consumo`, "PUT", { meses });
+export const simularRetiq = (datos: SimuladorDatos) => api<SimuladorResultado>("/simulador/retiq", "POST", datos);
