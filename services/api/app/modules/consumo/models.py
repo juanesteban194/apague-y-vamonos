@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Numeric, String, UniqueConstraint, true
+from sqlalchemy import Boolean, CheckConstraint, Date, DateTime, Float, ForeignKey, Numeric, String, UniqueConstraint, true
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base, nuevo_id
@@ -22,12 +22,22 @@ class ConsumoHorario(Base):
 
 
 class Equivalencia(Base):
+    """Algo cotidiano con lo que comparar lo gastado ("es como dejar el televisor prendido 21 horas").
+    `energia`: cuánta energía gasta una unidad (Wh). `precio`: cuánto cuesta una unidad (COP). Cada fila lleva su fuente."""
+
     __tablename__ = "equivalencias"
+    __table_args__ = (CheckConstraint("tipo IN ('energia', 'precio')", name="tipo_valido"),)
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=nuevo_id)
-    nombre: Mapped[str] = mapped_column(String(120))
-    costo_cop: Mapped[float] = mapped_column(Numeric(12, 2))
+    nombre: Mapped[str] = mapped_column(String(120), unique=True)
+    tipo: Mapped[str] = mapped_column(String(10), server_default="precio")
+    costo_cop: Mapped[float | None] = mapped_column(Numeric(12, 2))  # precio de una unidad (tipo precio)
+    wh_por_unidad: Mapped[float | None] = mapped_column(Float)  # energía de una unidad (tipo energia)
+    plantilla_singular: Mapped[str] = mapped_column(String(200), server_default="")  # "comerse {n} hamburguesa"
+    plantilla_plural: Mapped[str] = mapped_column(String(200), server_default="")  # "comerse {n} hamburguesas"
     icono: Mapped[str] = mapped_column(String(60))
+    fuente: Mapped[str] = mapped_column(String(255), server_default="")
+    activa: Mapped[bool] = mapped_column(Boolean, server_default=true(), default=True)
     vigente_desde: Mapped[date] = mapped_column(Date)
 
 
