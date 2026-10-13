@@ -84,3 +84,10 @@ class ConsejoOut(BaseModel):
     accion: Literal["historial", "medidor", "enchufe", "rutina", "simulador"] | None  # a qué pantalla lleva el botón
     dispositivo_id: uuid.UUID | None
     consumo_kwh_mes: float | None  # lo que mide el enchufe (precarga el simulador)
+
+
+class EquivalenciaFuenteOut(BaseModel):
+    nombre: str
+    tipo: Literal["energia", "precio"]
+    activa: bool
+    fuente: str  # de dónde sale el valor de cada equivalencia (o por qué está apagada)

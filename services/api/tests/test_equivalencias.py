@@ -116,3 +116,11 @@ def test_el_resumen_trae_las_equivalencias_de_lo_que_se_gasto_hoy(client, auth, 
 def test_sin_consumo_no_hay_equivalencias(client, auth, hogar, enchufe):
     cargar_seed()
     assert client.get(f"/hogares/{hogar['id']}/resumen", headers=auth).json()["equivalencias"] == []
+
+
+def test_se_puede_consultar_de_donde_sale_cada_equivalencia(client, auth):
+    cargar_seed()
+    r = client.get("/equivalencias", headers=auth).json()
+    assert [(e["nombre"], e["activa"]) for e in r] == [("celular", True), ("hamburguesa", False), ("leche", False), ("televisor", True)]
+    assert "PENDIENTE" in next(e for e in r if e["nombre"] == "leche")["fuente"]
+    assert client.get("/equivalencias").status_code == 401
