@@ -17,7 +17,7 @@ Estado de las fases (detalle y decisiones en `docs/decisiones/`, historias en `d
 | 2 Consumo y tiempo real | Hecha: retraso enchufe → app máx 0,44 s (ADR 0003) |
 | 3 App base | Construida (tsc, bundle Android/iOS y 59 pruebas): Inicio, Dispositivo, Mi casa, registro con consentimiento, Google, onboarding. **Falta la prueba en teléfonos reales** ([guía](docs/guia-de-prueba.md)) |
 | Agente local | Hecho: cola SQLite, reintentos, redescubre IP, canal de comandos y modo simulado |
-| 4 Alertas y control | Hecha (ADR 0005): avisos de alto riesgo, subsistencia y prepago; encender/apagar; rutinas; tareas programadas; push. Aviso a los 15 s, Apagar en 0,96 s. Falta el push real (development build) y la regla de consumo anómalo |
+| 4 Alertas y control | Hecha (ADR 0005): avisos de alto riesgo, subsistencia y prepago; encender/apagar; rutinas; tareas programadas; push. Aviso a los 15 s, Apagar en 0,96 s. El push con la app cerrada se movió a la Fase 7 (lanzamiento); la regla de "consumo normal" se define con el promedio mensual de las facturas de EPM (ver Objetivo del producto) |
 
 Pendiente del usuario: crear el cliente OAuth de Google y poner `GOOGLE_CLIENT_ID/SECRET` en Render; revisar el despliegue en Render; probar la app en Android e iPhone; (hecho) factura de EPM verificada (ADR 0002);
 rotar la contraseña de Neon y el Access Secret de Tuya (quedaron expuestos en el chat).
@@ -33,6 +33,12 @@ Siguiente: Fase 5 (consejos, simulador RETIQ, semáforo y equivalencias). Necesi
 - Usuarios objetivo: hogares de Medellín (estrato 3, adultos mayores, arrendatarios con medidor prepago, presupuesto ajustado).
 - Alcance: **demo funcional para la sustentación**. Sin publicación en Google Play ni App Store.
 - Documento fuente de esta arquitectura: https://claude.ai/code/artifact/b2c9ef4f-918a-4afd-abd5-22b2db5c8982
+
+## Objetivo del producto (decisión del equipo, 2026-10-13)
+El producto debe ser rentable porque **ayuda a una familia a pagar menos que su promedio mensual según las facturas de EPM**. Por eso:
+- "Consumo normal" = el promedio mensual de la factura (el histórico de 6 meses que EPM imprime) y el ahorro se mide contra ese promedio, en pesos.
+- El semáforo, los avisos de consumo anómalo y los consejos buscan quedar por debajo de ese promedio.
+- Como los enchufes no miden toda la casa, la comparación mensual usa las lecturas del medidor (HU-07).
 
 ## Decisiones de arquitectura
 
@@ -355,6 +361,8 @@ Cada fase termina con su prueba. No avanzar de fase sin confirmación del usuari
 5. **Consejos y RETIQ**: simulador HU-05, semáforo y equivalencias HU-04.
    Prueba: el simulador reproduce un cálculo de VPN hecho a mano.
 6. **Pruebas y ensayo**: verificar cada criterio de calidad; ensayo de 30 min; video de respaldo.
+7. **Detalles para el lanzamiento**: push con la app cerrada (development build de Android con Firebase/FCM y proyecto de EAS; iPhone requiere cuenta de Apple de pago), íconos y pantalla de arranque propios, texto y política de tratamiento de datos, recuperación de contraseña y verificación de correo (servicio de envío de correos), publicación en las tiendas.
+   Prueba: el aviso llega con la app cerrada en un Android real.
 
 Riesgo principal: si el BSD04 no responde por red local en la Fase 0, la ingesta cambia. Por eso va primero.
 
