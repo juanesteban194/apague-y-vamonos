@@ -43,3 +43,12 @@ def cada_dia(ahora: datetime | None = None) -> None:
 # Se rellenan al importar cada módulo (alertas, rutinas, prepago) para que las tareas no dependan de ellos aquí.
 TAREAS_MINUTO: list[tuple[str, Callable[[Session, datetime], object]]] = []
 TAREAS_DIA: list[tuple[str, Callable[[Session, datetime], object]]] = []
+
+
+def _registrar() -> None:
+    from app.modules.alertas import notificar
+
+    TAREAS_MINUTO.append(("alertas", notificar.evaluar_y_notificar))
+
+
+_registrar()

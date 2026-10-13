@@ -20,6 +20,14 @@ class DispositivoResumen(BaseModel):
     costo_mes_cop: float | None
 
 
+class SubsistenciaOut(BaseModel):
+    limite_kwh: float
+    consumo_kwh: float
+    porcentaje: float  # 0,62 = 62 % del límite mensual
+    fuente: Literal["medidor", "enchufes"]  # "enchufes" = solo lo que miden los enchufes, no toda la casa
+    nivel: Literal["verde", "amarillo", "rojo"]
+
+
 class ResumenOut(BaseModel):
     hogar_id: uuid.UUID
     calculado_en: datetime
@@ -28,6 +36,7 @@ class ResumenOut(BaseModel):
     kwh_mes: float
     costo_hoy_cop: float | None
     costo_mes_cop: float | None
+    subsistencia: SubsistenciaOut
     dispositivos: list[DispositivoResumen]
 
 

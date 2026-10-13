@@ -1,4 +1,6 @@
 import uuid
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -6,8 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.core.security import generar_token_agente, hash_token_agente
 from app.modules.alertas.models import PreferenciaAlertas
-from app.modules.hogares.models import Agente, Hogar, MiembroHogar
-from app.modules.hogares.schemas import AgenteIn, HogarActualizarIn, HogarIn
+from app.modules.hogares.models import Agente, Hogar, LecturaMedidor, MiembroHogar
+from app.modules.hogares.schemas import AgenteIn, HogarActualizarIn, HogarIn, LecturaMedidorIn
 
 
 def exigir_miembro(db: Session, usuario_id: uuid.UUID, hogar_id: uuid.UUID, rol: str | None = None) -> MiembroHogar:
@@ -65,3 +67,21 @@ def revocar_agente(db: Session, hogar_id: uuid.UUID, agente_id: uuid.UUID) -> No
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Agente no encontrado")
     db.delete(agente)
     db.commit()
+
+
+def registrar_lectura_medidor(db: Session, hogar_id: uuid.UUID, datos: LecturaMedidorIn) -> LecturaMedidor:
+    """Lectura del medidor de EPM (HU-07). El contador solo sube: una lectura menor que la última es casi seguro un error de digitación."""
+    fecha = datos.fecha or datetime.now(ZoneInfo("America/Bogota")).date()
+    anterior = db.scalar(
+        select(LecturaMedidor).where(LecturaMedidor.hogar_id == hogar_id, LecturaMedidor.fecha <= fecha).order_by(LecturaMedidor.fecha.desc(), LecturaMedidor.lectura_kwh.desc()).limit(1)
+    )
+    if anterior is not None and datos.lectura_kwh < anterior.lectura_kwh:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"La lectura no puede ser menor que la anterior ({anterior.lectura_kwh:g}).")
+    lectura = LecturaMedidor(hogar_id=hogar_id, lectura_kwh=datos.lectura_kwh, fecha=fecha)
+    db.add(lectura)
+    db.commit()
+    return lectura
+
+
+def listar_lecturas_medidor(db: Session, hogar_id: uuid.UUID) -> list[LecturaMedidor]:
+    return list(db.scalars(select(LecturaMedidor).where(LecturaMedidor.hogar_id == hogar_id).order_by(LecturaMedidor.fecha.desc(), LecturaMedidor.lectura_kwh.desc()).limit(24)))

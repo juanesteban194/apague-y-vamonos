@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
@@ -40,5 +40,18 @@ class AgenteOut(BaseModel):
     nombre: str
     ultima_conexion: datetime | None
     creado_en: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class LecturaMedidorIn(BaseModel):
+    lectura_kwh: float = Field(ge=0)
+    fecha: date | None = None  # por defecto, hoy (hora de Colombia)
+
+
+class LecturaMedidorOut(BaseModel):
+    id: uuid.UUID
+    lectura_kwh: float
+    fecha: date
 
     model_config = {"from_attributes": True}

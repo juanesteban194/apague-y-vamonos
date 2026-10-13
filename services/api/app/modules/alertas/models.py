@@ -9,14 +9,16 @@ from app.core.database import Base, nuevo_id
 
 class Alerta(Base):
     __tablename__ = "alertas"
+    __table_args__ = (CheckConstraint("nivel IN ('rojo', 'amarillo', 'verde')", name="nivel_valido"),)
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=nuevo_id)
     hogar_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("hogares.id", ondelete="CASCADE"), index=True)
     dispositivo_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("dispositivos.id", ondelete="SET NULL")
     )
-    tipo: Mapped[str] = mapped_column(String(40))
-    nivel: Mapped[str] = mapped_column(String(20))
+    tipo: Mapped[str] = mapped_column(String(40))  # alto_riesgo, subsistencia, prepago…
+    nivel: Mapped[str] = mapped_column(String(20))  # los colores del semáforo: rojo, amarillo, verde
+    titulo: Mapped[str] = mapped_column(String(200), server_default="")
     mensaje: Mapped[str] = mapped_column(Text)
     fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     leida: Mapped[bool] = mapped_column(Boolean, server_default=false(), default=False)
