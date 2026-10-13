@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     jwt_secret: str
     jwt_access_minutes: int = 15
     jwt_refresh_days: int = 30
+    # Tareas programadas (APScheduler) dentro del proceso. Las pruebas las apagan y llaman las tareas a mano.
+    jobs_activos: bool = True
 
     # Inicio de sesión con Google (cliente OAuth tipo "Aplicación web" de Google Cloud). Sin ellos, el botón responde 503.
     google_client_id: str | None = None

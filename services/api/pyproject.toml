@@ -13,6 +13,7 @@ dependencies = [
     "email-validator>=2.2",
     "argon2-cffi>=23.1",
     "pyjwt[crypto]>=2.9",
+    "apscheduler>=3.10,<4",  # tareas programadas dentro del proceso de la API
     "httpx>=0.27",  # llamadas a Google (y a Tuya Cloud / Expo Push más adelante)
 ]
 

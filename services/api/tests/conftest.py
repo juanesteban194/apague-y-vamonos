@@ -11,6 +11,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.exc import OperationalError
 
 os.environ.setdefault("JWT_SECRET", "secreto-solo-para-pruebas-" + "x" * 16)
+os.environ["JOBS_ACTIVOS"] = "false"  # las pruebas llaman las tareas a mano; el planificador no corre solo
 
 from app.core import database  # noqa: E402
 from app.core.config import get_settings  # noqa: E402
