@@ -28,6 +28,16 @@ class SubsistenciaOut(BaseModel):
     nivel: Literal["verde", "amarillo", "rojo"]
 
 
+class SemaforoOut(BaseModel):
+    estado: Literal["ok", "sin_historial", "sin_medidor"]
+    nivel: Literal["verde", "amarillo", "rojo"] | None
+    titulo: str
+    mensaje: str
+    promedio_kwh: float | None
+    proyeccion_kwh: float | None
+    diferencia_cop: float | None  # > 0: pagaría de más que su promedio
+
+
 class ResumenOut(BaseModel):
     hogar_id: uuid.UUID
     calculado_en: datetime
@@ -37,6 +47,7 @@ class ResumenOut(BaseModel):
     costo_hoy_cop: float | None
     costo_mes_cop: float | None
     subsistencia: SubsistenciaOut
+    semaforo: SemaforoOut
     dispositivos: list[DispositivoResumen]
 
 
