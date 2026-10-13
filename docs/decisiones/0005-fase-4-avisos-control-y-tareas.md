@@ -37,8 +37,8 @@ un iPhone de cuenta gratuita no funciona y la app lo detecta y sigue con notific
 El botón "Apagar" va en la notificación de los avisos de alto riesgo.
 
 ## Pendiente (necesita datos o decisiones tuyas)
-- **Consumo anómalo** ("la nevera gasta un 18 % más de lo normal", "buena semana"): falta definir qué es "lo normal" y los umbrales por sensibilidad.
-- Push real en un teléfono: requiere el *development build* de Android (Firebase/FCM + EAS) — Fase 6.
+- **Consumo anómalo** ("la nevera gasta un 18 % más de lo normal", "buena semana"): "lo normal" es el promedio mensual de las facturas de EPM (objetivo del producto); faltan los umbrales por sensibilidad (Fase 5).
+- Push con la app cerrada: se movió a la Fase 7 (lanzamiento), junto con la compilación propia, Firebase/FCM y el proyecto de EAS.
 
 ## Medido de punta a punta (agente simulado, planificador real)
 Aviso de alto riesgo: 15 s después de cruzar el umbral (criterio ≤ 60 s). Apagar: 0,96 s (criterio ≤ 10 s).
