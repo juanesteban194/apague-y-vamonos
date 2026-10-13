@@ -15,3 +15,15 @@ export function formatoPotencia(vatios: number): string {
 export function formatoTarifa(copPorKwh: number): string {
   return `$${copPorKwh.toFixed(2).replace(".", ",")} por kWh`;
 }
+
+/** Interpreta lo que escribe la persona: "28500", "28.500" o "$28.500" → 28500; null si no hay ningún dígito. */
+export function leerPesos(texto: string): number | null {
+  const limpio = texto.replace(/[^\d]/g, "");
+  return limpio ? Number(limpio) : null;
+}
+
+/** 45238.5 → "45.238,5": miles con punto y decimales con coma, sin depender de Intl del teléfono. */
+export function formatoNumero(valor: number): string {
+  const [entero, decimales] = String(valor).split(".");
+  return entero.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (decimales ? "," + decimales : "");
+}
