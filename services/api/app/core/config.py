@@ -22,6 +22,15 @@ class Settings(BaseSettings):
     api_public_url: str | None = None
     render_external_url: str | None = None
 
+    # Respaldo por la nube de Tuya (solo cuando el agente no responde). Sin credenciales, no hay respaldo.
+    tuya_access_id: str | None = None
+    tuya_access_secret: str | None = None
+    tuya_region: str = "us"  # Western America → openapi.tuyaus.com
+    # Tope de llamadas a Tuya Cloud por mes y por proceso: la cuota de prueba es de 26.000 y no debe agotarse (CLAUDE.md).
+    tuya_llamadas_max_mes: int = 300
+    # Límite de frecuencia de encender/apagar por enchufe (CLAUDE.md: "límite de frecuencia"; el valor es una decisión técnica).
+    comandos_max_por_minuto: int = 6
+
     @property
     def url_publica(self) -> str:
         return (self.api_public_url or self.render_external_url or "http://localhost:8000").rstrip("/")

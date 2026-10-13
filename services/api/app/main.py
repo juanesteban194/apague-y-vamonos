@@ -7,6 +7,7 @@ from app.jobs.planificador import crear_planificador
 
 from app.modules.auth.router import router as auth_router
 from app.modules.consumo.router import router as consumo_router
+from app.modules.dispositivos.control import router as control_router
 from app.modules.dispositivos.router import router as dispositivos_router
 from app.modules.hogares.router import router as hogares_router
 from app.modules.ingesta.router import router as ingesta_router
@@ -28,6 +29,7 @@ app = FastAPI(title="Gestión de Consumo Energético", version="0.1.0", lifespan
 app.include_router(auth_router)
 app.include_router(hogares_router)
 app.include_router(dispositivos_router)
+app.include_router(control_router)
 app.include_router(ingesta_router)
 app.include_router(tarifas_router)
 app.include_router(consumo_router)
