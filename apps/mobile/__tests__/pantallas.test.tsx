@@ -4,6 +4,7 @@ import { cerrarSesion, useSesion } from "@/api/sesion";
 import Login from "../app/(auth)/login";
 import Dispositivo from "../app/dispositivo/[id]";
 import Inicio from "../app/(tabs)/index";
+import { ProveedorTiempoReal } from "@/realtime/ProveedorTiempoReal";
 
 import { CONSUMO_DIA, HOGAR, iniciarSesionDePrueba, jwtFalso, renderizar, respuestaJson, RESUMEN, WebSocketFalso } from "./auxiliares";
 
@@ -50,9 +51,14 @@ describe("Inicio", () => {
   it("autentica el WebSocket en el primer mensaje y actualiza la potencia en vivo", async () => {
     await iniciarSesionDePrueba();
     simularApi();
-    await renderizar(<Inicio />);
+    await renderizar(
+      <>
+        <ProveedorTiempoReal hogarId="h1" />
+        <Inicio />
+      </>,
+    );
 
-    await waitFor(() => expect(WebSocketFalso.instancias).toHaveLength(1));
+    await waitFor(() => expect(WebSocketFalso.instancias).toHaveLength(1)); // una sola conexión para toda la app
     const ws = WebSocketFalso.instancias[0];
     expect(ws.url).toBe("wss://api.test/ws/hogares/h1");
     await waitFor(() => expect(ws.enviados).toHaveLength(1));

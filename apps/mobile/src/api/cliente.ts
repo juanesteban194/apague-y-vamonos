@@ -3,6 +3,12 @@ import { API_URL } from "@/lib/config";
 import { cerrarSesion, guardarTokens, renovarTokens, tokenAccesoVigente } from "./sesion";
 import type {
   Agente,
+  Alerta,
+  LecturaMedidor,
+  Prepago,
+  Rutina,
+  RutinaDatos,
+  Sensibilidad,
   AgenteCreado,
   Consumo,
   Dispositivo,
@@ -121,3 +127,21 @@ export const obtenerConsumo = (dispositivoId: string, periodo: Periodo) =>
 export type ResultadoComando = { dispositivo_id: string; encendido: boolean; via: "agente" | "nube" };
 export const encenderDispositivo = (id: string) => api<ResultadoComando>(`/dispositivos/${id}/encender`, "POST");
 export const apagarDispositivo = (id: string) => api<ResultadoComando>(`/dispositivos/${id}/apagar`, "POST");
+
+export const obtenerAlertas = (hogarId: string) => api<Alerta[]>(`/hogares/${hogarId}/alertas`);
+export const marcarAlertaLeida = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/alertas/${id}/leida`, "POST");
+export const marcarAlertasLeidas = (hogarId: string) => api<void>(`/hogares/${hogarId}/alertas/leidas`, "POST");
+export const obtenerPreferencias = (hogarId: string) => api<{ sensibilidad: Sensibilidad }>(`/hogares/${hogarId}/preferencias-alertas`);
+export const guardarPreferencias = (hogarId: string, sensibilidad: Sensibilidad) =>
+  api<{ sensibilidad: Sensibilidad }>(`/hogares/${hogarId}/preferencias-alertas`, "PUT", { sensibilidad });
+export const obtenerPrepago = (hogarId: string) => api<Prepago>(`/hogares/${hogarId}/prepago`);
+export const registrarSaldo = (hogarId: string, saldo: number) => api<Prepago>(`/hogares/${hogarId}/prepago`, "PUT", { saldo_cop: saldo });
+export const listarRutinas = (hogarId: string) => api<Rutina[]>(`/hogares/${hogarId}/rutinas`);
+export const crearRutina = (hogarId: string, datos: RutinaDatos) => api<Rutina>(`/hogares/${hogarId}/rutinas`, "POST", datos);
+export const actualizarRutina = (hogarId: string, id: string, datos: RutinaDatos) => api<Rutina>(`/hogares/${hogarId}/rutinas/${id}`, "PUT", datos);
+export const borrarRutina = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/rutinas/${id}`, "DELETE");
+export const listarLecturasMedidor = (hogarId: string) => api<LecturaMedidor[]>(`/hogares/${hogarId}/lecturas-medidor`);
+export const registrarLecturaMedidor = (hogarId: string, lectura: number) =>
+  api<LecturaMedidor>(`/hogares/${hogarId}/lecturas-medidor`, "POST", { lectura_kwh: lectura });
+export const registrarTokenPush = (token: string, plataforma: "android" | "ios") => api<void>("/usuarios/yo/tokens-push", "PUT", { token, plataforma });
+export const quitarTokenPush = (token: string, plataforma: "android" | "ios") => api<void>("/usuarios/yo/tokens-push", "DELETE", { token, plataforma });

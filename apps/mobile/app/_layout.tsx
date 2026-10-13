@@ -8,6 +8,7 @@ import { ActivityIndicator, View } from "react-native";
 import { cerrarSesion } from "@/api/cliente";
 import { pasoDeNavegacion, useHogares, usePerfil } from "@/api/cuenta";
 import { cargarSesion, useSesion } from "@/api/sesion";
+import { ProveedorTiempoReal } from "@/realtime/ProveedorTiempoReal";
 import { Boton } from "@/components/Boton";
 import { Texto } from "@/components/Texto";
 import { colores, espacio } from "@/theme";
@@ -62,27 +63,32 @@ function Navegacion() {
     return <Cargando error={error} alReintentar={() => void (perfil.data ? hogares.refetch() : perfil.refetch())} />;
   }
 
+  const hogarId = paso === "lista" ? hogares.data?.[0]?.id : undefined;
+
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colores.fondo } }}>
-      <Stack.Protected guard={paso === "sesion"}>
-        <Stack.Screen name="(auth)/login" />
-        <Stack.Screen name="(auth)/registro" />
-      </Stack.Protected>
-      <Stack.Protected guard={paso === "consentimiento"}>
-        <Stack.Screen name="(onboarding)/consentimiento" />
-      </Stack.Protected>
-      <Stack.Protected guard={paso === "hogar"}>
-        <Stack.Screen name="(onboarding)/hogar" />
-      </Stack.Protected>
-      <Stack.Protected guard={paso === "lista"}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="dispositivo/[id]" options={{ ...opcionesCabecera, title: "Aparato", headerBackTitle: "Inicio" }} />
-        <Stack.Screen name="hogar/editar" options={{ ...opcionesCabecera, title: "Mi hogar" }} />
-        <Stack.Screen name="enchufe/nuevo" options={{ ...opcionesCabecera, title: "Agregar enchufe" }} />
-        <Stack.Screen name="enchufe/[id]" options={{ ...opcionesCabecera, title: "Enchufe" }} />
-        <Stack.Screen name="agente/nuevo" options={{ ...opcionesCabecera, title: "Agente" }} />
-      </Stack.Protected>
-    </Stack>
+    <>
+      {hogarId && <ProveedorTiempoReal hogarId={hogarId} />}
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colores.fondo } }}>
+        <Stack.Protected guard={paso === "sesion"}>
+          <Stack.Screen name="(auth)/login" />
+          <Stack.Screen name="(auth)/registro" />
+        </Stack.Protected>
+        <Stack.Protected guard={paso === "consentimiento"}>
+          <Stack.Screen name="(onboarding)/consentimiento" />
+        </Stack.Protected>
+        <Stack.Protected guard={paso === "hogar"}>
+          <Stack.Screen name="(onboarding)/hogar" />
+        </Stack.Protected>
+        <Stack.Protected guard={paso === "lista"}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="dispositivo/[id]" options={{ ...opcionesCabecera, title: "Aparato", headerBackTitle: "Inicio" }} />
+          <Stack.Screen name="hogar/editar" options={{ ...opcionesCabecera, title: "Mi hogar" }} />
+          <Stack.Screen name="enchufe/nuevo" options={{ ...opcionesCabecera, title: "Agregar enchufe" }} />
+          <Stack.Screen name="enchufe/[id]" options={{ ...opcionesCabecera, title: "Enchufe" }} />
+          <Stack.Screen name="agente/nuevo" options={{ ...opcionesCabecera, title: "Agente" }} />
+        </Stack.Protected>
+      </Stack>
+    </>
   );
 }
 

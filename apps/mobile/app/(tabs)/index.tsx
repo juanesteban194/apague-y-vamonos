@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 
 import { useHogarActual } from "@/api/hogar";
@@ -8,17 +7,15 @@ import { Tarjeta } from "@/components/Tarjeta";
 import { TarjetaDispositivo } from "@/components/TarjetaDispositivo";
 import { Texto } from "@/components/Texto";
 import { useResumen } from "@/features/consumo/hooks";
-import { aplicarEvento } from "@/features/consumo/tiempoReal";
 import { formatoCOP } from "@/lib/formato";
 import { mesDeTarifa } from "@/lib/fechas";
-import { useEventosHogar } from "@/realtime/useEventosHogar";
+import { useTiempoReal } from "@/realtime/estado";
 import { colores } from "@/theme";
 
 export default function Inicio() {
-  const cliente = useQueryClient();
   const { hogar, error: errorHogar, isLoading: cargandoHogar, refetch: recargarHogar } = useHogarActual();
   const { data: resumen, error, isLoading, isFetching, refetch } = useResumen(hogar?.id);
-  const conexion = useEventosHogar(hogar?.id, (e) => hogar && aplicarEvento(cliente, hogar.id, e));
+  const conexion = useTiempoReal((t) => t.conexion);
 
   const falla = errorHogar ?? error;
   const alRefrescar = () => (hogar ? void refetch() : void recargarHogar());
