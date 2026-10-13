@@ -29,3 +29,11 @@ export function haceCuanto(iso: string, ahora: number = Date.now()): string {
   if (horas < 48) return `hace ${horas} h`;
   return `hace ${Math.round(horas / 24)} días`;
 }
+
+const DIAS_LARGOS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+
+/** "jueves 10" para una fecha ISO (en la zona del teléfono; el día se ve igual que en la factura). */
+export function diaYNumero(iso: string): string {
+  const f = new Date(iso);
+  return `${DIAS_LARGOS[f.getDay()]} ${f.getDate()}`;
+}
