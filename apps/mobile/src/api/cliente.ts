@@ -117,3 +117,7 @@ export const obtenerResumen = (hogarId: string) => api<Resumen>(`/hogares/${hoga
 export const obtenerTarifa = (hogarId: string) => api<Tarifa>(`/hogares/${hogarId}/tarifa`);
 export const obtenerConsumo = (dispositivoId: string, periodo: Periodo) =>
   api<Consumo>(`/dispositivos/${dispositivoId}/consumo?periodo=${periodo}`);
+
+export type ResultadoComando = { dispositivo_id: string; encendido: boolean; via: "agente" | "nube" };
+export const encenderDispositivo = (id: string) => api<ResultadoComando>(`/dispositivos/${id}/encender`, "POST");
+export const apagarDispositivo = (id: string) => api<ResultadoComando>(`/dispositivos/${id}/apagar`, "POST");

@@ -3,10 +3,12 @@ import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 
+import { apagarDispositivo, encenderDispositivo, ErrorApi } from "@/api/cliente";
 import { useHogarActual } from "@/api/hogar";
 import type { Periodo } from "@/api/tipos";
 import { BarrasConsumo } from "@/components/BarrasConsumo";
 import { Boton } from "@/components/Boton";
+import { Interruptor } from "@/components/Interruptor";
 import { EstadoConexion } from "@/components/EstadoConexion";
 import { Pantalla } from "@/components/Pantalla";
 import { Tarjeta } from "@/components/Tarjeta";
@@ -31,6 +33,23 @@ export default function Dispositivo() {
   const conexion = useEventosHogar(hogar?.id, (e) => hogar && aplicarEvento(cliente, hogar.id, e));
   const [periodo, setPeriodo] = useState<Periodo>("dia");
   const { data: consumo, error, isLoading, isFetching, refetch } = useConsumo(id, periodo);
+
+  const [enviando, setEnviando] = useState(false);
+  const [errorControl, setErrorControl] = useState<string | null>(null);
+
+  async function cambiarEstado(encender: boolean) {
+    setErrorControl(null);
+    setEnviando(true);
+    try {
+      const r = await (encender ? encenderDispositivo(id) : apagarDispositivo(id));
+      // El agente confirmará con una lectura nueva en segundos; mientras, se refleja lo que la API acaba de lograr.
+      if (hogar) aplicarEvento(cliente, hogar.id, { tipo: "estado_enchufe", dispositivo_id: id, encendido: r.encendido, fecha_hora: new Date().toISOString() });
+    } catch (e) {
+      setErrorControl(e instanceof ErrorApi ? e.message : `No se pudo ${encender ? "prender" : "apagar"} el aparato.`);
+    } finally {
+      setEnviando(false);
+    }
+  }
 
   const d = resumen?.dispositivos.find((x) => x.id === id);
   const actual = PERIODOS.find((p) => p.valor === periodo)!;
@@ -60,6 +79,17 @@ export default function Dispositivo() {
               <Texto variante="secundario" color={colores.textoSecundario}>este mes</Texto>
             </View>
           </View>
+        </Tarjeta>
+      )}
+
+      {d && (
+        <Tarjeta>
+          <Interruptor encendido={d.encendido} cargando={enviando} alCambiar={cambiarEstado} />
+          {errorControl && (
+            <Texto accessibilityRole="alert" variante="secundario" color={colores.rojo} style={{ fontWeight: "600" }}>
+              {errorControl}
+            </Texto>
+          )}
         </Tarjeta>
       )}
 
