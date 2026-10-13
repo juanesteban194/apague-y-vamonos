@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { casaVigente, useCasaSeleccionada } from "@/features/casas/seleccion";
+
 import { obtenerHogares, obtenerTarifa } from "./cliente";
 
-/** Por ahora cada usuario trabaja con su primer hogar. */
+/** La casa que la persona eligió (o la primera si aún no eligió). Todas las pantallas leen de aquí. */
 export function useHogarActual() {
   const consulta = useQuery({ queryKey: ["hogares"], queryFn: obtenerHogares });
-  return { ...consulta, hogar: consulta.data?.[0] };
+  const elegida = useCasaSeleccionada((s) => s.id);
+  return { ...consulta, hogar: casaVigente(consulta.data, elegida), hogares: consulta.data };
 }
 
 export function useTarifa(hogarId: string | undefined) {
