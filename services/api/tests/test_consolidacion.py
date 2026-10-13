@@ -122,9 +122,9 @@ def test_las_tareas_no_dejan_escapar_excepciones(monkeypatch):
     tareas.cada_hora(AHORA)  # no lanza: se registra y se reintenta en la siguiente pasada
 
 
-def test_planificador_tiene_las_tres_cadencias():
+def test_planificador_tiene_las_cuatro_cadencias():
     p = crear_planificador()
-    assert {j.id for j in p.get_jobs()} == {"cada_minuto", "cada_hora", "cada_dia"}
+    assert {j.id for j in p.get_jobs()} == {"cada_20_segundos", "cada_minuto", "cada_hora", "cada_dia"}
     assert str(p.timezone) == "America/Bogota"
 
 

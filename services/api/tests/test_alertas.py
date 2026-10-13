@@ -57,7 +57,7 @@ def test_avisa_cuando_pasa_el_umbral_con_lo_que_cuesta_cada_hora(client, auth, h
     (tipo, nivel, titulo, mensaje), = evaluar(reglas.evaluar_alto_riesgo)
     assert (tipo, nivel) == ("alto_riesgo", "rojo")
     assert titulo == "Ventilador lleva 40 minutos prendido"
-    assert "30 minutos que usted definió" in mensaje
+    assert "Superó el tiempo que usted definió (30 minutos)" in mensaje
     assert "unos $815 por hora" in mensaje  # 1 kW × $814,63
 
 
@@ -99,7 +99,7 @@ def test_sin_tarifa_el_aviso_no_inventa_el_ahorro(client, auth, hogar, enchufe):
 
 
 def test_duracion_en_texto():
-    assert [reglas.duracion_en_texto(m) for m in (45, 60, 125, 361, 363)] == ["45 minutos", "1 hora", "2 horas y 5 minutos", "6 horas", "6 horas"]
+    assert [reglas.duracion_en_texto(m) for m in (1, 45, 60, 125, 361, 363)] == ["1 minuto", "45 minutos", "1 hora", "2 horas y 5 minutos", "6 horas", "6 horas"]
 
 
 # --- sensibilidad --------------------------------------------------------------------------------------------------------
