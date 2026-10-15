@@ -14,6 +14,7 @@ import { SugerenciaAyuda } from "@/components/SugerenciaAyuda";
 import { elegirCasa, useCasaSeleccionada } from "@/features/casas/seleccion";
 import { reiniciarAyuda, useAyudaVista } from "@/features/ayuda/estado";
 import { ORDEN_TEMAS, TEMAS } from "@/features/ayuda/temas";
+import { CONTACTO, POLITICA } from "@/features/datos/politica";
 import { haceCuanto } from "@/lib/fechas";
 import VincularAgente from "../app/agente/nuevo";
 import Login from "../app/(auth)/login";
@@ -29,7 +30,9 @@ import Agentes from "../app/agentes";
 import PantallaAyuda from "../app/ayuda/[tema]";
 import NuevaCasa from "../app/casa/nueva";
 import Casas from "../app/casas";
+import EliminarCuenta from "../app/eliminar-cuenta";
 import Medidor from "../app/medidor";
+import Politica from "../app/politica";
 import Enchufes from "../app/enchufes";
 import Facturas from "../app/facturas";
 import Instrucciones from "../app/instrucciones";
@@ -526,6 +529,89 @@ describe("Ayuda", () => {
     useAyudaVista.setState({ cargada: true, vistas: ["agentes", "enchufes"] });
     await reiniciarAyuda();
     expect(useAyudaVista.getState().vistas).toEqual([]);
+  });
+});
+
+describe("Tus datos: política y eliminar la cuenta", () => {
+  const sinContenido = () => ({ ok: true, status: 204, json: async () => undefined }) as Response;
+  const cuerpoDe = (metodo: string, ruta: string) => {
+    const c = fetchMock.mock.calls.find(([u, i]) => i?.method === metodo && String(u) === `https://api.test${ruta}`);
+    return c ? JSON.parse(c[1].body ?? "null") : undefined;
+  };
+
+  it("la política se puede leer antes de crear la cuenta y cubre lo que exige la ley", async () => {
+    await renderizar(<Politica />);
+    for (const titulo of ["Quién es el responsable", "Qué datos tratamos", "Para qué los usamos", "Con quién se comparten y dónde se guardan", "Cuánto tiempo los guardamos", "Tus derechos", "Seguridad", "Consultas, reclamos y quejas"]) {
+      expect(screen.getByText(titulo)).toBeTruthy();
+    }
+    expect(screen.getByText(/Superintendencia de Industria y Comercio/)).toBeTruthy();
+    expect(screen.getByText(/Ajustes › Eliminar mi cuenta/)).toBeTruthy();
+  });
+
+  it("mientras el correo de contacto esté pendiente, la política lo dice en vez de inventarlo", () => {
+    expect(CONTACTO.correo).toBeNull();
+    expect(POLITICA.flatMap((s) => s.parrafos ?? []).some((p) => /el correo de contacto se publicará aquí/.test(p))).toBe(true);
+  });
+
+  it("el registro y el consentimiento enlazan a la política", async () => {
+    await renderizar(<Registro />);
+    await fireEvent.press(screen.getByRole("button", { name: "Leer la política de tratamiento de datos" }));
+    expect(router.push).toHaveBeenCalledWith("/politica");
+    (router.push as jest.Mock).mockClear();
+    await iniciarSesionDePrueba();
+    simular({ "GET /auth/yo": { ...PERFIL, tiene_consentimiento: false } });
+    await renderizar(<Consentimiento />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Leer la política de tratamiento de datos" }));
+    expect(router.push).toHaveBeenCalledWith("/politica");
+  });
+
+  it("eliminar la cuenta con contraseña: la pide, confirma y cierra la sesión", async () => {
+    await iniciarSesionDePrueba();
+    const alerta = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    simular({ "GET /auth/yo": PERFIL, "DELETE /auth/yo": sinContenido });
+    await renderizar(<EliminarCuenta />);
+    const boton = async () => await screen.findByRole("button", { name: "Eliminar mi cuenta y mis datos" });
+    expect((await boton()).props.accessibilityState.disabled).toBe(true); // mientras carga el perfil no se puede
+    const campo = await screen.findByLabelText("Escribe tu contraseña para confirmar");
+    expect((await boton()).props.accessibilityState.disabled).toBe(true); // sin contraseña tampoco
+    await fireEvent.changeText(campo, "clave-segura-1");
+    await fireEvent.press(await boton());
+    expect(alerta).toHaveBeenCalled();
+    expect(cuerpoDe("DELETE", "/auth/yo")).toBeUndefined(); // todavía no
+    await alerta.mock.calls[0][2]!.find((b) => b.text === "Eliminar")!.onPress!();
+    await waitFor(() => expect(cuerpoDe("DELETE", "/auth/yo")).toEqual({ contrasena: "clave-segura-1" }));
+    await waitFor(() => expect(useSesion.getState().refreshToken).toBeNull());
+    alerta.mockRestore();
+  });
+
+  it("con la contraseña equivocada lo dice y no cierra la sesión", async () => {
+    await iniciarSesionDePrueba();
+    const alerta = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    simular({ "GET /auth/yo": PERFIL, "DELETE /auth/yo": () => respuestaJson({ detail: "La contraseña no es correcta" }, 403) });
+    await renderizar(<EliminarCuenta />);
+    await fireEvent.changeText(await screen.findByLabelText("Escribe tu contraseña para confirmar"), "mala");
+    await fireEvent.press(screen.getByRole("button", { name: "Eliminar mi cuenta y mis datos" }));
+    await alerta.mock.calls[0][2]!.find((b) => b.text === "Eliminar")!.onPress!();
+    expect(await screen.findByText("La contraseña no es correcta")).toBeTruthy();
+    expect(useSesion.getState().refreshToken).not.toBeNull();
+    alerta.mockRestore();
+  });
+
+  it("una cuenta de Google (sin contraseña) no la pide", async () => {
+    await iniciarSesionDePrueba();
+    simular({ "GET /auth/yo": { ...PERFIL, tiene_contrasena: false, tiene_google: true } });
+    await renderizar(<EliminarCuenta />);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Eliminar mi cuenta y mis datos" }).props.accessibilityState.disabled).toBe(false)); // cuando llega el perfil
+    expect(screen.queryByLabelText("Escribe tu contraseña para confirmar")).toBeNull();
+  });
+
+  it("Ajustes enlaza a la política y a eliminar la cuenta", async () => {
+    await iniciarSesionDePrueba();
+    simular({ "GET /auth/yo": PERFIL, "GET /hogares": [HOGAR] });
+    await renderizar(<Ajustes />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Política de tratamiento de datos" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Eliminar mi cuenta" }));
+    expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(["/politica", "/eliminar-cuenta"]);
   });
 });
 

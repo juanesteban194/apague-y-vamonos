@@ -111,6 +111,7 @@ export async function canjearGoogle(code: string, codeVerifier: string): Promise
 }
 
 export { cerrarSesion };
+export const eliminarCuenta = (contrasena?: string) => api<void>("/auth/yo", "DELETE", { contrasena: contrasena ?? null });
 export const obtenerPerfil = () => api<Perfil>("/auth/yo");
 export const aceptarConsentimiento = () => api<Perfil>("/auth/consentimiento", "POST");
 export const crearHogar = (datos: HogarNuevo) => api<Hogar>("/hogares", "POST", datos);

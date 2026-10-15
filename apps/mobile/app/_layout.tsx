@@ -82,6 +82,7 @@ function Navegacion() {
     <>
       {hogarId && <ProveedorTiempoReal key={hogarId} hogarId={hogarId} />}
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colores.fondo } }}>
+        <Stack.Screen name="politica" options={{ ...opcionesCabecera, title: "Tus datos" }} />
         <Stack.Protected guard={paso === "sesion"}>
           <Stack.Screen name="(auth)/login" />
           <Stack.Screen name="(auth)/registro" />
@@ -113,6 +114,7 @@ function Navegacion() {
           <Stack.Screen name="rutina/nueva" options={{ ...opcionesCabecera, title: "Nueva rutina" }} />
           <Stack.Screen name="rutina/[id]" options={{ ...opcionesCabecera, title: "Rutina" }} />
           <Stack.Screen name="instrucciones" options={{ ...opcionesCabecera, title: "Instrucciones" }} />
+          <Stack.Screen name="eliminar-cuenta" options={{ ...opcionesCabecera, title: "Eliminar mi cuenta" }} />
           <Stack.Screen name="ayuda/[tema]" options={{ ...opcionesCabecera, title: "Cómo funciona" }} />
         </Stack.Protected>
       </Stack>

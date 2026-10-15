@@ -53,6 +53,12 @@ export default function Ajustes() {
         <Boton titulo="Volver a mostrar las sugerencias" variante="secundario" onPress={() => void reiniciarAyuda()} />
       </Tarjeta>
 
+      <Tarjeta style={{ gap: espacio.s }}>
+        <Texto variante="subtitulo">Tus datos</Texto>
+        <Boton titulo="Política de tratamiento de datos" variante="secundario" icono={<Icono nombre="info" />} onPress={() => router.push("/politica")} />
+        <Boton titulo="Eliminar mi cuenta" variante="secundario" icono={<Icono nombre="borrar" color={colores.rojo} />} onPress={() => router.push("/eliminar-cuenta")} />
+      </Tarjeta>
+
       <Boton titulo="Cerrar sesión" variante="secundario" icono={<Icono nombre="salir" />} onPress={() => void cerrarSesion()} />
     </Pantalla>
   );
