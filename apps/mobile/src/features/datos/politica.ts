@@ -1,11 +1,11 @@
 /** Política de tratamiento de datos personales (Ley 1581 de 2012 y Decreto 1377 de 2013).
  *
  *  BORRADOR para revisión del equipo (y, idealmente, de un abogado): describe lo que la app hace de verdad hoy, pero no es asesoría legal.
- *  Pendiente de definir por el equipo: el correo de contacto (CONTACTO.correo) y, si aplica, la dirección física del responsable. */
+ *  Pendiente de definir por el equipo: la dirección física del responsable, si aplica. */
 
 export const CONTACTO = {
   responsable: "Equipo del proyecto «Apague y vámonos» (Proyecto de Ingeniería 1, Universidad de Medellín)",
-  correo: null as string | null, // PENDIENTE: lo define el equipo
+  correo: "juanechavarria194@gmail.com" as string | null, // dado por el equipo el 2026-10-15
 };
 
 export const VERSION_POLITICA = "borrador 2026-10-15";

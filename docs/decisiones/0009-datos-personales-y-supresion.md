@@ -17,7 +17,7 @@
 | No se venden datos ni hay publicidad | Decisión del producto (no hay nada de eso en el código) |
 
 ## Pendiente (decisión del equipo; no se inventa)
-1. **Correo de contacto** para consultas y reclamos (`CONTACTO.correo` en `politica.ts`). Mientras sea `null`, la política dice que «el correo de contacto se publicará aquí».
+1. ~~Correo de contacto~~ (resuelto 2026-10-15): `juanechavarria194@gmail.com`, en `CONTACTO.correo` de `politica.ts`. Es el correo personal de un integrante: si el equipo prefiere uno del proyecto, se cambia en ese archivo.
 2. **Quién es el responsable.** Hoy: «Equipo del proyecto «Apague y vámonos» (Proyecto de Ingeniería 1, Universidad de Medellín)». Si la universidad o una persona jurídica asumirá ese papel, hay que cambiarlo y, si aplica, agregar dirección y NIT.
 3. **Revisión legal** del texto (esto es un borrador, no asesoría jurídica) y, si se publica en tiendas, un enlace a una versión web de la política.
 4. Confirmar si los proveedores guardan copias de seguridad de los datos borrados y por cuánto tiempo (el texto no lo afirma).
