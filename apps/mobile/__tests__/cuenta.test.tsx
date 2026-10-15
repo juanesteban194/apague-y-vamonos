@@ -548,9 +548,11 @@ describe("Tus datos: política y eliminar la cuenta", () => {
     expect(screen.getByText(/Ajustes › Eliminar mi cuenta/)).toBeTruthy();
   });
 
-  it("mientras el correo de contacto esté pendiente, la política lo dice en vez de inventarlo", () => {
-    expect(CONTACTO.correo).toBeNull();
-    expect(POLITICA.flatMap((s) => s.parrafos ?? []).some((p) => /el correo de contacto se publicará aquí/.test(p))).toBe(true);
+  it("la política da el correo de contacto del equipo para consultas y reclamos", () => {
+    expect(CONTACTO.correo).toBe("juanechavarria194@gmail.com");
+    const textos = POLITICA.flatMap((s) => s.parrafos ?? []);
+    expect(textos.some((p) => p.includes("escribe a juanechavarria194@gmail.com") && /10 días hábiles/.test(p))).toBe(true);
+    expect(textos.some((p) => /se publicará aquí/.test(p))).toBe(false);
   });
 
   it("el registro y el consentimiento enlazan a la política", async () => {

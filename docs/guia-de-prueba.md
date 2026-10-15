@@ -147,7 +147,7 @@ Los precios de la hamburguesa (Big Mac, $32.900) y la caja de leche (Colanta 1 L
 | # | Prueba | Debe pasar |
 | --- | --- | --- |
 | 43 | En «Crear cuenta», toca «Leer la política de tratamiento de datos» (sin haber entrado) | Se abre la política con sus 9 secciones |
-| 44 | **Ajustes → Tus datos → Política de tratamiento de datos** | Lo mismo; la sección «Consultas y reclamos» dice que el correo de contacto se publicará (pendiente) |
+| 44 | **Ajustes → Tus datos → Política de tratamiento de datos** | Lo mismo; la sección «Consultas y reclamos» da el correo juanechavarria194@gmail.com |
 | 45 | **Ajustes → Eliminar mi cuenta** con una cuenta de prueba (¡no la tuya!) | El botón está apagado hasta escribir la contraseña; con una mala dice «La contraseña no es correcta» |
 | 46 | Confirma con la contraseña buena | Vuelve a la pantalla de entrada; esa cuenta ya no existe y su correo se puede registrar de nuevo |
 | 47 | Mira el ícono de la app en el teléfono y la pantalla de arranque | Rayo verde sobre fondo oscuro; arranque crema con rayo verde (con Expo Go se ve el de Expo: el nuestro aparece al compilar la app) |
