@@ -30,7 +30,8 @@ export const TEMAS = {
     paraQueSirve: "Para saber cuánto cuesta en pesos tener prendido el televisor, la nevera o el ventilador, y poder apagarlo desde el celular.",
     pasos: [
       "Conecta el enchufe a la pared y el aparato al enchufe.",
-      "Tócalo para ver su consumo, apagarlo o prenderlo.",
+      "Tócalo para cambiarle el nombre, elegir qué agente lo lee o quitarlo.",
+      "En Inicio, toca el aparato para ver su consumo y apagarlo o prenderlo.",
       "Para agregar uno nuevo, necesitas su código (ID de Tuya). Lo ves en la app Smart Life, en los datos del dispositivo.",
     ],
     ojo: "El enchufe BSD04 aguanta hasta 10 A (unos 1.100 W): no lo uses con aire acondicionado, plancha ni calentadores.",
@@ -44,8 +45,10 @@ export const TEMAS = {
       "Toca «Vincular agente» y copia las dos líneas que te muestra (se ven una sola vez).",
       "En el computador de tu casa, pégalas en el archivo .env del agente.",
       "Corre el agente. En menos de un minuto aquí aparece «conectado».",
+      "En Enchufes, abre cada enchufe y elige qué agente lo lee. Puedes cambiarlo o quitarlo cuando quieras.",
+      "Aquí puedes cambiarle el nombre a un agente o eliminarlo; sus enchufes quedan sin agente.",
     ],
-    ojo: "El computador debe estar prendido y en la misma WiFi del enchufe. Si se apaga, no se pierde nada: al volver reenvía lo guardado.",
+    ojo: "Cada enchufe lo lee un solo agente, y solo ese agente puede prenderlo o apagarlo. El computador debe estar prendido y en la misma WiFi del enchufe. Si se apaga, no se pierde nada: al volver reenvía lo guardado.",
   },
   rutinas: {
     titulo: "Rutinas",

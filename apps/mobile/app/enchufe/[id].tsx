@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Alert } from "react-native";
 
 import { useHogarActual } from "@/api/hogar";
-import { useDispositivos } from "@/api/cuenta";
+import { useAgentes, useDispositivos } from "@/api/cuenta";
 import { actualizarDispositivo, borrarDispositivo } from "@/api/cliente";
 import { Boton } from "@/components/Boton";
 import { FormularioEnchufe } from "@/components/FormularioEnchufe";
@@ -16,6 +16,7 @@ export default function EditarEnchufe() {
   const cliente = useQueryClient();
   const { hogar } = useHogarActual();
   const { data: dispositivos } = useDispositivos(hogar?.id);
+  const { data: agentes } = useAgentes(hogar?.id);
   const dispositivo = dispositivos?.find((d) => d.id === id);
   if (!hogar || !dispositivo) return null;
 
@@ -43,9 +44,10 @@ export default function EditarEnchufe() {
       <Texto variante="titulo">Editar enchufe</Texto>
       <FormularioEnchufe
         inicial={dispositivo}
+        agentes={agentes}
         etiquetaBoton="Guardar"
-        alEnviar={async ({ nombre, tipo_aparato, alto_riesgo, umbral_minutos_encendido }) => {
-          await actualizarDispositivo(hogar.id, dispositivo.id, { nombre, tipo_aparato, alto_riesgo, umbral_minutos_encendido });
+        alEnviar={async ({ nombre, tipo_aparato, alto_riesgo, umbral_minutos_encendido, agente_id }) => {
+          await actualizarDispositivo(hogar.id, dispositivo.id, { nombre, tipo_aparato, alto_riesgo, umbral_minutos_encendido, agente_id });
           await cliente.invalidateQueries();
           router.back();
         }}

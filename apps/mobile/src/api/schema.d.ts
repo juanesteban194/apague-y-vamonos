@@ -219,7 +219,8 @@ export interface paths {
         delete: operations["revocar_agente_hogares__hogar_id__agentes__agente_id__delete"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Renombrar Agente */
+        patch: operations["renombrar_agente_hogares__hogar_id__agentes__agente_id__patch"];
         trace?: never;
     };
     "/hogares/{hogar_id}/lecturas-medidor": {
@@ -408,6 +409,26 @@ export interface paths {
         };
         /** Ver Consejos */
         get: operations["ver_consejos_hogares__hogar_id__consejos_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/equivalencias": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Fuentes De Las Equivalencias
+         * @description Qué equivalencias existen, cuáles están activas y de dónde sale su valor.
+         */
+        get: operations["fuentes_de_las_equivalencias_equivalencias_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -640,6 +661,21 @@ export interface components {
              * Format: date-time
              */
             creado_en: string;
+            /**
+             * Conectado
+             * @default false
+             */
+            conectado: boolean;
+            /**
+             * Enchufes
+             * @default []
+             */
+            enchufes: components["schemas"]["EnchufeDeAgenteOut"][];
+        };
+        /** AgenteRenombrarIn */
+        AgenteRenombrarIn: {
+            /** Nombre */
+            nombre: string;
         };
         /** AlertaOut */
         AlertaOut: {
@@ -758,6 +794,8 @@ export interface components {
             alto_riesgo?: boolean | null;
             /** Umbral Minutos Encendido */
             umbral_minutos_encendido?: number | null;
+            /** Agente Id */
+            agente_id?: string | null;
         };
         /** DispositivoIn */
         DispositivoIn: {
@@ -774,6 +812,8 @@ export interface components {
             alto_riesgo: boolean;
             /** Umbral Minutos Encendido */
             umbral_minutos_encendido?: number | null;
+            /** Agente Id */
+            agente_id?: string | null;
         };
         /** DispositivoOut */
         DispositivoOut: {
@@ -790,6 +830,8 @@ export interface components {
             alto_riesgo: boolean;
             /** Umbral Minutos Encendido */
             umbral_minutos_encendido?: number | null;
+            /** Agente Id */
+            agente_id?: string | null;
             /**
              * Id
              * Format: uuid
@@ -821,6 +863,30 @@ export interface components {
             costo_hoy_cop: number | null;
             /** Costo Mes Cop */
             costo_mes_cop: number | null;
+        };
+        /** EnchufeDeAgenteOut */
+        EnchufeDeAgenteOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Nombre */
+            nombre: string;
+        };
+        /** EquivalenciaFuenteOut */
+        EquivalenciaFuenteOut: {
+            /** Nombre */
+            nombre: string;
+            /**
+             * Tipo
+             * @enum {string}
+             */
+            tipo: "energia" | "precio";
+            /** Activa */
+            activa: boolean;
+            /** Fuente */
+            fuente: string;
         };
         /** EquivalenciaOut */
         EquivalenciaOut: {
@@ -947,6 +1013,11 @@ export interface components {
             duplicadas: number;
             /** Desconocidas */
             desconocidas: number;
+            /**
+             * De Otro Agente
+             * @default 0
+             */
+            de_otro_agente: number;
         };
         /** LoginIn */
         LoginIn: {
@@ -1742,6 +1813,42 @@ export interface operations {
             };
         };
     };
+    renombrar_agente_hogares__hogar_id__agentes__agente_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+                agente_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgenteRenombrarIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgenteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     lecturas_medidor_hogares__hogar_id__lecturas_medidor_get: {
         parameters: {
             query?: never;
@@ -2223,6 +2330,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    fuentes_de_las_equivalencias_equivalencias_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EquivalenciaFuenteOut"][];
                 };
             };
         };

@@ -23,6 +23,8 @@ Estado de las fases (detalle y decisiones en `docs/decisiones/`, historias en `d
 Pendiente del usuario: crear el cliente OAuth de Google y poner `GOOGLE_CLIENT_ID/SECRET` en Render; revisar el despliegue en Render; probar la app en Android e iPhone; (hecho) factura de EPM verificada (ADR 0002);
 rotar la contraseña de Neon y el Access Secret de Tuya (quedaron expuestos en el chat).
 
+Agente por enchufe (ADR 0008): cada enchufe lo lee un solo agente, que se elige en la app; la orden de prender/apagar va solo a ese agente. Decisión del equipo (2026-10-15): la clave local pasará a guardarse **cifrada** en la base para vincular agentes con un código, sin consola (paso 2, por hacer; hasta entonces sigue `devices.json`).
+
 Siguiente: Fase 6 (verificar cada criterio de calidad, ensayo de 30 min, video de respaldo) y Fase 7 (lanzamiento). El aviso de consumo anómalo por aparato ya está hecho (ADR 0007, umbrales por confirmar). Falta la precisión de potencia con bombillo incandescente.
 
 ---
@@ -287,7 +289,7 @@ Librerías: FastAPI, Pydantic, SQLAlchemy 2, Alembic, APScheduler, httpx, SDK de
 | equivalencias | nombre, costo (COP), ícono, vigente desde |
 
 Reglas:
-- La clave local del enchufe **nunca** entra a la base de datos; vive en `services/agent` (`devices.json`, gitignored).
+- La clave local del enchufe vive hoy solo en `services/agent` (`devices.json`, gitignored). Decisión 2026-10-15 (ADR 0008): al hacer la vinculación por código se guardará **cifrada** en la base y solo se entrega al agente asignado; nunca llega a la app. Mientras no se implemente, no entra a la base.
 - Lecturas crudas: retención de 30 días (17.280 filas/día por enchufe). `consumo_horario` se guarda siempre.
 
 ## Historias de usuario
