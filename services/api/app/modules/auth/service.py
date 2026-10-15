@@ -13,6 +13,7 @@ from app.core.security import (
     verificar_contrasena,
 )
 from app.modules.auth.models import Usuario
+from app.modules.hogares.models import Hogar, MiembroHogar
 from app.modules.auth.google import PerfilGoogle
 from app.modules.auth.schemas import PerfilOut, RegistroIn, TokensOut
 
@@ -103,3 +104,24 @@ def tokens_de(db: Session, usuario_id) -> TokensOut:
     if usuario is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido o vencido")
     return _tokens(usuario)
+
+
+def eliminar_cuenta(db: Session, usuario: Usuario, contrasena: str | None) -> list:
+    """Derecho de supresión (Ley 1581): borra la cuenta y sus datos. Devuelve los ids de las casas que se borraron por completo.
+
+    - Una casa donde la persona era la única miembro se borra con todo lo suyo.
+    - En una casa compartida solo sale la persona; si era la única titular, pasa a titular otro miembro (la casa no queda sin dueño)."""
+    if usuario.hash_contrasena is not None and not (contrasena and verificar_contrasena(contrasena, usuario.hash_contrasena)):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "La contraseña no es correcta")
+    borradas = []
+    for m in list(db.scalars(select(MiembroHogar).where(MiembroHogar.usuario_id == usuario.id))):
+        otros = list(db.scalars(select(MiembroHogar).where(MiembroHogar.hogar_id == m.hogar_id, MiembroHogar.usuario_id != usuario.id)))
+        if not otros:
+            db.delete(db.get(Hogar, m.hogar_id))
+            borradas.append(m.hogar_id)
+        elif m.rol == "titular" and not any(o.rol == "titular" for o in otros):
+            otros[0].rol = "titular"
+    db.flush()
+    db.delete(usuario)  # sus membresías y tokens de notificaciones se van en cascada
+    db.commit()
+    return borradas

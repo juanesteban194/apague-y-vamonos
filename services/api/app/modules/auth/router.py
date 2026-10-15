@@ -1,15 +1,18 @@
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
+from starlette.concurrency import run_in_threadpool
 
 from app.core.database import get_db
 from app.modules.auth import google, service
 from app.modules.auth.dependencias import usuario_actual
 from app.modules.auth.models import Usuario
+from app.realtime.agentes import gestor_agentes
 from app.modules.auth.schemas import (
     CanjeGoogleIn,
+    EliminarCuentaIn,
     LoginIn,
     PerfilOut,
     RegistroIn,
@@ -40,6 +43,19 @@ def renovar(datos: RenovarIn, db: Session = Depends(get_db)):
 def yo(usuario: Usuario = Depends(usuario_actual)):
     """Quién soy y si ya acepté el tratamiento de datos (la app decide qué pantalla mostrar con esto)."""
     return service.perfil_de(usuario)
+
+
+@router.delete("/yo", status_code=status.HTTP_204_NO_CONTENT)
+async def eliminar_cuenta(
+    datos: EliminarCuentaIn | None = None,
+    usuario: Usuario = Depends(usuario_actual),
+    db: Session = Depends(get_db),
+):
+    """Borra la cuenta y sus datos (derecho de supresión, Ley 1581). No pide haber aceptado el tratamiento: quien no lo acepta debe poder irse."""
+    borradas = await run_in_threadpool(service.eliminar_cuenta, db, usuario, datos.contrasena if datos else None)
+    for hogar_id in borradas:
+        await gestor_agentes.cerrar(hogar_id)  # los agentes de una casa borrada no deben seguir conectados
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/consentimiento", response_model=PerfilOut)

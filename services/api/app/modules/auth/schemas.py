@@ -20,6 +20,11 @@ class RenovarIn(BaseModel):
     refresh_token: str
 
 
+class EliminarCuentaIn(BaseModel):
+    # Las cuentas con contraseña la confirman; las que entran solo con Google no tienen una.
+    contrasena: str | None = None
+
+
 class UsuarioOut(BaseModel):
     id: uuid.UUID
     email: EmailStr
