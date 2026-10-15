@@ -28,11 +28,15 @@ def cargar_env(nombre: str = ".env") -> None:
                     os.environ.setdefault(clave.strip(), valor.strip())
 
 
-def cargar_ajustes(entorno: dict[str, str] | None = None) -> Ajustes:
-    entorno = os.environ if entorno is None else entorno
+def cargar_ajustes(entorno: dict[str, str] | None = None, credenciales=None) -> Ajustes:
+    """URL y token salen de las variables de entorno (desarrollo) o, si faltan, de la vinculación hecha con el código de la app."""
+    entorno = dict(os.environ if entorno is None else entorno)
+    if credenciales is not None:
+        entorno["AGENT_API_URL"] = credenciales.api_url  # la vinculación manda sobre un .env de desarrollo
+        entorno["AGENT_TOKEN"] = credenciales.token
     faltan = [v for v in ("AGENT_API_URL", "AGENT_TOKEN") if not entorno.get(v)]
     if faltan:
-        raise ErrorConfiguracion(f"Faltan variables de entorno: {', '.join(faltan)}")
+        raise ErrorConfiguracion("Este equipo no está vinculado. En la app: Explorar › Agentes › Agregar agente, y escribe el código aquí (python -m agent --vincular 123456)")
     try:
         segundos = float(entorno.get("AGENT_POLL_SECONDS") or 5)
     except ValueError:

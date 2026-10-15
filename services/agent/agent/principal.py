@@ -13,7 +13,10 @@ from agent.buffer.cola import Cola
 from agent.collector.lector import ErrorEnchufe, LectorEnchufe
 from agent.collector.simulador import LectorSimulado
 from agent.commands.cliente import ClienteComandos
+from agent.config import almacen
 from agent.config.ajustes import Ajustes, ErrorConfiguracion, cargar_ajustes, cargar_dispositivos, cargar_env
+from agent.config.remota import Registro, bucle as bucle_config
+from agent.vinculacion import API_POR_DEFECTO, ErrorVinculacion, vincular
 from agent.enviador import Enviador, ErrorAutenticacion, ErrorRed
 
 log = logging.getLogger("agente")
@@ -23,9 +26,10 @@ ESPERA_MAXIMA_REINTENTO_S = 10  # con la API caída se reintenta cada ≤ 10 s: 
 
 
 class Agente:
-    def __init__(self, ajustes: Ajustes, lectores: list, cliente: httpx.Client):
+    def __init__(self, ajustes: Ajustes, lectores: "list | Registro", cliente: httpx.Client, remoto: bool = False):
         self._ajustes = ajustes
-        self._lectores = lectores
+        self._registro = lectores if isinstance(lectores, Registro) else Registro(lectores)
+        self._remoto = remoto  # pide su lista de enchufes a la API cada minuto
         self._cliente = cliente
         self._hay_datos = threading.Event()
         self._ultimo_aviso: dict[str, float] = {}
@@ -34,8 +38,10 @@ class Agente:
         hilos = [
             threading.Thread(target=self._bucle_lectura, args=(parar,), name="lectura", daemon=True),
             threading.Thread(target=self._bucle_envio, args=(parar,), name="envio", daemon=True),
-            threading.Thread(target=ClienteComandos(self._ajustes, self._lectores).correr, args=(parar,), name="comandos", daemon=True),
+            threading.Thread(target=ClienteComandos(self._ajustes, self._registro).correr, args=(parar,), name="comandos", daemon=True),
         ]
+        if self._remoto:
+            hilos.append(threading.Thread(target=bucle_config, args=(self._cliente, self._registro, parar), name="configuracion", daemon=True))
         for h in hilos:
             h.start()
         parar.wait()
@@ -53,7 +59,7 @@ class Agente:
         proximo = time.monotonic()
         try:
             while not parar.is_set():
-                for lector in self._lectores:
+                for lector in self._registro.lectores():
                     try:
                         lectura = lector.leer()
                     except ErrorEnchufe as e:
@@ -103,18 +109,34 @@ class Agente:
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="python -m agent", description="Agente local de consumo energético")
+    parser.add_argument("--vincular", metavar="CODIGO", help="vincula este equipo con el código de 6 dígitos que muestra la app (Explorar › Agentes)")
+    parser.add_argument("--api", default=None, help=f"dirección de la API al vincular (por defecto {API_POR_DEFECTO})")
+    parser.add_argument("--desvincular", action="store_true", help="olvida la vinculación de este equipo")
     parser.add_argument("--simular", metavar="ID_TUYA", action="append",
                         help="en vez del enchufe real, simula uno con este ID de Tuya (repetible); no usa devices.json")
     parser.add_argument("--vatios", type=float, default=26.5, help="potencia del enchufe simulado (por defecto 26,5 W, un ventilador)")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s", datefmt="%H:%M:%S")
+    if args.desvincular:
+        almacen.borrar()
+        raise SystemExit("Listo: este equipo ya no está vinculado.")
+    if args.vincular:
+        try:
+            c = vincular(args.vincular, args.api or API_POR_DEFECTO)
+        except ErrorVinculacion as e:
+            raise SystemExit(str(e)) from None
+        raise SystemExit(f"Listo: este equipo quedó vinculado como «{c.nombre}» (casa {c.hogar_nombre}). Ahora corre el agente.")
+
     cargar_env()
+    guardadas = almacen.cargar()
+    remoto = guardadas is not None and not args.simular  # vinculado con código: pide sus enchufes a la API
     try:
-        ajustes = cargar_ajustes()
+        ajustes = cargar_ajustes(credenciales=guardadas)
         lectores = (
             [LectorSimulado(i, vatios=args.vatios) for i in args.simular]
             if args.simular
+            else Registro() if remoto
             else [LectorEnchufe(d) for d in cargar_dispositivos(ajustes.ruta_devices)]
         )
     except ErrorConfiguracion as e:
@@ -125,13 +147,16 @@ def main() -> None:
     )
     if args.simular:
         log.warning("MODO SIMULACIÓN: los datos NO vienen de un enchufe real (%s)", ", ".join(args.simular))
-    log.info("Agente iniciado: %d enchufe(s), lectura cada %s s, API %s", len(lectores), ajustes.segundos, ajustes.api_url)
+    if remoto:
+        log.info("Agente «%s» (casa %s): la lista de enchufes se pide a la API", guardadas.nombre, guardadas.hogar_nombre)
+    else:
+        log.info("Agente iniciado: %d enchufe(s), lectura cada %s s, API %s", len(lectores), ajustes.segundos, ajustes.api_url)
 
     parar = threading.Event()
     for senal in (signal.SIGINT, signal.SIGTERM):
         signal.signal(senal, lambda *_: parar.set())
     try:
-        Agente(ajustes, lectores, cliente).correr(parar)
+        Agente(ajustes, lectores, cliente, remoto=remoto).correr(parar)
     finally:
         cliente.close()
         log.info("Agente detenido")
