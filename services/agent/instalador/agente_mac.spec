@@ -14,6 +14,7 @@ coll = COLLECT(exe, a.binaries, a.datas, name="ApagueYVamonos")
 app = BUNDLE(
     coll,
     name="Apague y vamonos.app",
+    icon=os.path.join(SPECPATH, "Apague.icns"),
     bundle_identifier="co.apagueyvamonos.agente",
     version="1.0.0",
     info_plist={
