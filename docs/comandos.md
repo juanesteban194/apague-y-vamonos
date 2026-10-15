@@ -65,7 +65,13 @@ Para datos reales, el Mac debe estar en la **misma WiFi que el enchufe** (`192.1
 cd services/agent
 python3.12 -m venv .venv && .venv/bin/pip install -e ".[dev]"    # solo la primera vez
 ```
-1. En la app: **Explorar → Agentes → Vincular agente → Crear clave**. Copia `AGENT_API_URL` y `AGENT_TOKEN` (se muestran una sola vez) al `.env` de la raíz, reemplazando los que haya.
+1. En la app: **Explorar → Agentes → Agregar agente → Ver el código** (6 números, vale 10 minutos).
+2. Vincula este computador con el código (no hay que copiar claves):
+```
+.venv/bin/python -m agent --vincular 123456           # guarda el token en tu carpeta de datos
+.venv/bin/python -m agent --desvincular               # olvidarlo
+```
+Con la vinculación hecha, `python -m agent` pide a la API qué enchufes le asignaste en la app (con sus claves) cada minuto. La forma antigua (`.env` + `devices.json`) sigue funcionando si el equipo no está vinculado.
 2. Correr:
 ```
 .venv/bin/python -m agent                          # enchufe real (usa devices.json)

@@ -50,9 +50,14 @@ Los nombres de los menús de Google cambian de vez en cuando; lo importante son 
 ## 4. El agente (lleva el consumo del enchufe a la app)
 Para datos **reales**, el Mac debe estar en la **misma WiFi que el enchufe** (la de `192.168.78.x`; si estás en otra red el agente dirá "no responde"). Ya tienes `services/agent/devices.json` (clave local del enchufe).
 **Sin el enchufe a la mano o en otra red:** usa el enchufe simulado (paso 3 de abajo).
-1. En la app, **Explorar → Agentes → Vincular agente → Crear clave del agente**. Copia las dos líneas (`AGENT_API_URL` y `AGENT_TOKEN`). Se muestran **una sola vez**.
-2. Pégalas en el archivo `.env` de la raíz del proyecto, **reemplazando** las líneas `AGENT_API_URL` y `AGENT_TOKEN` que ya existan (las del usuario demo).
-3. Corre el agente y déjalo abierto:
+1. En la app, **Explorar → Agentes → Agregar agente**: ponle un nombre y toca «Ver el código». Aparece un código de 6 números (vale 10 minutos y sirve una vez).
+2. En el computador (mientras no esté el instalador), vincúlalo con ese código. No hay que copiar claves ni tocar el `.env`:
+   ```
+   cd services/agent
+   .venv/bin/python -m agent --vincular 123456
+   ```
+   Dice «quedó vinculado como «Sala»». El token se guarda solo en una carpeta tuya (`~/Library/Application Support/ApagueYVamonos/agente.json`, solo legible por ti). Para olvidarlo: `--desvincular`.
+3. Corre el agente y déjalo abierto. Ya vinculado, **pide a la API qué enchufes le tocan** (los que le asignes en la app) y los vuelve a pedir cada minuto: no necesita `devices.json`:
    ```
    cd services/agent
    .venv/bin/python -m agent                      # enchufe real (misma WiFi)
