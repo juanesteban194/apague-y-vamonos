@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { useState } from "react";
 
 import { aceptarConsentimiento, cerrarSesion, ErrorApi } from "@/api/cliente";
@@ -42,6 +43,7 @@ export default function Consentimiento() {
           {error}
         </Texto>
       )}
+      <Boton titulo="Leer la política de tratamiento de datos" variante="secundario" onPress={() => router.push("/politica")} />
       <Boton titulo="Acepto y continuar" onPress={aceptar} cargando={cargando} />
       <Boton titulo="No acepto, salir" variante="secundario" onPress={() => void cerrarSesion()} deshabilitado={cargando} />
     </PantallaFormulario>

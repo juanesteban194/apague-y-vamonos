@@ -1,4 +1,4 @@
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 
@@ -59,6 +59,7 @@ export default function Registro() {
       </View>
 
       <Casilla marcada={acepta} alCambiar={setAcepta} texto={TEXTO_CONSENTIMIENTO} />
+      <Boton titulo="Leer la política de tratamiento de datos" variante="secundario" onPress={() => router.push("/politica")} />
 
       {error && (
         <Texto accessibilityRole="alert" color={colores.rojo} style={{ fontWeight: "600" }}>
