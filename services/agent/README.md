@@ -15,6 +15,17 @@ python3.12 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/pytest
 ```
 
+## Programa de Mac («Apague y vámonos»)
+Para quien no sabe de tecnología: un solo `.app` con su propio Python, un ícono ⚡ en la barra de menús y cero terminales.
+```
+cd services/agent && ./instalador/construir_mac.sh      # genera dist/Apague-y-vamonos-Mac.zip (≈ 19 MB)
+```
+1. La persona descomprime, arrastra el `.app` a Aplicaciones y lo abre (la primera vez: clic derecho → Abrir, porque no tiene firma de Apple de pago).
+2. Una ventana pide el código de 6 números de la app (Explorar › Agentes › Agregar agente). Si se equivoca, se lo dice y deja intentar otra vez.
+3. Listo: queda en la barra de menús («🟢 Conectado · leyendo 2 enchufes»), se abre solo al iniciar sesión (se quita desde el menú) y evita que el Mac se duerma por inactividad (con la pantalla apagada sigue leyendo).
+Menú: estado · casa y agente · abrir al iniciar el Mac · ver el registro (`~/Library/Logs/ApagueYVamonos/agente.log`) · vincular de nuevo · salir.
+Código: `agent/app_mac.py` (barra de menús), `agent/ui/mac.py` (diálogos nativos, inicio con el Mac, una sola instancia), `instalador/` (PyInstaller).
+
 ## Cómo funciona
 Dos hilos independientes: **lectura** (cada `AGENT_POLL_SECONDS`, horario fijo) y **envío**. Una API lenta o sin internet nunca retrasa la lectura.
 - `agent/collector`: `LectorEnchufe` detecta el protocolo (3.5 para el BSD04), conserva el último valor de cada DP (el enchufe manda

@@ -23,7 +23,7 @@ Estado de las fases (detalle y decisiones en `docs/decisiones/`, historias en `d
 Pendiente del usuario: crear el cliente OAuth de Google y poner `GOOGLE_CLIENT_ID/SECRET` en Render; revisar el despliegue en Render; probar la app en Android e iPhone; (hecho) factura de EPM verificada (ADR 0002);
 rotar la contraseña de Neon y el Access Secret de Tuya (quedaron expuestos en el chat).
 
-Agente por enchufe (ADR 0008): cada enchufe lo lee un solo agente, que se elige en la app; la orden de prender/apagar va solo a ese agente. Decisión del equipo (2026-10-15): la clave local pasará a guardarse **cifrada** en la base para vincular agentes con un código, sin consola (paso 2 hecho: código de 6 dígitos, claves cifradas y configuración remota del agente; falta el paso 3, el instalable con ventana).
+Agente por enchufe (ADR 0008): cada enchufe lo lee un solo agente, que se elige en la app; la orden de prender/apagar va solo a ese agente. Decisión del equipo (2026-10-15): la clave local pasará a guardarse **cifrada** en la base para vincular agentes con un código, sin consola (paso 2 hecho: código de 6 dígitos, claves cifradas y configuración remota del agente; paso 3 hecho solo para Mac: `services/agent/instalador/construir_mac.sh` genera el `.app` con ventana para el código e ícono en la barra de menús; Windows no).
 
 Siguiente: Fase 6 (verificar cada criterio de calidad, ensayo de 30 min, video de respaldo) y Fase 7 (lanzamiento). El aviso de consumo anómalo por aparato ya está hecho (ADR 0007, umbrales por confirmar). Falta la precisión de potencia con bombillo incandescente.
 

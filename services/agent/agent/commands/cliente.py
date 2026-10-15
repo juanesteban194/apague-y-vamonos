@@ -32,6 +32,8 @@ class ClienteComandos:
     def __init__(self, ajustes: Ajustes, lectores: "list | Registro"):
         self._ajustes = ajustes
         self._registro = lectores if isinstance(lectores, Registro) else Registro(lectores)
+        self.conectado = False  # el canal con la API está abierto ahora mismo (sirve para mostrar el estado)
+        self.token_rechazado = False
         self._ultimo_aviso = 0.0
 
     def correr(self, parar: threading.Event) -> None:
@@ -41,11 +43,14 @@ class ClienteComandos:
                 self._sesion(parar)
                 espera = 1.0
             except TokenRechazado:
+                self.conectado = False
+                self.token_rechazado = True
                 self._avisar(logging.ERROR, "La API rechaza el token del agente: no se recibirán comandos (revisa AGENT_TOKEN)")
                 parar.wait(ESPERA_TOKEN_RECHAZADO_S)
                 continue
             except (OSError, WebSocketException, TimeoutError, ValueError) as e:
                 self._avisar(logging.WARNING, "Canal de comandos caído (%s: %s); reintentando", type(e).__name__, e)
+            self.conectado = False
             parar.wait(espera)
             espera = min(ESPERA_MAXIMA_S, espera * 2)
 
@@ -66,6 +71,7 @@ class ClienteComandos:
             if primero.get("tipo") != "conectado":
                 raise TokenRechazado
             log.info("Canal de comandos conectado")
+            self.conectado, self.token_rechazado = True, False
             ultimo_ping = time.monotonic()
             while not parar.is_set():
                 try:

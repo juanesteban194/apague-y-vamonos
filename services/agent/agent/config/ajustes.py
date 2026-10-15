@@ -4,6 +4,8 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
+from agent.config import almacen
+
 
 class ErrorConfiguracion(Exception):
     pass
@@ -48,7 +50,8 @@ def cargar_ajustes(entorno: dict[str, str] | None = None, credenciales=None) -> 
         token=entorno["AGENT_TOKEN"],
         segundos=segundos,
         ruta_devices=Path(entorno.get("AGENT_DEVICES_FILE") or "devices.json"),
-        ruta_cola=Path(entorno.get("AGENT_QUEUE_FILE") or "cola.sqlite"),
+        # Vinculado desde el programa de Mac el directorio actual es «/»: la cola va a la carpeta de datos del usuario.
+        ruta_cola=Path(entorno.get("AGENT_QUEUE_FILE") or (almacen.carpeta_de_datos() / "cola.sqlite" if credenciales is not None else "cola.sqlite")),
     )
 
 

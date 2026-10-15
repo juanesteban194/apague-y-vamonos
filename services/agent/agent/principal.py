@@ -30,15 +30,20 @@ class Agente:
         self._ajustes = ajustes
         self._registro = lectores if isinstance(lectores, Registro) else Registro(lectores)
         self._remoto = remoto  # pide su lista de enchufes a la API cada minuto
+        self._comandos = ClienteComandos(ajustes, self._registro)
         self._cliente = cliente
         self._hay_datos = threading.Event()
         self._ultimo_aviso: dict[str, float] = {}
+
+    def estado(self) -> dict:
+        """Para mostrarlo en la barra de menús: cuántos enchufes lee, si el canal con la API está abierto y si el token fue rechazado."""
+        return {"enchufes": len(self._registro.lectores()), "conectado": self._comandos.conectado, "token_rechazado": self._comandos.token_rechazado}
 
     def correr(self, parar: threading.Event) -> None:
         hilos = [
             threading.Thread(target=self._bucle_lectura, args=(parar,), name="lectura", daemon=True),
             threading.Thread(target=self._bucle_envio, args=(parar,), name="envio", daemon=True),
-            threading.Thread(target=ClienteComandos(self._ajustes, self._registro).correr, args=(parar,), name="comandos", daemon=True),
+            threading.Thread(target=self._comandos.correr, args=(parar,), name="comandos", daemon=True),
         ]
         if self._remoto:
             hilos.append(threading.Thread(target=bucle_config, args=(self._cliente, self._registro, parar), name="configuracion", daemon=True))
