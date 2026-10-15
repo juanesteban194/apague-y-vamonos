@@ -1,18 +1,22 @@
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
 from app.core.database import get_db
-from app.modules.auth import google, service
+from app.integrations.correo import cliente as correo
+from app.modules.auth import google, recuperacion, service
 from app.modules.auth.dependencias import usuario_actual
 from app.modules.auth.models import Usuario
 from app.realtime.agentes import gestor_agentes
 from app.modules.auth.schemas import (
     CanjeGoogleIn,
+    CodigoIn,
     EliminarCuentaIn,
+    OlvideContrasenaIn,
+    RestablecerContrasenaIn,
     LoginIn,
     PerfilOut,
     RegistroIn,
@@ -25,8 +29,47 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/registro", response_model=UsuarioOut, status_code=status.HTTP_201_CREATED)
-def registro(datos: RegistroIn, db: Session = Depends(get_db)):
-    return service.registrar(db, datos)
+def registro(datos: RegistroIn, segundo_plano: BackgroundTasks, db: Session = Depends(get_db)):
+    usuario = service.registrar(db, datos)
+    # Se manda el código para verificar el correo, pero sin hacer esperar a la persona ni fallar si el correo no sale.
+    segundo_plano.add_task(correo.enviar, recuperacion.emitir_codigo(db, usuario, "verificar"))
+    return usuario
+
+
+@router.post("/olvide-contrasena", status_code=status.HTTP_202_ACCEPTED)
+def olvide_contrasena(datos: OlvideContrasenaIn, peticion: Request, segundo_plano: BackgroundTasks, db: Session = Depends(get_db)):
+    """Manda un código al correo si tiene cuenta. La respuesta es siempre la misma: no se revela quién tiene cuenta."""
+    origen = peticion.client.host if peticion.client else "desconocido"
+    mensaje = recuperacion.pedir_recuperacion(db, datos.email, origen)
+    if mensaje is not None:
+        segundo_plano.add_task(correo.enviar, mensaje)
+    return {"detalle": "Si ese correo tiene una cuenta, te enviamos un código. Vale 15 minutos."}
+
+
+@router.post("/restablecer-contrasena", status_code=status.HTTP_204_NO_CONTENT)
+def restablecer_contrasena(datos: RestablecerContrasenaIn, db: Session = Depends(get_db)):
+    """Con el código del correo se elige una contraseña nueva. Las sesiones abiertas se cierran."""
+    recuperacion.restablecer_contrasena(db, datos.email, datos.codigo, datos.contrasena_nueva)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/verificar-correo/enviar", status_code=status.HTTP_202_ACCEPTED)
+def enviar_verificacion(
+    peticion: Request, segundo_plano: BackgroundTasks, usuario: Usuario = Depends(usuario_actual), db: Session = Depends(get_db)
+):
+    if usuario.email_verificado_en is not None:
+        return {"detalle": "Tu correo ya está verificado."}
+    origen = peticion.client.host if peticion.client else "desconocido"
+    if not recuperacion.permitir_pedido(usuario.email, origen):
+        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Pediste varios códigos seguidos. Espera un rato e intenta de nuevo.")
+    segundo_plano.add_task(correo.enviar, recuperacion.emitir_codigo(db, usuario, "verificar"))
+    return {"detalle": "Te enviamos un código a tu correo. Vale 15 minutos."}
+
+
+@router.post("/verificar-correo", response_model=PerfilOut)
+def verificar_correo(datos: CodigoIn, usuario: Usuario = Depends(usuario_actual), db: Session = Depends(get_db)):
+    recuperacion.verificar_correo(db, usuario, datos.codigo)
+    return service.perfil_de(usuario)
 
 
 @router.post("/login", response_model=TokensOut)

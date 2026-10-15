@@ -9,6 +9,7 @@ from app.core.security import (
     crear_token_acceso,
     crear_token_renovacion,
     decodificar_token,
+    decodificar_token_con_version,
     hash_contrasena,
     verificar_contrasena,
 )
@@ -23,8 +24,8 @@ _HASH_RELLENO = hash_contrasena("relleno-no-es-una-contrasena-real")
 
 def _tokens(usuario: Usuario) -> TokensOut:
     return TokensOut(
-        access_token=crear_token_acceso(usuario.id),
-        refresh_token=crear_token_renovacion(usuario.id),
+        access_token=crear_token_acceso(usuario.id, usuario.version_sesion),
+        refresh_token=crear_token_renovacion(usuario.id, usuario.version_sesion),
     )
 
 
@@ -59,9 +60,9 @@ def iniciar_sesion(db: Session, email: str, contrasena: str) -> TokensOut:
 
 
 def renovar(db: Session, refresh_token: str) -> TokensOut:
-    usuario_id = decodificar_token(refresh_token, "refresh")
+    usuario_id, version = decodificar_token_con_version(refresh_token, "refresh")
     usuario = db.get(Usuario, usuario_id)
-    if usuario is None:
+    if usuario is None or version != usuario.version_sesion:  # tras restablecer la contraseña, los tokens viejos no renuevan
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido o vencido")
     return _tokens(usuario)
 
@@ -74,6 +75,7 @@ def perfil_de(usuario: Usuario) -> PerfilOut:
         tiene_consentimiento=usuario.consentimiento_datos_en is not None,
         tiene_contrasena=usuario.hash_contrasena is not None,
         tiene_google=usuario.google_sub is not None,
+        email_verificado=usuario.email_verificado_en is not None,
     )
 
 
@@ -92,8 +94,9 @@ def usuario_desde_google(db: Session, perfil: PerfilGoogle) -> Usuario:
         usuario = db.scalar(select(Usuario).where(Usuario.email == perfil.email))
         if usuario is not None:
             usuario.google_sub = perfil.sub
+            usuario.email_verificado_en = usuario.email_verificado_en or datetime.now(UTC)  # Google ya verificó ese correo
         else:
-            usuario = Usuario(email=perfil.email, nombre=perfil.nombre, google_sub=perfil.sub)
+            usuario = Usuario(email=perfil.email, nombre=perfil.nombre, google_sub=perfil.sub, email_verificado_en=datetime.now(UTC))
             db.add(usuario)
         db.commit()
     return usuario

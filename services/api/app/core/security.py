@@ -27,29 +27,35 @@ def verificar_contrasena(contrasena: str, hash_guardado: str) -> bool:
         return False
 
 
-def _crear_token(usuario_id: UUID, tipo: str, vigencia: timedelta) -> str:
+def _crear_token(usuario_id: UUID, tipo: str, vigencia: timedelta, version: int = 0) -> str:
     ahora = datetime.now(UTC)
-    claims = {"sub": str(usuario_id), "type": tipo, "iat": ahora, "exp": ahora + vigencia}
+    claims = {"sub": str(usuario_id), "type": tipo, "ver": version, "iat": ahora, "exp": ahora + vigencia}
     return jwt.encode(claims, get_settings().jwt_secret, algorithm=ALGORITMO)
 
 
-def crear_token_acceso(usuario_id: UUID) -> str:
-    return _crear_token(usuario_id, "access", timedelta(minutes=get_settings().jwt_access_minutes))
+def crear_token_acceso(usuario_id: UUID, version: int = 0) -> str:
+    return _crear_token(usuario_id, "access", timedelta(minutes=get_settings().jwt_access_minutes), version)
 
 
-def crear_token_renovacion(usuario_id: UUID) -> str:
-    return _crear_token(usuario_id, "refresh", timedelta(days=get_settings().jwt_refresh_days))
+def crear_token_renovacion(usuario_id: UUID, version: int = 0) -> str:
+    return _crear_token(usuario_id, "refresh", timedelta(days=get_settings().jwt_refresh_days), version)
 
 
-def decodificar_token(token: str, tipo: str) -> UUID:
-    """Devuelve el id de usuario o lanza 401 si el token es inválido, vencido o de otro tipo."""
+def decodificar_token_con_version(token: str, tipo: str) -> tuple[UUID, int]:
+    """(id de usuario, versión de sesión con la que se emitió) o 401 si el token es inválido, vencido o de otro tipo.
+    Los tokens anteriores a las versiones no traen `ver`: cuentan como versión 0."""
     try:
         claims = jwt.decode(token, get_settings().jwt_secret, algorithms=[ALGORITMO])
         if claims.get("type") != tipo:
             raise jwt.InvalidTokenError("tipo de token incorrecto")
-        return UUID(claims["sub"])
+        return UUID(claims["sub"]), int(claims.get("ver", 0))
     except (jwt.InvalidTokenError, KeyError, ValueError):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido o vencido") from None
+
+
+def decodificar_token(token: str, tipo: str) -> UUID:
+    """Devuelve el id de usuario o lanza 401 si el token es inválido, vencido o de otro tipo."""
+    return decodificar_token_con_version(token, tipo)[0]
 
 
 def generar_token_agente() -> str:

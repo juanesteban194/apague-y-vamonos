@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     # Cifra las claves locales de los enchufes que se guardan en la base (ADR 0008). Cualquier texto largo y secreto; nunca en el repositorio.
     clave_maestra: str | None = None
 
+    # Correos (recuperar contraseña y verificar el correo) por la API de Brevo: Render gratuito bloquea el SMTP. Sin clave, no se envía nada
+    # y la API lo dice. El remitente debe estar verificado en Brevo (puede ser un Gmail).
+    brevo_api_key: str | None = None
+    correo_remitente_email: str | None = None
+    correo_remitente_nombre: str = "Apague y vámonos"
+    # Solo para desarrollo: escribe el código en el registro en vez de enviarlo. Nunca activar en producción.
+    correo_consola: bool = False
+
     # Respaldo por la nube de Tuya (solo cuando el agente no responde). Sin credenciales, no hay respaldo.
     tuya_access_id: str | None = None
     tuya_access_secret: str | None = None
