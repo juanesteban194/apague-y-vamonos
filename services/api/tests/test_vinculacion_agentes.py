@@ -67,7 +67,7 @@ def test_crear_un_agente_da_un_codigo_de_6_digitos_y_aun_no_esta_vinculado(clien
     a = con_codigo(client, auth, hogar)
     assert len(a["codigo"]) == 6 and a["codigo"].isdigit() and a["nombre"] == "Sala"
     lista = client.get(f"/hogares/{hogar['id']}/agentes", headers=auth).json()
-    assert [(x["nombre"], x["vinculado"], x["conectado"]) for x in lista] == [("Sala", False, False)]
+    assert [(x["nombre"], x["vinculado"], x["conectado"], x["codigo_pendiente"]) for x in lista] == [("Sala", False, False, True)]
 
 
 def test_el_codigo_no_se_guarda_en_claro(client, auth, hogar):
@@ -85,7 +85,8 @@ def test_vincular_con_el_codigo_entrega_el_token_y_el_codigo_deja_de_servir(clie
     assert v["agente_id"] == a["id"] and v["nombre"] == "Sala" and v["hogar_nombre"] == "Casa" and len(v["token"]) >= 30
     assert vincular(client, a["codigo"]).status_code == 404  # un solo uso
     assert client.get("/agentes/configuracion", headers=cabecera(v["token"])).status_code == 200
-    assert client.get(f"/hogares/{hogar['id']}/agentes", headers=auth).json()[0]["vinculado"] is True
+    estado = client.get(f"/hogares/{hogar['id']}/agentes", headers=auth).json()[0]
+    assert estado["vinculado"] is True and estado["codigo_pendiente"] is False  # usar el código lo consume
 
 
 def test_el_token_entregado_sirve_para_mandar_lecturas(client, auth, hogar, enchufe):
@@ -100,6 +101,7 @@ def test_un_codigo_vencido_no_sirve(client, auth, hogar):
     with get_sessionmaker()() as db:
         db.get(Agente, a["id"]).codigo_expira_en = datetime.now(UTC) - timedelta(minutes=1)
         db.commit()
+    assert client.get(f"/hogares/{hogar['id']}/agentes", headers=auth).json()[0]["codigo_pendiente"] is False
     r = vincular(client, a["codigo"])
     assert r.status_code == 404 and "venció" in r.json()["detail"]
 

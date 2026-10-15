@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException, status
@@ -72,6 +72,7 @@ def agentes_con_enchufes(db: Session, hogar_id: uuid.UUID) -> list[AgenteOut]:
     return [
         AgenteOut(
             id=a.id, nombre=a.nombre, ultima_conexion=a.ultima_conexion, creado_en=a.creado_en,
+            codigo_pendiente=a.codigo_hash is not None and a.codigo_expira_en is not None and a.codigo_expira_en > datetime.now(UTC),
             vinculado=a.token_hash is not None, conectado=gestor_agentes.conectado(hogar_id, a.id), enchufes=enchufes.get(a.id, []),
         )
         for a in listar_agentes(db, hogar_id)
