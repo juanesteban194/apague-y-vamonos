@@ -385,7 +385,7 @@ describe("Categorías de la casa", () => {
     await renderizar(<Agentes />);
     expect(await screen.findByText("¿Qué hace un agente?")).toBeTruthy();
     expect(await screen.findByText(/Sin agente vinculado/)).toBeTruthy();
-    await fireEvent.press(screen.getByRole("button", { name: "Vincular agente" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Agregar agente" }));
     expect(router.push).toHaveBeenCalledWith("/agente/nuevo");
   });
 
