@@ -6,7 +6,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.integrations.expo_push import cliente as expo_push
-from app.modules.alertas import reglas
+from app.modules.alertas import anomalias, reglas
 from app.modules.alertas.models import Alerta, TokenPush
 from app.modules.hogares.models import MiembroHogar
 from app.realtime.manager import gestor
@@ -71,5 +71,13 @@ def notificar(db: Session, alertas: list[Alerta]) -> None:
 def evaluar_y_notificar(db: Session, ahora: datetime) -> int:
     """Tarea de cada minuto (CLAUDE.md: el aviso debe llegar ≤ 60 s después de cruzar el umbral)."""
     nuevas = reglas.evaluar_todo(db, ahora)
+    notificar(db, nuevas)
+    return len(nuevas)
+
+
+def evaluar_anomalias_y_notificar(db: Session, ahora: datetime) -> int:
+    """Tarea de cada hora: compara ayer con lo normal de cada aparato. Cuesta una consulta por aparato, por eso no va con las reglas de cada 20 s;
+    el aviso sale una sola vez al día (cada alerta se deduplica por día)."""
+    nuevas = anomalias.evaluar_consumo_anomalo(db, ahora)
     notificar(db, nuevas)
     return len(nuevas)

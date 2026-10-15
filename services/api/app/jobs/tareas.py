@@ -39,6 +39,9 @@ def cada_minuto(ahora: datetime | None = None) -> None:
 
 def cada_hora(ahora: datetime | None = None) -> None:
     _ejecutar("consolidar_horas", lambda db, t: consolidacion.consolidar_horas(db, t), ahora)
+    from app.modules.alertas import notificar
+
+    _ejecutar("consumo_anomalo", notificar.evaluar_anomalias_y_notificar, ahora)
 
 
 def cada_dia(ahora: datetime | None = None) -> None:
