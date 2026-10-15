@@ -72,7 +72,7 @@ def agentes_con_enchufes(db: Session, hogar_id: uuid.UUID) -> list[AgenteOut]:
     return [
         AgenteOut(
             id=a.id, nombre=a.nombre, ultima_conexion=a.ultima_conexion, creado_en=a.creado_en,
-            conectado=gestor_agentes.conectado(hogar_id, a.id), enchufes=enchufes.get(a.id, []),
+            vinculado=a.token_hash is not None, conectado=gestor_agentes.conectado(hogar_id, a.id), enchufes=enchufes.get(a.id, []),
         )
         for a in listar_agentes(db, hogar_id)
     ]

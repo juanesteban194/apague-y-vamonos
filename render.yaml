@@ -18,6 +18,9 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
+      # Cifra las claves locales de los enchufes guardadas en la base (ADR 0008). Si se cambia, las claves se vuelven a pedir a Tuya.
+      - key: CLAVE_MAESTRA
+        generateValue: true
       # Inicio de sesión con Google (cliente OAuth "Aplicación web"). Sin ellos el botón de Google responde 503.
       - key: GOOGLE_CLIENT_ID
         sync: false

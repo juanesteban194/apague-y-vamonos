@@ -49,6 +49,7 @@ class AgenteOut(BaseModel):
     nombre: str
     ultima_conexion: datetime | None
     creado_en: datetime
+    vinculado: bool = True  # False mientras nadie haya usado su código de vinculación
     conectado: bool = False  # tiene el canal abierto con la API en este momento
     enchufes: list[EnchufeDeAgenteOut] = []  # los que lee este agente
 

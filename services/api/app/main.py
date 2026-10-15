@@ -8,6 +8,7 @@ from app import datos_referencia
 from app.jobs.planificador import crear_planificador
 
 from app.realtime.manager import gestor
+from app.modules.agentes.router import router as agentes_router
 from app.modules.alertas.router import router as alertas_router, tokens as tokens_router
 from app.modules.auth.router import router as auth_router
 from app.modules.consumo.router import router as consumo_router
@@ -39,6 +40,7 @@ app = FastAPI(title="Gestión de Consumo Energético", version="0.1.0", lifespan
 
 app.include_router(auth_router)
 app.include_router(hogares_router)
+app.include_router(agentes_router)
 app.include_router(dispositivos_router)
 app.include_router(control_router)
 app.include_router(ingesta_router)

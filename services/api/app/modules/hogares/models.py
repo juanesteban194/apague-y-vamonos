@@ -49,7 +49,11 @@ class Agente(Base):
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=nuevo_id)
     hogar_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("hogares.id", ondelete="CASCADE"), index=True)
     nombre: Mapped[str] = mapped_column(String(120))
-    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    # Sin token mientras nadie haya usado el código de vinculación (ADR 0008).
+    token_hash: Mapped[str | None] = mapped_column(String(64), unique=True)
+    # Código de 6 dígitos para vincular el programa del agente; se guarda su hash, vence a los 10 minutos y sirve una sola vez.
+    codigo_hash: Mapped[str | None] = mapped_column(String(64), unique=True)
+    codigo_expira_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ultima_conexion: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

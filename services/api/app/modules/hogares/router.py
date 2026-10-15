@@ -1,12 +1,14 @@
 import uuid
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.modules.auth.dependencias import usuario_con_consentimiento
+from app.modules.agentes import service as agentes_service
+from app.modules.agentes.schemas import AgenteConCodigoOut
 from app.modules.hogares import service
-from app.modules.hogares.models import Hogar
+from app.modules.hogares.models import Agente, Hogar
 from app.modules.hogares.schemas import (
     AgenteCreadoOut,
     AgenteIn,
@@ -54,6 +56,33 @@ def crear_agente(
     service.exigir_miembro(db, usuario_id, hogar_id, rol="titular")
     agente, token = service.crear_agente(db, hogar_id, datos)
     return AgenteCreadoOut(id=agente.id, nombre=agente.nombre, token=token)
+
+
+@router.post("/{hogar_id}/agentes/con-codigo", response_model=AgenteConCodigoOut, status_code=status.HTTP_201_CREATED)
+def crear_agente_con_codigo(
+    hogar_id: uuid.UUID,
+    datos: AgenteIn,
+    db: Session = Depends(get_db),
+    usuario_id: uuid.UUID = Depends(usuario_con_consentimiento),
+):
+    """Agente nuevo sin token: la persona escribe el código de 6 dígitos en el programa del agente y este se vincula solo."""
+    service.exigir_miembro(db, usuario_id, hogar_id, rol="titular")
+    return agentes_service.crear_con_codigo(db, hogar_id, datos.nombre)
+
+
+@router.post("/{hogar_id}/agentes/{agente_id}/codigo", response_model=AgenteConCodigoOut)
+def codigo_nuevo(
+    hogar_id: uuid.UUID,
+    agente_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    usuario_id: uuid.UUID = Depends(usuario_con_consentimiento),
+):
+    """Código nuevo para vincular este agente en otro computador (o si el anterior venció). El programa vinculado antes deja de servir al usarlo."""
+    service.exigir_miembro(db, usuario_id, hogar_id, rol="titular")
+    agente = db.get(Agente, agente_id)
+    if agente is None or agente.hogar_id != hogar_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Agente no encontrado")
+    return agentes_service.generar_codigo(db, agente)
 
 
 @router.patch("/{hogar_id}", response_model=HogarOut)
