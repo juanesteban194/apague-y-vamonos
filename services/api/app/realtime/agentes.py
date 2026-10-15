@@ -33,6 +33,16 @@ class GestorAgentes:
         if not conexiones:
             self._por_hogar.pop(hogar_id, None)
 
+    async def cerrar(self, hogar_id: uuid.UUID, agente_id: uuid.UUID | None = None, codigo: int = 4401) -> None:
+        """Corta el canal de un agente (o de todos los de la casa): al eliminarlo no debe seguir recibiendo órdenes."""
+        conexiones = self._por_hogar.get(hogar_id, {})
+        for id_agente, ws in list(conexiones.items()):
+            if agente_id is None or id_agente == agente_id:
+                try:
+                    await ws.close(code=codigo)
+                except Exception:  # ya estaba caído
+                    pass
+
     def hay_agente(self, hogar_id: uuid.UUID) -> bool:
         return bool(self._por_hogar.get(hogar_id))
 
