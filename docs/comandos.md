@@ -3,10 +3,13 @@
 Chuleta de todo lo que se corre en la terminal, **en el orden en que se usa**. El paso a paso con qué mirar en cada prueba está en [guia-de-prueba.md](guia-de-prueba.md).
 Todo parte de la raíz del proyecto; las carpetas importantes son distintas, así que **mira siempre en cuál estás** (`pwd`).
 
+**Primero, en cada terminal nueva, copia y pega este bloque completo.** La primera línea hace que zsh entienda los comentarios (`# …`) que verás al lado de los comandos: sin ella, zsh los toma como parte del comando y da errores como «export: not valid in this context».
 ```
+setopt interactive_comments
 cd /Users/estebanechavarria/Downloads/gestion-consumo-energetico
-export PATH=/opt/homebrew/bin:/Applications/Docker.app/Contents/Resources/bin:$PATH   # si node o docker "no se reconocen"
+export PATH=/opt/homebrew/bin:/Applications/Docker.app/Contents/Resources/bin:$PATH
 ```
+Para no repetirlo nunca (una sola vez): `echo "setopt interactive_comments" >> ~/.zshrc` y abre una terminal nueva. La línea del `export PATH` solo hace falta si `node` o `docker` «no se reconocen».
 
 ## Orden de ejecución
 
