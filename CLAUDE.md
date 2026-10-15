@@ -26,7 +26,7 @@ rotar la contraseña de Neon y el Access Secret de Tuya (quedaron expuestos en e
 
 Agente por enchufe (ADR 0008): cada enchufe lo lee un solo agente, que se elige en la app; la orden de prender/apagar va solo a ese agente. Decisión del equipo (2026-10-15): la clave local pasará a guardarse **cifrada** en la base para vincular agentes con un código, sin consola (paso 2 hecho: código de 6 dígitos, claves cifradas y configuración remota del agente; paso 3 hecho solo para Mac: `services/agent/instalador/construir_mac.sh` genera el `.app` con ventana para el código e ícono en la barra de menús; Windows no).
 
-Siguiente: Fase 6 (verificar cada criterio de calidad, ensayo de 30 min, video de respaldo) y Fase 7 (lanzamiento). El aviso de consumo anómalo por aparato ya está hecho (ADR 0007, umbrales por confirmar). Falta la precisión de potencia con bombillo incandescente.
+Siguiente: Fase 6 (verificar cada criterio de calidad, ensayo de 30 min, video de respaldo) y Fase 7 (lanzamiento). El aviso de consumo anómalo por aparato ya está hecho (ADR 0007, umbrales por confirmar). Falta la precisión de potencia con bombillo incandescente. Fase 7 adelantada: ícono y pantalla de arranque propios, política de tratamiento de datos (borrador; falta el correo de contacto y la revisión legal, ADR 0009) y «Eliminar mi cuenta» (derecho de supresión). Siguen pendientes de la Fase 7: push con la app cerrada, recuperación de contraseña, verificación de correo y publicación.
 
 ---
 
