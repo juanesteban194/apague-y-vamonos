@@ -33,20 +33,20 @@ def contar() -> int:
 def test_guarda_lecturas(client, agente_token, enchufe):
     r = enviar(client, agente_token, [lectura(i) for i in range(3)])
     assert r.status_code == 200
-    assert r.json() == {"recibidas": 3, "guardadas": 3, "duplicadas": 0, "desconocidas": 0}
+    assert r.json() == {"recibidas": 3, "guardadas": 3, "duplicadas": 0, "desconocidas": 0, "de_otro_agente": 0}
     assert contar() == 3
 
 
 def test_reenviar_no_duplica(client, agente_token, enchufe):
     enviar(client, agente_token, [lectura(0), lectura(1)])
     r = enviar(client, agente_token, [lectura(1), lectura(2)])  # el agente reenvía tras una caída
-    assert r.json() == {"recibidas": 2, "guardadas": 1, "duplicadas": 1, "desconocidas": 0}
+    assert r.json() == {"recibidas": 2, "guardadas": 1, "duplicadas": 1, "desconocidas": 0, "de_otro_agente": 0}
     assert contar() == 3
 
 
 def test_dispositivo_ajeno_o_desconocido_no_se_guarda(client, agente_token, enchufe):
     r = enviar(client, agente_token, [lectura(0), lectura(0, tuya_id="no-es-de-este-hogar")])
-    assert r.json() == {"recibidas": 2, "guardadas": 1, "duplicadas": 0, "desconocidas": 1}
+    assert r.json() == {"recibidas": 2, "guardadas": 1, "duplicadas": 0, "desconocidas": 1, "de_otro_agente": 0}
 
 
 def test_agente_de_otro_hogar_no_escribe_en_este(client, auth, hogar, enchufe):

@@ -1,7 +1,7 @@
 """Conexiones WebSocket de los agentes locales (/ws/agente) y envío de comandos a ellos.
 
-Un hogar puede tener varios agentes conectados; el comando se manda a todos (cada uno solo actúa sobre sus enchufes) y se da por
-hecho con la primera respuesta exitosa, o fallido cuando todos respondieron que no pudieron."""
+Un hogar puede tener varios agentes conectados. Cada enchufe tiene asignado un agente y la orden va solo a ese; sin agente indicado
+se manda a todos y se da por hecho con la primera respuesta exitosa, o fallido cuando todos respondieron que no pudieron."""
 import asyncio
 import uuid
 from dataclasses import dataclass
@@ -36,9 +36,16 @@ class GestorAgentes:
     def hay_agente(self, hogar_id: uuid.UUID) -> bool:
         return bool(self._por_hogar.get(hogar_id))
 
-    async def enviar(self, hogar_id: uuid.UUID, tuya_id: str, accion: Accion, espera_s: float = 8.0) -> ResultadoComando | None:
-        """None si no hay ningún agente conectado (el llamador decide si usa el respaldo)."""
-        conexiones = list(self._por_hogar.get(hogar_id, {}).values())
+    def conectado(self, hogar_id: uuid.UUID, agente_id: uuid.UUID) -> bool:
+        return agente_id in self._por_hogar.get(hogar_id, {})
+
+    async def enviar(
+        self, hogar_id: uuid.UUID, tuya_id: str, accion: Accion, espera_s: float = 8.0, agente_id: uuid.UUID | None = None
+    ) -> ResultadoComando | None:
+        """None si el agente (o, sin `agente_id`, ninguno) está conectado: el llamador decide si usa el respaldo.
+        Con `agente_id` la orden va SOLO a ese agente: otro agente de la casa no tiene la clave de ese enchufe."""
+        todas = self._por_hogar.get(hogar_id, {})
+        conexiones = [todas[agente_id]] if agente_id is not None and agente_id in todas else ([] if agente_id is not None else list(todas.values()))
         if not conexiones:
             return None
         id_comando = uuid.uuid4().hex

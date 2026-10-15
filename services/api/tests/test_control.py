@@ -92,7 +92,7 @@ def fijar(monkeypatch, agente=None, nube=None):
     """agente: ResultadoComando | None. nube: None (sin configurar), 'ok' o un texto de error."""
     llamadas = {"agente": [], "nube": []}
 
-    async def enviar(hogar_id, tuya_id, accion, espera_s=8.0):
+    async def enviar(hogar_id, tuya_id, accion, espera_s=8.0, agente_id=None):
         llamadas["agente"].append((tuya_id, accion))
         return agente
 
@@ -137,7 +137,7 @@ def test_agente_que_falla_tambien_cae_a_la_nube(client, auth, enchufe, monkeypat
 def test_sin_agente_ni_nube_responde_503_claro(client, auth, enchufe, monkeypatch):
     fijar(monkeypatch, agente=None)
     r = client.post(f"/dispositivos/{enchufe['id']}/apagar", headers=auth)
-    assert r.status_code == 503 and "no hay un agente conectado" in r.json()["detail"]
+    assert r.status_code == 503 and "no tiene un agente asignado" in r.json()["detail"]
 
 
 def test_si_todo_falla_el_mensaje_dice_por_que(client, auth, enchufe, monkeypatch):

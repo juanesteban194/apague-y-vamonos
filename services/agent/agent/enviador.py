@@ -36,6 +36,9 @@ class Enviador:
         desconocidas = respuesta.json().get("desconocidas", 0)
         if desconocidas:
             log.warning("La API no reconoce %d lecturas (¿el enchufe está registrado en el hogar?)", desconocidas)
+        ajenas = respuesta.json().get("de_otro_agente", 0)
+        if ajenas:
+            log.warning("%d lecturas descartadas: ese enchufe está asignado a otro agente en la app", ajenas)
         self._cola.borrar([i for i, _ in filas])
         return len(filas)
 

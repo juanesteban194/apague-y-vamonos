@@ -9,6 +9,7 @@ class DispositivoIn(BaseModel):
     tipo_aparato: str | None = Field(default=None, max_length=60)
     alto_riesgo: bool = False
     umbral_minutos_encendido: int | None = Field(default=None, gt=0)
+    agente_id: uuid.UUID | None = None  # qué agente lo lee; debe ser de la misma casa
 
 
 class DispositivoOut(DispositivoIn):
@@ -24,3 +25,4 @@ class DispositivoActualizarIn(BaseModel):
     tipo_aparato: str | None = Field(default=None, max_length=60)
     alto_riesgo: bool | None = None
     umbral_minutos_encendido: int | None = Field(default=None, gt=0)
+    agente_id: uuid.UUID | None = None  # null quita el agente

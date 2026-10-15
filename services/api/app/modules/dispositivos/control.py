@@ -16,6 +16,7 @@ from app.core.database import get_sessionmaker
 from app.integrations.tuya_cloud.cliente import ErrorTuyaCloud, cliente_tuya
 from app.modules.auth.dependencias import usuario_con_consentimiento
 from app.modules.dispositivos.models import Dispositivo
+from app.modules.hogares.models import Agente
 from app.modules.hogares.service import exigir_miembro
 from app.realtime.agentes import Accion, gestor_agentes
 
@@ -58,15 +59,33 @@ def _autorizar(dispositivo_id: uuid.UUID, usuario_id: uuid.UUID) -> tuple[uuid.U
         return d.id, d.hogar_id, d.tuya_id
 
 
+def _agente_del_enchufe(dispositivo_id: uuid.UUID) -> tuple[uuid.UUID | None, str | None]:
+    with get_sessionmaker()() as db:
+        d = db.get(Dispositivo, dispositivo_id)
+        if d is None or d.agente_id is None:
+            return None, None
+        agente = db.get(Agente, d.agente_id)
+        return d.agente_id, agente.nombre if agente else None
+
+
 async def ejecutar_comando(hogar_id: uuid.UUID, dispositivo_id: uuid.UUID, tuya_id: str, accion: Accion) -> ComandoOut:
-    """Agente primero; si falla, el respaldo por la nube. Lanza HTTPException 503 si ninguna vía funcionó."""
+    """La orden va al agente asignado a ese enchufe; si no está conectado o no pudo, al respaldo por la nube.
+    Lanza HTTPException 503 si ninguna vía funcionó, diciendo por qué."""
     encender = accion == "encender"
-    motivo = "no hay un agente conectado en tu casa"
-    resultado = await gestor_agentes.enviar(hogar_id, tuya_id, accion)
+    agente_id, nombre = await run_in_threadpool(_agente_del_enchufe, dispositivo_id)
+    if agente_id is None:
+        # Aún no lo lee ningún agente: se le pregunta a los conectados (el que lo tenga en su configuración lo ejecuta).
+        motivo = "este enchufe no tiene un agente asignado (asígnale uno en Enchufes)"
+    else:
+        motivo = f"el agente «{nombre}», que lee este enchufe, no está conectado"
+        if gestor_agentes.hay_agente(hogar_id) and not gestor_agentes.conectado(hogar_id, agente_id):
+            motivo += " (los otros agentes conectados no leen este enchufe y no pueden controlarlo)"
+    resultado = await gestor_agentes.enviar(hogar_id, tuya_id, accion, agente_id=agente_id)
     if resultado is not None and resultado.ok:
         return ComandoOut(dispositivo_id=dispositivo_id, encendido=encender, via="agente")
     if resultado is not None:
-        motivo = resultado.detalle or "el agente no pudo ejecutar el comando"
+        quien = f"el agente «{nombre}»" if nombre else "el agente"
+        motivo = f"{quien} no pudo ejecutarlo: {resultado.detalle or 'sin detalle'}"
     if cliente_tuya.configurado():
         try:
             await cliente_tuya.enviar_comando(tuya_id, encender)

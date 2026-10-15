@@ -11,6 +11,7 @@ from app.modules.hogares.schemas import (
     AgenteCreadoOut,
     AgenteIn,
     AgenteOut,
+    AgenteRenombrarIn,
     HogarActualizarIn,
     HogarIn,
     HogarOut,
@@ -69,7 +70,20 @@ def actualizar(
 @router.get("/{hogar_id}/agentes", response_model=list[AgenteOut])
 def agentes(hogar_id: uuid.UUID, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)):
     service.exigir_miembro(db, usuario_id, hogar_id)
-    return service.listar_agentes(db, hogar_id)
+    return service.agentes_con_enchufes(db, hogar_id)
+
+
+@router.patch("/{hogar_id}/agentes/{agente_id}", response_model=AgenteOut)
+def renombrar_agente(
+    hogar_id: uuid.UUID,
+    agente_id: uuid.UUID,
+    datos: AgenteRenombrarIn,
+    db: Session = Depends(get_db),
+    usuario_id: uuid.UUID = Depends(usuario_con_consentimiento),
+):
+    service.exigir_miembro(db, usuario_id, hogar_id, rol="titular")
+    service.renombrar_agente(db, hogar_id, agente_id, datos.nombre)
+    return next(a for a in service.agentes_con_enchufes(db, hogar_id) if a.id == agente_id)
 
 
 @router.delete("/{hogar_id}/agentes/{agente_id}", status_code=status.HTTP_204_NO_CONTENT)
