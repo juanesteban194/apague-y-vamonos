@@ -34,13 +34,13 @@ import Facturas from "../app/facturas";
 import Instrucciones from "../app/instrucciones";
 import Rutinas from "../app/rutinas";
 
-import { HOGAR, iniciarSesionDePrueba, jwtFalso, renderizar, respuestaJson, RESUMEN, TARIFA } from "./auxiliares";
+import { clienteDePrueba, HOGAR, iniciarSesionDePrueba, jwtFalso, renderizar, respuestaJson, RESUMEN, TARIFA } from "./auxiliares";
 
 const fetchMock = jest.fn();
 const abrirNavegador = WebBrowser.openAuthSessionAsync as jest.Mock;
 const PERFIL = { id: "u1", email: "ana@example.com", nombre: "Ana Pérez", tiene_consentimiento: true, tiene_contrasena: true, tiene_google: false };
 const TOKENS = () => ({ access_token: jwtFalso(), refresh_token: jwtFalso(86400), token_type: "bearer" });
-const AGENTE = { id: "a1", nombre: "Sala", ultima_conexion: new Date().toISOString(), creado_en: "2026-10-12T00:00:00Z", conectado: true, enchufes: [] as { id: string; nombre: string }[] };
+const AGENTE = { id: "a1", nombre: "Sala", ultima_conexion: new Date().toISOString(), creado_en: "2026-10-12T00:00:00Z", vinculado: true, conectado: true, enchufes: [] as { id: string; nombre: string }[] };
 const ENCHUFE = { id: "d1", tuya_id: "eb182b7a119cf6aaeecf66", nombre: "Nevera", tipo_aparato: null, alto_riesgo: false, umbral_minutos_encendido: null };
 
 /** API simulada: rutas exactas con su respuesta; lo demás da 404. Guarda lo enviado en `llamadas`. */
@@ -654,18 +654,89 @@ describe("Enchufes", () => {
 });
 
 describe("Agente", () => {
-  it("muestra la clave una sola vez, lista para copiar con la URL de la API", async () => {
-    await iniciarSesionDePrueba();
-    simular({ "GET /hogares": [HOGAR], "POST /hogares/h1/agentes": () => respuestaJson({ id: "a1", nombre: "Computador de la casa", token: "TOKEN-SECRETO-123" }, 201) });
-    await renderizar(<VincularAgente />);
-    await fireEvent.press(await screen.findByRole("button", { name: "Crear clave del agente" }));
+  const CON_CODIGO = { id: "a1", nombre: "Computador de la casa", codigo: "123456", expira_en: new Date(Date.now() + 10 * 60_000).toISOString() };
 
-    expect(await screen.findByText("Se muestra una sola vez. Si lo pierdes, crea otra clave.")).toBeTruthy();
-    const configuracion = "AGENT_API_URL=https://api.test\nAGENT_TOKEN=TOKEN-SECRETO-123";
-    expect(screen.getByText(configuracion)).toBeTruthy();
-    await fireEvent.press(screen.getByRole("button", { name: "Copiar" }));
-    expect(Clipboard.setStringAsync).toHaveBeenCalledWith(configuracion);
-    expect(await screen.findByRole("button", { name: "Copiado" })).toBeTruthy();
+  it("crea el agente y muestra su código de 6 dígitos, sin claves para copiar", async () => {
+    await iniciarSesionDePrueba();
+    simular({
+      "GET /hogares": [HOGAR],
+      "GET /hogares/h1/agentes": [{ id: "a1", nombre: "Computador de la casa", ultima_conexion: null, creado_en: "2026-10-15T00:00:00Z", vinculado: false, conectado: false, codigo_pendiente: true, enchufes: [] }],
+      "POST /hogares/h1/agentes/con-codigo": () => respuestaJson(CON_CODIGO, 201),
+    });
+    await renderizar(<VincularAgente />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Ver el código" }));
+    expect(await screen.findByText("123 456")).toBeTruthy();
+    expect(screen.getByText("Vence en 10 minutos")).toBeTruthy();
+    expect(enviado("POST /hogares/h1/agentes/con-codigo")).toEqual({ nombre: "Computador de la casa" });
+    expect(screen.queryByText(/AGENT_TOKEN/)).toBeNull();
+    expect(screen.getByText(/--vincular 123456/)).toBeTruthy(); // ayuda para el equipo mientras no haya instalador
+  });
+
+  it("avisa cuando el agente se vincula y lleva a asignar enchufes", async () => {
+    await iniciarSesionDePrueba();
+    const agente = { id: "a1", nombre: "Computador de la casa", ultima_conexion: null, creado_en: "2026-10-15T00:00:00Z", vinculado: false, conectado: false, codigo_pendiente: true, enchufes: [] };
+    let vinculado = false;
+    fetchMock.mockImplementation(async (url: string, init: RequestInit = {}) => {
+      const clave = `${init.method ?? "GET"} ${String(url).replace("https://api.test", "")}`;
+      if (clave === "GET /hogares") return respuestaJson([HOGAR]);
+      if (clave === "POST /hogares/h1/agentes/con-codigo") return respuestaJson(CON_CODIGO, 201);
+      if (clave === "GET /hogares/h1/agentes") return respuestaJson([{ ...agente, vinculado, conectado: vinculado, codigo_pendiente: !vinculado }]);
+      return respuestaJson({ detail: `sin simular ${clave}` }, 404);
+    });
+    const cliente = clienteDePrueba();
+    await renderizar(<VincularAgente />, cliente);
+    await fireEvent.press(await screen.findByRole("button", { name: "Ver el código" }));
+    await screen.findByText("123 456");
+    expect(screen.queryByText(/está conectado/)).toBeNull();
+    vinculado = true;
+    await act(async () => void (await cliente.refetchQueries({ queryKey: ["agentes"] })));
+    expect(await screen.findByText("¡Listo! «Computador de la casa» está conectado")).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: "Ir a mis enchufes" }));
+    expect(router.replace).toHaveBeenCalledWith("/enchufes");
+  });
+
+  it("un código vencido se puede pedir de nuevo", async () => {
+    await iniciarSesionDePrueba();
+    let pendiente = false; // el vencido ya no cuenta como pendiente; el nuevo sí
+    const agente = () => ({ id: "a1", nombre: "Computador de la casa", ultima_conexion: null, creado_en: "2026-10-15T00:00:00Z", vinculado: false, conectado: false, codigo_pendiente: pendiente, enchufes: [] });
+    fetchMock.mockImplementation(async (url: string, init: RequestInit = {}) => {
+      const clave = `${init.method ?? "GET"} ${String(url).replace("https://api.test", "")}`;
+      if (clave === "GET /hogares") return respuestaJson([HOGAR]);
+      if (clave === "GET /hogares/h1/agentes") return respuestaJson([agente()]);
+      if (clave === "POST /hogares/h1/agentes/con-codigo") return respuestaJson({ ...CON_CODIGO, expira_en: new Date(Date.now() - 1000).toISOString() }, 201);
+      if (clave === "POST /hogares/h1/agentes/a1/codigo") {
+        pendiente = true;
+        return respuestaJson({ ...CON_CODIGO, codigo: "654321", expira_en: new Date(Date.now() + 10 * 60_000).toISOString() });
+      }
+      return respuestaJson({ detail: `sin simular ${clave}` }, 404);
+    });
+    await renderizar(<VincularAgente />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Ver el código" }));
+    expect(await screen.findByText("Venció")).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: "Pedir un código nuevo" }));
+    expect(await screen.findByText("654 321")).toBeTruthy();
+  });
+
+  it("para usarlo en otro computador genera un código nuevo del mismo agente", async () => {
+    await iniciarSesionDePrueba();
+    (globalThis as { __parametros?: object }).__parametros = { agente: "a1" };
+    const existente = { id: "a1", nombre: "Sala", ultima_conexion: null, creado_en: "2026-10-15T00:00:00Z", vinculado: true, conectado: true, enchufes: [] };
+    let pendiente = false;
+    fetchMock.mockImplementation(async (url: string, init: RequestInit = {}) => {
+      const clave = `${init.method ?? "GET"} ${String(url).replace("https://api.test", "")}`;
+      if (clave === "GET /hogares") return respuestaJson([HOGAR]);
+      if (clave === "GET /hogares/h1/agentes") return respuestaJson([{ ...existente, codigo_pendiente: pendiente }]);
+      if (clave === "POST /hogares/h1/agentes/a1/codigo") {
+        pendiente = true;
+        return respuestaJson({ ...CON_CODIGO, nombre: "Sala" });
+      }
+      return respuestaJson({ detail: `sin simular ${clave}` }, 404);
+    });
+    await renderizar(<VincularAgente />);
+    expect(await screen.findByText(/dejará de funcionar/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: "Ver el código" }));
+    expect(await screen.findByText("123 456")).toBeTruthy();
+    expect(screen.queryByText(/está conectado/)).toBeNull(); // el agente viejo sigue «conectado» y eso no es haber usado el código nuevo
   });
 });
 

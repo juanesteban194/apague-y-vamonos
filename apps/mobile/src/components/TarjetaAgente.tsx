@@ -15,16 +15,23 @@ type Props = {
   agente: Agente;
   alRenombrar: (nombre: string) => Promise<void>;
   alEliminar: () => Promise<void>;
+  alUsarEnOtroComputador: () => void; // pide un código nuevo para este mismo agente
 };
 
 /** Un agente: si está conectado, qué enchufes lee, y cambiarle el nombre o eliminarlo. */
-export function TarjetaAgente({ agente, alRenombrar, alEliminar }: Props) {
+export function TarjetaAgente({ agente, alRenombrar, alEliminar, alUsarEnOtroComputador }: Props) {
   const [editando, setEditando] = useState(false);
   const [nombre, setNombre] = useState(agente.nombre);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const estado = agente.conectado ? "Conectado" : !agente.ultima_conexion ? "Nunca se ha conectado" : `Sin conexión · última vez ${haceCuanto(agente.ultima_conexion)}`;
+  const estado = !agente.vinculado
+    ? "Esperando que lo vincules con un código"
+    : agente.conectado
+      ? "Conectado"
+      : !agente.ultima_conexion
+        ? "Nunca se ha conectado"
+        : `Sin conexión · última vez ${haceCuanto(agente.ultima_conexion)}`;
 
   async function guardar() {
     setError(null);
@@ -56,7 +63,7 @@ export function TarjetaAgente({ agente, alRenombrar, alEliminar }: Props) {
   return (
     <Tarjeta style={{ gap: espacio.s }}>
       <Texto variante="subtitulo">{agente.nombre}</Texto>
-      <Texto color={agente.conectado ? colores.verde : colores.textoSecundario} style={{ fontWeight: "600" }}>{estado}</Texto>
+      <Texto color={agente.conectado ? colores.verde : agente.vinculado ? colores.textoSecundario : colores.ambar} style={{ fontWeight: "600" }}>{estado}</Texto>
       {agente.enchufes.length > 0 ? (
         <Texto>Lee: {agente.enchufes.map((e) => e.nombre).join(", ")}</Texto>
       ) : (
@@ -72,9 +79,12 @@ export function TarjetaAgente({ agente, alRenombrar, alEliminar }: Props) {
           </View>
         </View>
       ) : (
-        <View style={{ flexDirection: "row", gap: espacio.s }}>
-          <Boton titulo="Cambiar nombre" variante="secundario" flex onPress={() => setEditando(true)} />
-          <Boton titulo="Eliminar" variante="secundario" onPress={confirmarEliminar} />
+        <View style={{ gap: espacio.s }}>
+          <Boton titulo={agente.vinculado ? "Usar en otro computador" : "Ver código de vinculación"} variante="secundario" onPress={alUsarEnOtroComputador} />
+          <View style={{ flexDirection: "row", gap: espacio.s }}>
+            <Boton titulo="Cambiar nombre" variante="secundario" flex onPress={() => setEditando(true)} />
+            <Boton titulo="Eliminar" variante="secundario" onPress={confirmarEliminar} />
+          </View>
         </View>
       )}
     </Tarjeta>

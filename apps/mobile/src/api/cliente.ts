@@ -14,6 +14,7 @@ import type {
   Rutina,
   RutinaDatos,
   Sensibilidad,
+  AgenteConCodigo,
   AgenteCreado,
   Consumo,
   Dispositivo,
@@ -122,6 +123,8 @@ export const actualizarDispositivo = (hogarId: string, id: string, cambios: Disp
 export const borrarDispositivo = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/dispositivos/${id}`, "DELETE");
 export const listarAgentes = (hogarId: string) => api<Agente[]>(`/hogares/${hogarId}/agentes`);
 export const crearAgente = (hogarId: string, nombre: string) => api<AgenteCreado>(`/hogares/${hogarId}/agentes`, "POST", { nombre });
+export const crearAgenteConCodigo = (hogarId: string, nombre: string) => api<AgenteConCodigo>(`/hogares/${hogarId}/agentes/con-codigo`, "POST", { nombre });
+export const codigoNuevoAgente = (hogarId: string, id: string) => api<AgenteConCodigo>(`/hogares/${hogarId}/agentes/${id}/codigo`, "POST");
 export const renombrarAgente = (hogarId: string, id: string, nombre: string) => api<Agente>(`/hogares/${hogarId}/agentes/${id}`, "PATCH", { nombre });
 export const revocarAgente = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/agentes/${id}`, "DELETE");
 export const obtenerHogares = () => api<Hogar[]>("/hogares");
