@@ -99,7 +99,7 @@ export const TEMAS = {
   avisos: {
     titulo: "Avisos",
     icono: "avisos",
-    queEs: "Las alertas de tu casa: un aparato que lleva mucho prendido, que te acercas a la línea de subsistencia o que se acaba el saldo.",
+    queEs: "Las alertas de tu casa: un aparato que lleva mucho prendido o que gastó más de lo normal, que te acercas a la línea de subsistencia o que se acaba el saldo.",
     paraQueSirve: "Para actuar a tiempo, incluso apagando el aparato desde el aviso.",
     pasos: ["Toca un aviso para marcarlo como leído.", "Elige abajo cada cuánto quieres que te avisemos."],
   },
