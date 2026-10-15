@@ -38,3 +38,6 @@ lecturas_fase0*.csv
 # Cola SQLite del agente (WAL)
 *.sqlite-wal
 *.sqlite-shm
+
+build/
+*.spec.bak

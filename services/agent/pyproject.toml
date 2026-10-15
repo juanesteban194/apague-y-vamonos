@@ -11,6 +11,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+# Para construir el programa de Mac (services/agent/instalador/construir_mac.sh)
+instalador = ["rumps>=0.4; sys_platform == 'darwin'", "pyinstaller>=6"]
 
 [project.scripts]
 agente = "agent.principal:main"

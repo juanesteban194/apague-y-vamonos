@@ -100,7 +100,7 @@ export default function VincularAgente() {
           </Tarjeta>
           <Tarjeta style={{ gap: espacio.s }}>
             <Texto variante="subtitulo">Qué hacer ahora</Texto>
-            <Texto>1. En el computador de tu casa, abre el programa «Apague y vámonos».</Texto>
+            <Texto>1. En el computador de tu casa (Mac), abre el programa «Apague y vámonos».</Texto>
             <Texto>2. Escribe este código cuando te lo pida.</Texto>
             <Texto>3. Listo: esta pantalla te avisa cuando se vincule.</Texto>
             <Texto variante="secundario" color={colores.textoSecundario}>

@@ -51,7 +51,7 @@ Los nombres de los menús de Google cambian de vez en cuando; lo importante son 
 Para datos **reales**, el Mac debe estar en la **misma WiFi que el enchufe** (la de `192.168.78.x`; si estás en otra red el agente dirá "no responde"). Ya tienes `services/agent/devices.json` (clave local del enchufe).
 **Sin el enchufe a la mano o en otra red:** usa el enchufe simulado (paso 3 de abajo).
 1. En la app, **Explorar → Agentes → Agregar agente**: ponle un nombre y toca «Ver el código». Aparece un código de 6 números (vale 10 minutos y sirve una vez).
-2. En el computador (mientras no esté el instalador), vincúlalo con ese código. No hay que copiar claves ni tocar el `.env`:
+2. En el computador, abre **«Apague y vamonos.app»** (se genera con `services/agent/instalador/construir_mac.sh`; la primera vez clic derecho → Abrir) y escribe el código en la ventana. Verás un ⚡ en la barra de menús. (Alternativa para desarrollo, sin la app, en una terminal:) No hay que copiar claves ni tocar el `.env`:
    ```
    cd services/agent
    .venv/bin/python -m agent --vincular 123456

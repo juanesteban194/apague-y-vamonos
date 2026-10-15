@@ -1,6 +1,6 @@
 # ADR 0008 — Un agente por enchufe, y la clave local cifrada en la base
 
-**Fecha:** 2026-10-15 · **Estado:** pasos 1 y 2 hechos (asignación; código de vinculación y claves cifradas); paso 3 (instalable con ventana) por hacer
+**Fecha:** 2026-10-15 · **Estado:** pasos 1, 2 y 3 hechos para Mac (asignación; código de vinculación y claves cifradas; programa instalable de Mac). Windows: no se hizo
 
 ## Problema
 El usuario no es técnico. Con varios agentes en una casa no sabía cuál leía cada enchufe, y para vincular un agente tenía que copiar líneas a un `.env` y correr un programa.
@@ -28,4 +28,7 @@ Antes (CLAUDE.md): «la clave local nunca entra a la base de datos». Para que e
 ## Límites conocidos
 - Alguien debe tener el agente corriendo en la misma WiFi que el enchufe: la app del teléfono no puede leerlo de forma fiable (iOS/Android la duermen).
 - Al eliminar un agente que sigue conectado, su canal abierto no se cierra hasta que se desconecte; sus lecturas ya se rechazan (token inválido).
-- Hasta el paso 3 (instalable con ventana), el código se escribe con `python -m agent --vincular` en una terminal; el usuario final no debería hacerlo así.
+- **Paso 3 (hecho, solo Mac):** `services/agent/instalador/construir_mac.sh` genera «Apague y vamonos.app» con PyInstaller (Python propio, sin instalar nada): ventana nativa para el código, ícono ⚡ en la barra de menús, inicio con el Mac (LaunchAgent), una sola instancia, registro rotativo y `caffeinate` para que el Mac no se duerma por inactividad. Probado: construye, arranca vinculado, se conecta a la API y pide su configuración. **Sin verificar:** ver el ícono y la ventana del código en pantalla (la captura de pantalla no estaba permitida) y abrirlo desde otro usuario/Mac limpio.
+- Sin cuenta de Apple de pago el programa no está firmado ni notarizado: la primera vez hay que abrirlo con clic derecho → Abrir. La firma «ad hoc» solo evita que el sistema lo trate como archivos sueltos.
+- Windows: no se construyó (haría falta una máquina Windows o un servicio de compilación).
+- Falta dónde publicar el `.zip` para que la app lo enlace («Descargar el programa»); hoy se entrega a mano.
