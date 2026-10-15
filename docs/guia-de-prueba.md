@@ -135,6 +135,14 @@ Los precios de la hamburguesa (Big Mac, $32.900) y la caja de leche (Colanta 1 L
 | 37 | **Agentes → Cambiar nombre** | El nombre cambia en Agentes y en la lista de Enchufes |
 | 38 | **Agentes → Eliminar** | Pide confirmación; sus enchufes pasan a «Sin agente asignado» |
 
+## 5f. Eliminar una casa y corregir lecturas del medidor
+| # | Prueba | Debe pasar |
+| --- | --- | --- |
+| 39 | **Explorar → Facturas y medidor → Anotar lectura del medidor**: anota un número con un cero de más y luego uno correcto menor | La segunda lectura se rechaza («no puede ser menor que la anterior») |
+| 40 | En «Anotaciones anteriores» toca el bote de basura de la lectura mala | Pide confirmación; al borrarla, la lectura correcta ya se puede anotar |
+| 41 | **Explorar → Mis casas → Eliminar esta casa** en una casa de prueba | Pide confirmación, nombra la casa y dice que se borra todo; al confirmar pasa a otra casa (si era la única, a crear una nueva) |
+| 42 | **Explorar → Agentes → Eliminar** un agente que está conectado | El programa de Mac de ese agente deja de recibir órdenes al instante |
+
 ## 6. Si algo falla
 | Síntoma | Causa probable y qué hacer |
 | --- | --- |
