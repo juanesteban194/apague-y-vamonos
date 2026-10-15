@@ -122,6 +122,7 @@ export const actualizarDispositivo = (hogarId: string, id: string, cambios: Disp
 export const borrarDispositivo = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/dispositivos/${id}`, "DELETE");
 export const listarAgentes = (hogarId: string) => api<Agente[]>(`/hogares/${hogarId}/agentes`);
 export const crearAgente = (hogarId: string, nombre: string) => api<AgenteCreado>(`/hogares/${hogarId}/agentes`, "POST", { nombre });
+export const renombrarAgente = (hogarId: string, id: string, nombre: string) => api<Agente>(`/hogares/${hogarId}/agentes/${id}`, "PATCH", { nombre });
 export const revocarAgente = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/agentes/${id}`, "DELETE");
 export const obtenerHogares = () => api<Hogar[]>("/hogares");
 export const obtenerResumen = (hogarId: string) => api<Resumen>(`/hogares/${hogarId}/resumen`);

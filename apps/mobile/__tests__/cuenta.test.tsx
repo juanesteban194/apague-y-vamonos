@@ -40,6 +40,7 @@ const fetchMock = jest.fn();
 const abrirNavegador = WebBrowser.openAuthSessionAsync as jest.Mock;
 const PERFIL = { id: "u1", email: "ana@example.com", nombre: "Ana Pérez", tiene_consentimiento: true, tiene_contrasena: true, tiene_google: false };
 const TOKENS = () => ({ access_token: jwtFalso(), refresh_token: jwtFalso(86400), token_type: "bearer" });
+const AGENTE = { id: "a1", nombre: "Sala", ultima_conexion: new Date().toISOString(), creado_en: "2026-10-12T00:00:00Z", conectado: true, enchufes: [] as { id: string; nombre: string }[] };
 const ENCHUFE = { id: "d1", tuya_id: "eb182b7a119cf6aaeecf66", nombre: "Nevera", tipo_aparato: null, alto_riesgo: false, umbral_minutos_encendido: null };
 
 /** API simulada: rutas exactas con su respuesta; lo demás da 404. Guarda lo enviado en `llamadas`. */
@@ -310,13 +311,16 @@ describe("Categorías de la casa", () => {
     await iniciarSesionDePrueba();
     simular({
       ...base,
-      "GET /hogares/h1/dispositivos": [ENCHUFE, { ...ENCHUFE, id: "d2", nombre: "Pasillo" }],
+      "GET /hogares/h1/dispositivos": [{ ...ENCHUFE, agente_id: "a1" }, { ...ENCHUFE, id: "d2", nombre: "Pasillo", agente_id: null }],
+      "GET /hogares/h1/agentes": [AGENTE],
       "GET /hogares/h1/resumen": { ...RESUMEN, dispositivos: [...RESUMEN.dispositivos, { ...RESUMEN.dispositivos[0], id: "d2", en_linea: false, ultima_lectura: new Date(Date.now() - 2 * 3600_000).toISOString() }] },
     });
     await renderizar(<Enchufes />);
     expect(await screen.findByText("1 de 2 enviando datos ahora")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Nevera · Conectado" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Pasillo · Sin señal desde hace 2 h" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Nevera · Conectado · Lo lee Sala" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Pasillo · Sin señal desde hace 2 h · Sin agente asignado" })).toBeTruthy();
+    expect(screen.getByText("Lo lee: Sala")).toBeTruthy();
+    expect(screen.getByText("Sin agente asignado: no llegarán datos")).toBeTruthy();
     await fireEvent.press(screen.getByRole("button", { name: /^Nevera · / }));
     await fireEvent.press(screen.getByRole("button", { name: "Conectar un enchufe" }));
     expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(["/enchufe/d1", "/enchufe/nuevo"]);
@@ -385,19 +389,53 @@ describe("Categorías de la casa", () => {
     expect(router.push).toHaveBeenCalledWith("/agente/nuevo");
   });
 
-  it("Agentes: uno que nunca se ha conectado", async () => {
+  it("Agentes: uno que nunca se ha conectado y no lee ningún enchufe", async () => {
     await iniciarSesionDePrueba();
-    simular({ ...base, "GET /hogares/h1/agentes": [{ id: "a1", nombre: "Mac", ultima_conexion: null, creado_en: "2026-10-12T00:00:00Z" }] });
+    simular({ ...base, "GET /hogares/h1/agentes": [{ ...AGENTE, conectado: false, ultima_conexion: null }] });
     await renderizar(<Agentes />);
-    expect(await screen.findByText("Mac")).toBeTruthy();
+    expect(await screen.findByText("Sala")).toBeTruthy();
     expect(screen.getByText("Nunca se ha conectado")).toBeTruthy();
+    expect(screen.getByText("No lee ningún enchufe. Asígnalo desde Enchufes.")).toBeTruthy();
   });
 
-  it("Agentes: uno conectado hace segundos", async () => {
+  it("Agentes: uno conectado muestra qué enchufes lee", async () => {
     await iniciarSesionDePrueba();
-    simular({ ...base, "GET /hogares/h1/agentes": [{ id: "a1", nombre: "Mac", ultima_conexion: new Date().toISOString(), creado_en: "2026-10-12T00:00:00Z" }] });
+    simular({ ...base, "GET /hogares/h1/agentes": [{ ...AGENTE, enchufes: [{ id: "d1", nombre: "Nevera" }, { id: "d2", nombre: "Televisor" }] }] });
     await renderizar(<Agentes />);
     expect(await screen.findByText("Conectado")).toBeTruthy();
+    expect(screen.getByText("Lee: Nevera, Televisor")).toBeTruthy();
+  });
+
+  it("Agentes: sin conexión dice desde cuándo", async () => {
+    await iniciarSesionDePrueba();
+    simular({ ...base, "GET /hogares/h1/agentes": [{ ...AGENTE, conectado: false, ultima_conexion: new Date(Date.now() - 2 * 3600_000).toISOString() }] });
+    await renderizar(<Agentes />);
+    expect(await screen.findByText("Sin conexión · última vez hace 2 h")).toBeTruthy();
+  });
+
+  it("Agentes: se le cambia el nombre", async () => {
+    await iniciarSesionDePrueba();
+    simular({ ...base, "GET /hogares/h1/agentes": [AGENTE], "PATCH /hogares/h1/agentes/a1": () => respuestaJson({ ...AGENTE, nombre: "Patio" }) });
+    await renderizar(<Agentes />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Cambiar nombre" }));
+    await fireEvent.changeText(screen.getByLabelText("Nombre del agente"), "  Patio ");
+    await fireEvent.press(screen.getByRole("button", { name: "Guardar nombre" }));
+    await waitFor(() => expect(enviado("PATCH /hogares/h1/agentes/a1")).toEqual({ nombre: "Patio" }));
+  });
+
+  it("Agentes: eliminar pide confirmación y avisa que sus enchufes quedan sin agente", async () => {
+    await iniciarSesionDePrueba();
+    const alerta = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    simular({ ...base, "GET /hogares/h1/agentes": [{ ...AGENTE, enchufes: [{ id: "d1", nombre: "Nevera" }] }], "DELETE /hogares/h1/agentes/a1": () => ({ ok: true, status: 204, json: async () => undefined }) as Response });
+    await renderizar(<Agentes />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Eliminar" }));
+    const [titulo, mensaje, botones] = alerta.mock.calls[0];
+    expect(titulo).toBe('¿Eliminar "Sala"?');
+    expect(mensaje).toMatch(/enchufe quedará sin agente/);
+    expect(fetchMock.mock.calls.some(([u, i]) => i?.method === "DELETE")).toBe(false); // todavía no
+    await botones!.find((b) => b.text === "Eliminar")!.onPress!();
+    await waitFor(() => expect(fetchMock.mock.calls.some(([u, i]) => i?.method === "DELETE" && String(u).endsWith("/agentes/a1"))).toBe(true));
+    alerta.mockRestore();
   });
 
   it("Facturas: lleva a anotar las facturas y la lectura del medidor", async () => {
@@ -493,6 +531,55 @@ describe("Ayuda", () => {
 describe("Enchufes", () => {
   const base = { "GET /hogares": [HOGAR], "GET /hogares/h1/dispositivos": [ENCHUFE] };
 
+  it("con varios agentes se elige cuál lee el enchufe nuevo", async () => {
+    await iniciarSesionDePrueba();
+    simular({ ...base, "GET /hogares/h1/agentes": [AGENTE, { ...AGENTE, id: "a2", nombre: "Patio" }], "POST /hogares/h1/dispositivos": () => respuestaJson(ENCHUFE, 201) });
+    await renderizar(<NuevoEnchufe />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Patio" }));
+    await fireEvent.changeText(screen.getByLabelText("Nombre"), "Lámpara");
+    await fireEvent.changeText(screen.getByLabelText("ID del dispositivo en Tuya"), "abc");
+    await fireEvent.press(screen.getByRole("button", { name: "Agregar" }));
+    await waitFor(() => expect(enviado("POST /hogares/h1/dispositivos")).toMatchObject({ nombre: "Lámpara", agente_id: "a2" }));
+  });
+
+  it("con un solo agente se propone ese", async () => {
+    await iniciarSesionDePrueba();
+    simular({ ...base, "GET /hogares/h1/agentes": [AGENTE], "POST /hogares/h1/dispositivos": () => respuestaJson(ENCHUFE, 201) });
+    await renderizar(<NuevoEnchufe />);
+    expect((await screen.findByRole("button", { name: "Sala" })).props.accessibilityState.selected).toBe(true);
+    await fireEvent.changeText(screen.getByLabelText("Nombre"), "Lámpara");
+    await fireEvent.changeText(screen.getByLabelText("ID del dispositivo en Tuya"), "abc");
+    await fireEvent.press(screen.getByRole("button", { name: "Agregar" }));
+    await waitFor(() => expect(enviado("POST /hogares/h1/dispositivos")).toMatchObject({ agente_id: "a1" }));
+  });
+
+  it("sin agentes en la casa no aparece el selector", async () => {
+    await iniciarSesionDePrueba();
+    simular({ ...base, "GET /hogares/h1/agentes": [] });
+    await renderizar(<NuevoEnchufe />);
+    await screen.findByLabelText("Nombre");
+    expect(screen.queryByText("¿Qué agente lo lee?")).toBeNull();
+  });
+
+  it("al editar se cambia el agente y se puede quitar", async () => {
+    await iniciarSesionDePrueba();
+    (globalThis as { __parametros?: object }).__parametros = { id: "d1" };
+    simular({
+      ...base,
+      "GET /hogares/h1/dispositivos": [{ ...ENCHUFE, agente_id: "a1" }],
+      "GET /hogares/h1/agentes": [AGENTE, { ...AGENTE, id: "a2", nombre: "Patio" }],
+      "PATCH /hogares/h1/dispositivos/d1": () => respuestaJson(ENCHUFE),
+    });
+    await renderizar(<EditarEnchufe />);
+    expect((await screen.findByRole("button", { name: "Sala" })).props.accessibilityState.selected).toBe(true);
+    await fireEvent.press(screen.getByRole("button", { name: "Patio" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
+    await waitFor(() => expect(enviado("PATCH /hogares/h1/dispositivos/d1")).toMatchObject({ agente_id: "a2" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Ninguno" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
+    await waitFor(() => expect(fetchMock.mock.calls.filter(([, i]) => i?.method === "PATCH").map(([, i]) => JSON.parse(i.body).agente_id)).toEqual(["a2", null]));
+  });
+
   it("agrega un enchufe con su ID de Tuya y el aviso de alto riesgo", async () => {
     await iniciarSesionDePrueba();
     simular({ ...base, "POST /hogares/h1/dispositivos": () => respuestaJson(ENCHUFE, 201) });
@@ -507,7 +594,7 @@ describe("Enchufes", () => {
     await fireEvent.changeText(screen.getByLabelText("Minutos encendido antes de avisar"), "45");
     await fireEvent.press(await agregar());
     await waitFor(() =>
-      expect(enviado("POST /hogares/h1/dispositivos")).toEqual({ tuya_id: "abc123", nombre: "Plancha", tipo_aparato: null, alto_riesgo: true, umbral_minutos_encendido: 45 }),
+      expect(enviado("POST /hogares/h1/dispositivos")).toEqual({ tuya_id: "abc123", nombre: "Plancha", tipo_aparato: null, alto_riesgo: true, umbral_minutos_encendido: 45, agente_id: null }),
     );
     expect(router.back).toHaveBeenCalled();
   });
@@ -544,7 +631,7 @@ describe("Enchufes", () => {
     expect(id.props.editable).toBe(false);
     await fireEvent.changeText(screen.getByLabelText("Nombre"), "Nevera nueva");
     await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
-    await waitFor(() => expect(enviado("PATCH /hogares/h1/dispositivos/d1")).toEqual({ nombre: "Nevera nueva", tipo_aparato: null, alto_riesgo: false, umbral_minutos_encendido: null }));
+    await waitFor(() => expect(enviado("PATCH /hogares/h1/dispositivos/d1")).toEqual({ nombre: "Nevera nueva", tipo_aparato: null, alto_riesgo: false, umbral_minutos_encendido: null, agente_id: null }));
   });
 
   it("quitar un enchufe pide confirmación y avisa que borra el historial", async () => {

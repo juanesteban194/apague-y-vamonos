@@ -119,6 +119,17 @@ Los precios de la hamburguesa (Big Mac, $32.900) y la caja de leche (Colanta 1 L
 | 30 | **Explorar → Instrucciones** | Lista de todos los temas explicados |
 | 31 | Botón **Continuar con Google** | Lleva el logo de Google con sus colores |
 
+## 5e. Agentes asignados a enchufes
+| # | Prueba | Debe pasar |
+| --- | --- | --- |
+| 32 | **Explorar → Agentes → Vincular agente** dos veces con nombres distintos (por ejemplo «Sala» y «Patio») | Cada agente sale con su estado y «No lee ningún enchufe» |
+| 33 | **Explorar → Enchufes → toca un enchufe** | Aparece «¿Qué agente lo lee?» con Ninguno y los agentes; elige uno y guarda |
+| 34 | Vuelve a la lista de Enchufes | Cada enchufe dice «Lo lee: Sala» (o «Sin agente asignado: no llegarán datos») |
+| 35 | Corre el agente de Sala y deja el de Patio apagado; en Inicio toca el aparato asignado a Patio y apágalo | Dice «el agente «Patio», que lee este enchufe, no está conectado» |
+| 36 | Corre un agente que NO es el asignado al enchufe | Sus lecturas de ese enchufe se descartan (el log del agente lo avisa) |
+| 37 | **Agentes → Cambiar nombre** | El nombre cambia en Agentes y en la lista de Enchufes |
+| 38 | **Agentes → Eliminar** | Pide confirmación; sus enchufes pasan a «Sin agente asignado» |
+
 ## 6. Si algo falla
 | Síntoma | Causa probable y qué hacer |
 | --- | --- |
