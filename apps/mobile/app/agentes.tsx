@@ -38,13 +38,14 @@ export default function Agentes() {
             await renombrarAgente(hogar!.id, a.id, nombre);
             await cliente.invalidateQueries({ queryKey: ["agentes"] });
           }}
+          alUsarEnOtroComputador={() => router.push({ pathname: "/agente/nuevo", params: { agente: a.id } })}
           alEliminar={async () => {
             await revocarAgente(hogar!.id, a.id);
             await cliente.invalidateQueries();
           }}
         />
       ))}
-      <Boton titulo="Vincular agente" variante={agentes?.length ? "secundario" : "primario"} onPress={() => router.push("/agente/nuevo")} />
+      <Boton titulo="Agregar agente" variante={agentes?.length ? "secundario" : "primario"} onPress={() => router.push("/agente/nuevo")} />
     </Pantalla>
   );
 }

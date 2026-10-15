@@ -188,6 +188,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/hogares/{hogar_id}/agentes/con-codigo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Crear Agente Con Codigo
+         * @description Agente nuevo sin token: la persona escribe el código de 6 dígitos en el programa del agente y este se vincula solo.
+         */
+        post: operations["crear_agente_con_codigo_hogares__hogar_id__agentes_con_codigo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/agentes/{agente_id}/codigo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Codigo Nuevo
+         * @description Código nuevo para vincular este agente en otro computador (o si el anterior venció). El programa vinculado antes deja de servir al usarlo.
+         */
+        post: operations["codigo_nuevo_hogares__hogar_id__agentes__agente_id__codigo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/hogares/{hogar_id}": {
         parameters: {
             query?: never;
@@ -235,6 +275,46 @@ export interface paths {
         put?: never;
         /** Registrar Lectura */
         post: operations["registrar_lectura_hogares__hogar_id__lecturas_medidor_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agentes/vincular": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Vincular
+         * @description Sin sesión: el código de 6 dígitos que muestra la app es la autorización (vence en 10 minutos y sirve una vez).
+         */
+        post: operations["vincular_agentes_vincular_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agentes/configuracion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Configuracion
+         * @description Con el token del agente: los enchufes que le tocan y sus claves locales (solo a él, por HTTPS).
+         */
+        get: operations["configuracion_agentes_configuracion_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -628,6 +708,23 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AgenteConCodigoOut */
+        AgenteConCodigoOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Nombre */
+            nombre: string;
+            /** Codigo */
+            codigo: string;
+            /**
+             * Expira En
+             * Format: date-time
+             */
+            expira_en: string;
+        };
         /** AgenteCreadoOut */
         AgenteCreadoOut: {
             /**
@@ -661,6 +758,16 @@ export interface components {
              * Format: date-time
              */
             creado_en: string;
+            /**
+             * Codigo Pendiente
+             * @default false
+             */
+            codigo_pendiente: boolean;
+            /**
+             * Vinculado
+             * @default true
+             */
+            vinculado: boolean;
             /**
              * Conectado
              * @default false
@@ -728,6 +835,20 @@ export interface components {
              * @enum {string}
              */
             via: "agente" | "nube";
+        };
+        /** ConfiguracionOut */
+        ConfiguracionOut: {
+            /**
+             * Agente Id
+             * Format: uuid
+             */
+            agente_id: string;
+            /** Nombre */
+            nombre: string;
+            /** Enchufes */
+            enchufes: components["schemas"]["EnchufeConfigOut"][];
+            /** Sin Clave */
+            sin_clave: string[];
         };
         /** ConsejoOut */
         ConsejoOut: {
@@ -863,6 +984,15 @@ export interface components {
             costo_hoy_cop: number | null;
             /** Costo Mes Cop */
             costo_mes_cop: number | null;
+        };
+        /** EnchufeConfigOut */
+        EnchufeConfigOut: {
+            /** Tuya Id */
+            tuya_id: string;
+            /** Nombre */
+            nombre: string;
+            /** Clave Local */
+            clave_local: string;
         };
         /** EnchufeDeAgenteOut */
         EnchufeDeAgenteOut: {
@@ -1382,6 +1512,28 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /**
+         * VinculadoOut
+         * @description Lo que recibe el programa del agente al usar el código. El token solo se entrega aquí, una vez.
+         */
+        VinculadoOut: {
+            /**
+             * Agente Id
+             * Format: uuid
+             */
+            agente_id: string;
+            /** Nombre */
+            nombre: string;
+            /** Hogar Nombre */
+            hogar_nombre: string;
+            /** Token */
+            token: string;
+        };
+        /** VincularIn */
+        VincularIn: {
+            /** Codigo */
+            codigo: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -1748,6 +1900,73 @@ export interface operations {
             };
         };
     };
+    crear_agente_con_codigo_hogares__hogar_id__agentes_con_codigo_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgenteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgenteConCodigoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    codigo_nuevo_hogares__hogar_id__agentes__agente_id__codigo_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+                agente_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgenteConCodigoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     actualizar_hogares__hogar_id__patch: {
         parameters: {
             query?: never;
@@ -1911,6 +2130,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    vincular_agentes_vincular_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VincularIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VinculadoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    configuracion_agentes_configuracion_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfiguracionOut"];
                 };
             };
         };

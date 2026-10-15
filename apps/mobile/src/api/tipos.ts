@@ -13,6 +13,7 @@ export type Dispositivo = components["schemas"]["DispositivoOut"];
 export type DispositivoNuevo = components["schemas"]["DispositivoIn"];
 export type DispositivoCambios = components["schemas"]["DispositivoActualizarIn"];
 export type Agente = components["schemas"]["AgenteOut"];
+export type AgenteConCodigo = components["schemas"]["AgenteConCodigoOut"];
 export type AgenteCreado = components["schemas"]["AgenteCreadoOut"];
 export type HogarNuevo = components["schemas"]["HogarIn"];
 export type HogarCambios = components["schemas"]["HogarActualizarIn"];
