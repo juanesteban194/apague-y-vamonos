@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, false, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, false, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base, nuevo_id
@@ -20,4 +20,6 @@ class Dispositivo(Base):
     umbral_minutos_encendido: Mapped[int | None] = mapped_column(Integer)
     # El agente que lo lee. Solo ese agente puede mandar sus lecturas y recibir sus órdenes de encender/apagar. Si el agente se elimina, queda sin agente.
     agente_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("agentes.id", ondelete="SET NULL"), index=True)
+    # Clave local de Tuya, cifrada (ADR 0008). Solo se entrega al agente asignado; la app nunca la recibe.
+    clave_local_cifrada: Mapped[str | None] = mapped_column(Text)
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

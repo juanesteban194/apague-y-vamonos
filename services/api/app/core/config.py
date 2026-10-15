@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     # Notificaciones push por Expo (https://exp.host). El token de acceso es opcional (mejora los límites de uso).
     expo_access_token: str | None = None
 
+    # Cifra las claves locales de los enchufes que se guardan en la base (ADR 0008). Cualquier texto largo y secreto; nunca en el repositorio.
+    clave_maestra: str | None = None
+
     # Respaldo por la nube de Tuya (solo cuando el agente no responde). Sin credenciales, no hay respaldo.
     tuya_access_id: str | None = None
     tuya_access_secret: str | None = None

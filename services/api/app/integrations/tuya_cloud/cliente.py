@@ -122,4 +122,16 @@ class ClienteTuyaCloud:
         log.warning("comando por Tuya Cloud (respaldo) a %s: %s [llamadas este mes: %d]", tuya_id, "encender" if encender else "apagar", self._llamadas)
 
 
+    async def clave_local(self, tuya_id: str) -> str:
+        """Clave local de un enchufe (para que el agente lo lea por LAN). 2 llamadas la primera vez (token + dispositivo), 1 después."""
+        if not self.configurado():
+            raise ErrorTuyaCloud("Tuya Cloud no está configurado")
+        await self._obtener_token()
+        r = await self._pedir("GET", f"/v1.0/devices/{tuya_id}")
+        clave = (r.get("result") or {}).get("local_key")
+        if not clave:
+            raise ErrorTuyaCloud("Tuya no entregó la clave local de ese enchufe (¿está en la cuenta vinculada al proyecto?)")
+        return clave
+
+
 cliente_tuya = ClienteTuyaCloud()
