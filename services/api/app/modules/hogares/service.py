@@ -96,6 +96,23 @@ def revocar_agente(db: Session, hogar_id: uuid.UUID, agente_id: uuid.UUID) -> No
     db.commit()
 
 
+def borrar_hogar(db: Session, hogar_id: uuid.UUID) -> None:
+    """Borra la casa con todo lo suyo (enchufes, lecturas, agentes, avisos, prepago, rutinas, facturas…): las llaves foráneas lo hacen en cascada."""
+    hogar = db.get(Hogar, hogar_id)
+    if hogar is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Casa no encontrada")
+    db.delete(hogar)
+    db.commit()
+
+
+def borrar_lectura_medidor(db: Session, hogar_id: uuid.UUID, lectura_id: uuid.UUID) -> None:
+    lectura = db.get(LecturaMedidor, lectura_id)
+    if lectura is None or lectura.hogar_id != hogar_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Lectura no encontrada")
+    db.delete(lectura)
+    db.commit()
+
+
 def registrar_lectura_medidor(db: Session, hogar_id: uuid.UUID, datos: LecturaMedidorIn) -> LecturaMedidor:
     """Lectura del medidor de EPM (HU-07). El contador solo sube: una lectura menor que la última es casi seguro un error de digitación."""
     fecha = datos.fecha or datetime.now(ZoneInfo("America/Bogota")).date()

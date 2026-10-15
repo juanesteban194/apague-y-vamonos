@@ -2,6 +2,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
+from starlette.concurrency import run_in_threadpool
 
 from app.core.database import get_db
 from app.modules.auth.dependencias import usuario_con_consentimiento
@@ -9,6 +10,7 @@ from app.modules.agentes import service as agentes_service
 from app.modules.agentes.schemas import AgenteConCodigoOut
 from app.modules.hogares import service
 from app.modules.hogares.models import Agente, Hogar
+from app.realtime.agentes import gestor_agentes
 from app.modules.hogares.schemas import (
     AgenteCreadoOut,
     AgenteIn,
@@ -116,14 +118,41 @@ def renombrar_agente(
 
 
 @router.delete("/{hogar_id}/agentes/{agente_id}", status_code=status.HTTP_204_NO_CONTENT)
-def revocar_agente(
+async def revocar_agente(
     hogar_id: uuid.UUID,
     agente_id: uuid.UUID,
     db: Session = Depends(get_db),
     usuario_id: uuid.UUID = Depends(usuario_con_consentimiento),
 ):
-    service.exigir_miembro(db, usuario_id, hogar_id, rol="titular")
-    service.revocar_agente(db, hogar_id, agente_id)
+    await run_in_threadpool(service.exigir_miembro, db, usuario_id, hogar_id, "titular")
+    await run_in_threadpool(service.revocar_agente, db, hogar_id, agente_id)
+    await gestor_agentes.cerrar(hogar_id, agente_id)  # si seguía conectado, se le corta el canal ya
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.delete("/{hogar_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def borrar_casa(
+    hogar_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    usuario_id: uuid.UUID = Depends(usuario_con_consentimiento),
+):
+    """Solo el titular. Borra la casa con todo lo suyo y no se puede deshacer."""
+    await run_in_threadpool(service.exigir_miembro, db, usuario_id, hogar_id, "titular")
+    await run_in_threadpool(service.borrar_hogar, db, hogar_id)
+    await gestor_agentes.cerrar(hogar_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.delete("/{hogar_id}/lecturas-medidor/{lectura_id}", status_code=status.HTTP_204_NO_CONTENT)
+def borrar_lectura(
+    hogar_id: uuid.UUID,
+    lectura_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    usuario_id: uuid.UUID = Depends(usuario_con_consentimiento),
+):
+    """Para corregir un error de digitación: se borra la lectura mala y se anota la correcta."""
+    service.exigir_miembro(db, usuario_id, hogar_id)
+    service.borrar_lectura_medidor(db, hogar_id, lectura_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
