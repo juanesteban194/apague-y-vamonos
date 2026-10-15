@@ -35,13 +35,22 @@ class HogarActualizarIn(BaseModel):
     tipo_medidor: str | None = Field(default=None, max_length=30)
 
 
+class AgenteRenombrarIn(BaseModel):
+    nombre: str = Field(min_length=1, max_length=120)
+
+
+class EnchufeDeAgenteOut(BaseModel):
+    id: uuid.UUID
+    nombre: str
+
+
 class AgenteOut(BaseModel):
     id: uuid.UUID
     nombre: str
     ultima_conexion: datetime | None
     creado_en: datetime
-
-    model_config = {"from_attributes": True}
+    conectado: bool = False  # tiene el canal abierto con la API en este momento
+    enchufes: list[EnchufeDeAgenteOut] = []  # los que lee este agente
 
 
 class LecturaMedidorIn(BaseModel):

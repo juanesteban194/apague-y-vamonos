@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.security import generar_token_agente, hash_token_agente
 from app.modules.alertas.models import PreferenciaAlertas
 from app.modules.hogares.models import Agente, Hogar, LecturaMedidor, MiembroHogar
-from app.modules.hogares.schemas import AgenteIn, HogarActualizarIn, HogarIn, LecturaMedidorIn
+from app.modules.hogares.schemas import AgenteIn, AgenteOut, EnchufeDeAgenteOut, HogarActualizarIn, HogarIn, LecturaMedidorIn
 
 
 def exigir_miembro(db: Session, usuario_id: uuid.UUID, hogar_id: uuid.UUID, rol: str | None = None) -> MiembroHogar:
@@ -59,6 +59,32 @@ def actualizar_hogar(db: Session, hogar: Hogar, datos: HogarActualizarIn) -> Hog
 
 def listar_agentes(db: Session, hogar_id: uuid.UUID) -> list[Agente]:
     return list(db.scalars(select(Agente).where(Agente.hogar_id == hogar_id).order_by(Agente.creado_en)))
+
+
+def agentes_con_enchufes(db: Session, hogar_id: uuid.UUID) -> list[AgenteOut]:
+    """Los agentes de la casa con los enchufes que lee cada uno y si están conectados ahora mismo."""
+    from app.modules.dispositivos.models import Dispositivo
+    from app.realtime.agentes import gestor_agentes
+
+    enchufes: dict[uuid.UUID, list[EnchufeDeAgenteOut]] = {}
+    for d in db.scalars(select(Dispositivo).where(Dispositivo.hogar_id == hogar_id, Dispositivo.agente_id.is_not(None)).order_by(Dispositivo.creado_en)):
+        enchufes.setdefault(d.agente_id, []).append(EnchufeDeAgenteOut(id=d.id, nombre=d.nombre))
+    return [
+        AgenteOut(
+            id=a.id, nombre=a.nombre, ultima_conexion=a.ultima_conexion, creado_en=a.creado_en,
+            conectado=gestor_agentes.conectado(hogar_id, a.id), enchufes=enchufes.get(a.id, []),
+        )
+        for a in listar_agentes(db, hogar_id)
+    ]
+
+
+def renombrar_agente(db: Session, hogar_id: uuid.UUID, agente_id: uuid.UUID, nombre: str) -> Agente:
+    agente = db.get(Agente, agente_id)
+    if agente is None or agente.hogar_id != hogar_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Agente no encontrado")
+    agente.nombre = nombre
+    db.commit()
+    return agente
 
 
 def revocar_agente(db: Session, hogar_id: uuid.UUID, agente_id: uuid.UUID) -> None:

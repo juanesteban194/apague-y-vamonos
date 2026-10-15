@@ -65,13 +65,13 @@ def guardar_lecturas(db: Session, agente: Agente, datos: LecturasIn) -> tuple[Le
 
     Devuelve también los eventos en vivo a publicar por WebSocket."""
     ids = {l.tuya_id for l in datos.lecturas}
-    dispositivos = dict(
-        db.execute(
-            select(Dispositivo.tuya_id, Dispositivo.id).where(
-                Dispositivo.hogar_id == agente.hogar_id, Dispositivo.tuya_id.in_(ids)
-            )
-        ).all()
-    )
+    del_hogar = list(db.scalars(select(Dispositivo).where(Dispositivo.hogar_id == agente.hogar_id, Dispositivo.tuya_id.in_(ids))))
+    for d in del_hogar:
+        if d.agente_id is None:
+            d.agente_id = agente.id  # un enchufe sin agente toma al primero que lo lee: así el caso normal no pide configurar nada
+    # Solo cuentan las lecturas de SUS enchufes: si el enchufe está asignado a otro agente, se descartan (lo contrario mezclaría dos fuentes).
+    dispositivos = {d.tuya_id: d.id for d in del_hogar if d.agente_id == agente.id}
+    ajenas = {l.tuya_id for l in datos.lecturas if l.tuya_id in {d.tuya_id for d in del_hogar} and l.tuya_id not in dispositivos}
     filas = [
         {
             "dispositivo_id": dispositivos[l.tuya_id],
@@ -108,6 +108,7 @@ def guardar_lecturas(db: Session, agente: Agente, datos: LecturasIn) -> tuple[Le
         recibidas=len(datos.lecturas),
         guardadas=guardadas,
         duplicadas=len(filas) - guardadas,
-        desconocidas=len(datos.lecturas) - len(filas),
+        desconocidas=len(datos.lecturas) - len(filas) - sum(1 for l in datos.lecturas if l.tuya_id in ajenas),
+        de_otro_agente=sum(1 for l in datos.lecturas if l.tuya_id in ajenas),
     )
     return salida, (_eventos_en_vivo(nuevas, previo) if nuevas else [])

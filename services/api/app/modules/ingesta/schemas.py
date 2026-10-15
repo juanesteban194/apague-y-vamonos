@@ -20,3 +20,4 @@ class LecturasOut(BaseModel):
     guardadas: int
     duplicadas: int
     desconocidas: int  # lecturas de un tuya_id que no es de este hogar
+    de_otro_agente: int = 0  # lecturas de un enchufe de este hogar que está asignado a otro agente: se descartan

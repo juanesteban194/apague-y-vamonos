@@ -12,10 +12,12 @@ class Dispositivo(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=nuevo_id)
     hogar_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("hogares.id", ondelete="CASCADE"), index=True)
-    # ID de Tuya (no es secreto). La clave local NUNCA se guarda aquí: vive en el agente.
+    # ID de Tuya (no es secreto). La clave local no va en esta tabla (ver ADR 0008).
     tuya_id: Mapped[str] = mapped_column(String(64), unique=True)
     nombre: Mapped[str] = mapped_column(String(120))
     tipo_aparato: Mapped[str | None] = mapped_column(String(60))
     alto_riesgo: Mapped[bool] = mapped_column(Boolean, server_default=false(), default=False)
     umbral_minutos_encendido: Mapped[int | None] = mapped_column(Integer)
+    # El agente que lo lee. Solo ese agente puede mandar sus lecturas y recibir sus órdenes de encender/apagar. Si el agente se elimina, queda sin agente.
+    agente_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("agentes.id", ondelete="SET NULL"), index=True)
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
