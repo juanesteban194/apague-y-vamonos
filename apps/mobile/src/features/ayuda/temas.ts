@@ -69,7 +69,7 @@ export const TEMAS = {
     paraQueSirve: "Tu promedio de los últimos meses es lo «normal» de tu casa: contra él medimos cuánto ahorras. La lectura del medidor nos dice cuánto lleva este mes toda la casa, no solo los enchufes.",
     pasos: [
       "Anota los kWh de los últimos meses (al menos 3) tal como salen en el cuadro de historial de tu factura.",
-      "Cada cierto tiempo anota la lectura de tu medidor.",
+      "Cada cierto tiempo anota la lectura de tu medidor. Si te equivocas al escribirla, bórrala con el bote de basura y anota la correcta.",
       "Con eso el semáforo y la línea de subsistencia se vuelven más exactos.",
     ],
   },
@@ -111,7 +111,7 @@ export const TEMAS = {
     icono: "casas",
     queEs: "Puedes tener varias casas en la misma cuenta (la tuya, la de tus papás, un local).",
     paraQueSirve: "Cada casa tiene sus propios enchufes, agente, facturas y avisos, y no se mezclan.",
-    pasos: ["Toca el nombre de una casa para verla.", "Toca «Agregar otra casa» e indica su estrato."],
+    pasos: ["Toca el nombre de una casa para verla.", "Toca «Agregar otra casa» e indica su estrato.", "«Eliminar esta casa» la borra con todo lo suyo (enchufes, historial, agentes…). Pide confirmación y no se puede deshacer."],
   },
 } as const satisfies Record<string, TemaAyuda>;
 
