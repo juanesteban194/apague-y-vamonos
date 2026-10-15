@@ -11,6 +11,7 @@ from websockets.sync.client import connect
 
 from agent.collector.lector import ErrorEnchufe
 from agent.config.ajustes import Ajustes
+from agent.config.remota import Registro
 
 log = logging.getLogger("agente.comandos")
 
@@ -28,9 +29,9 @@ def url_del_canal(api_url: str) -> str:
 
 
 class ClienteComandos:
-    def __init__(self, ajustes: Ajustes, lectores: list):
+    def __init__(self, ajustes: Ajustes, lectores: "list | Registro"):
         self._ajustes = ajustes
-        self._lectores = {l.tuya_id: l for l in lectores}
+        self._registro = lectores if isinstance(lectores, Registro) else Registro(lectores)
         self._ultimo_aviso = 0.0
 
     def correr(self, parar: threading.Event) -> None:
@@ -85,7 +86,7 @@ class ClienteComandos:
         if orden.get("tipo") != "comando":
             return  # pong y demás
         id_comando, tuya_id, accion = orden.get("id"), orden.get("tuya_id"), orden.get("accion")
-        lector = self._lectores.get(tuya_id)
+        lector = self._registro.get(tuya_id)
         if lector is None:
             return self._responder(ws, id_comando, False, "ese enchufe no es de este agente")
         if accion not in ("encender", "apagar"):
