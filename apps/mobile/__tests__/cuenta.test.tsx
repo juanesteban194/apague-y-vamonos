@@ -33,6 +33,8 @@ import Casas from "../app/casas";
 import EliminarCuenta from "../app/eliminar-cuenta";
 import Medidor from "../app/medidor";
 import Politica from "../app/politica";
+import Recuperar from "../app/(auth)/recuperar";
+import VerificarCorreo from "../app/verificar-correo";
 import Enchufes from "../app/enchufes";
 import Facturas from "../app/facturas";
 import Instrucciones from "../app/instrucciones";
@@ -42,7 +44,7 @@ import { clienteDePrueba, HOGAR, iniciarSesionDePrueba, jwtFalso, renderizar, re
 
 const fetchMock = jest.fn();
 const abrirNavegador = WebBrowser.openAuthSessionAsync as jest.Mock;
-const PERFIL = { id: "u1", email: "ana@example.com", nombre: "Ana Pérez", tiene_consentimiento: true, tiene_contrasena: true, tiene_google: false };
+const PERFIL = { id: "u1", email: "ana@example.com", nombre: "Ana Pérez", tiene_consentimiento: true, tiene_contrasena: true, tiene_google: false, email_verificado: false };
 const TOKENS = () => ({ access_token: jwtFalso(), refresh_token: jwtFalso(86400), token_type: "bearer" });
 const AGENTE = { id: "a1", nombre: "Sala", ultima_conexion: new Date().toISOString(), creado_en: "2026-10-12T00:00:00Z", vinculado: true, conectado: true, enchufes: [] as { id: string; nombre: string }[] };
 const ENCHUFE = { id: "d1", tuya_id: "eb182b7a119cf6aaeecf66", nombre: "Nevera", tipo_aparato: null, alto_riesgo: false, umbral_minutos_encendido: null };
@@ -529,6 +531,131 @@ describe("Ayuda", () => {
     useAyudaVista.setState({ cargada: true, vistas: ["agentes", "enchufes"] });
     await reiniciarAyuda();
     expect(useAyudaVista.getState().vistas).toEqual([]);
+  });
+});
+
+describe("Recuperar la contraseña y verificar el correo", () => {
+  const llamadas = (metodo: string, ruta: string) =>
+    fetchMock.mock.calls.filter(([u, i]) => (i?.method ?? "GET") === metodo && String(u) === `https://api.test${ruta}`);
+  const cuerpo = (metodo: string, ruta: string) => JSON.parse(llamadas(metodo, ruta)[0]?.[1].body ?? "null");
+  const sinContenido = () => ({ ok: true, status: 204, json: async () => undefined }) as Response;
+
+  it("el login ofrece recuperar la contraseña", async () => {
+    await renderizar(<Login />);
+    expect(screen.getByText("¿Olvidaste tu contraseña?")).toBeTruthy();
+  });
+
+  it("paso 1: pide el correo, valida que sea un correo y manda el código", async () => {
+    simular({ "POST /auth/olvide-contrasena": () => respuestaJson({ detalle: "ok" }, 202) });
+    await renderizar(<Recuperar />);
+    const enviar = () => screen.getByRole("button", { name: "Enviarme el código" });
+    expect(enviar().props.accessibilityState.disabled).toBe(true);
+    await fireEvent.changeText(screen.getByLabelText("Correo"), "no-es-un-correo");
+    expect(enviar().props.accessibilityState.disabled).toBe(true);
+    await fireEvent.changeText(screen.getByLabelText("Correo"), "  ana@example.com ");
+    await fireEvent.press(enviar());
+    expect(await screen.findByText("Revisa tu correo")).toBeTruthy();
+    expect(cuerpo("POST", "/auth/olvide-contrasena")).toEqual({ email: "ana@example.com" });
+    expect(screen.getByText(/Si ana@example.com tiene una cuenta/)).toBeTruthy(); // no confirma si existe
+  });
+
+  it("paso 2: cambia la contraseña con el código y avisa que cerró las otras sesiones", async () => {
+    simular({ "POST /auth/olvide-contrasena": () => respuestaJson({ detalle: "ok" }, 202), "POST /auth/restablecer-contrasena": sinContenido });
+    await renderizar(<Recuperar />);
+    await fireEvent.changeText(screen.getByLabelText("Correo"), "ana@example.com");
+    await fireEvent.press(screen.getByRole("button", { name: "Enviarme el código" }));
+    await screen.findByText("Revisa tu correo");
+    const cambiar = () => screen.getByRole("button", { name: "Cambiar mi contraseña" });
+    expect(cambiar().props.accessibilityState.disabled).toBe(true);
+    await fireEvent.changeText(screen.getByLabelText("Código de 6 números"), "12345");
+    await fireEvent.changeText(screen.getByLabelText("Contraseña nueva"), "otra-clave-nueva-9");
+    expect(cambiar().props.accessibilityState.disabled).toBe(true); // el código tiene 5 números
+    await fireEvent.changeText(screen.getByLabelText("Código de 6 números"), "123456");
+    await fireEvent.changeText(screen.getByLabelText("Contraseña nueva"), "corta");
+    expect(cambiar().props.accessibilityState.disabled).toBe(true); // menos de 8 caracteres
+    await fireEvent.changeText(screen.getByLabelText("Contraseña nueva"), "otra-clave-nueva-9");
+    await fireEvent.press(cambiar());
+    expect(await screen.findByText("¡Listo! Cambiaste tu contraseña")).toBeTruthy();
+    expect(cuerpo("POST", "/auth/restablecer-contrasena")).toEqual({ email: "ana@example.com", codigo: "123456", contrasena_nueva: "otra-clave-nueva-9" });
+    expect(screen.getByText(/cerramos las demás sesiones/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: "Ir a entrar" }));
+    expect(router.replace).toHaveBeenCalledWith("/login");
+  });
+
+  it("un código malo o vencido se dice y deja intentar de nuevo", async () => {
+    simular({
+      "POST /auth/olvide-contrasena": () => respuestaJson({ detalle: "ok" }, 202),
+      "POST /auth/restablecer-contrasena": () => respuestaJson({ detail: "Ese código no es válido o ya venció. Pide uno nuevo." }, 400),
+    });
+    await renderizar(<Recuperar />);
+    await fireEvent.changeText(screen.getByLabelText("Correo"), "ana@example.com");
+    await fireEvent.press(screen.getByRole("button", { name: "Enviarme el código" }));
+    await screen.findByText("Revisa tu correo");
+    await fireEvent.changeText(screen.getByLabelText("Código de 6 números"), "000000");
+    await fireEvent.changeText(screen.getByLabelText("Contraseña nueva"), "otra-clave-nueva-9");
+    await fireEvent.press(screen.getByRole("button", { name: "Cambiar mi contraseña" }));
+    expect(await screen.findByText("Ese código no es válido o ya venció. Pide uno nuevo.")).toBeTruthy();
+    expect(screen.queryByText("¡Listo! Cambiaste tu contraseña")).toBeNull();
+    await fireEvent.press(screen.getByRole("button", { name: "Pedir otro código" })); // vuelve al paso 1
+    expect(await screen.findByRole("button", { name: "Enviarme el código" })).toBeTruthy();
+  });
+
+  it("sin conexión lo dice en el primer paso", async () => {
+    fetchMock.mockRejectedValue(new Error("red"));
+    await renderizar(<Recuperar />);
+    await fireEvent.changeText(screen.getByLabelText("Correo"), "ana@example.com");
+    await fireEvent.press(screen.getByRole("button", { name: "Enviarme el código" }));
+    expect(await screen.findByText("No hay conexión con el servidor")).toBeTruthy();
+  });
+
+  it("verificar el correo: envía el código, lo confirma y queda verificado", async () => {
+    await iniciarSesionDePrueba();
+    let verificado = false;
+    fetchMock.mockImplementation(async (url: string, init: RequestInit = {}) => {
+      const clave = `${init.method ?? "GET"} ${String(url).replace("https://api.test", "")}`;
+      if (clave === "GET /auth/yo") return respuestaJson({ ...PERFIL, email_verificado: verificado });
+      if (clave === "POST /auth/verificar-correo/enviar") return respuestaJson({ detalle: "ok" }, 202);
+      if (clave === "POST /auth/verificar-correo") {
+        verificado = true;
+        return respuestaJson({ ...PERFIL, email_verificado: true });
+      }
+      return respuestaJson({ detail: `sin simular ${clave}` }, 404);
+    });
+    await renderizar(<VerificarCorreo />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Enviarme el código" }));
+    expect(await screen.findByText(/revisa tu correo/)).toBeTruthy();
+    const verificar = () => screen.getByRole("button", { name: "Verificar" });
+    expect(verificar().props.accessibilityState.disabled).toBe(true);
+    await fireEvent.changeText(screen.getByLabelText("Código de 6 números"), "654321");
+    await fireEvent.press(verificar());
+    expect(await screen.findByText("Tu correo está verificado")).toBeTruthy();
+    expect(cuerpo("POST", "/auth/verificar-correo")).toEqual({ codigo: "654321" });
+  });
+
+  it("un código malo al verificar se explica", async () => {
+    await iniciarSesionDePrueba();
+    simular({ "GET /auth/yo": PERFIL, "POST /auth/verificar-correo": () => respuestaJson({ detail: "Ese código no es válido o ya venció. Pide uno nuevo." }, 400) });
+    await renderizar(<VerificarCorreo />);
+    await fireEvent.changeText(await screen.findByLabelText("Código de 6 números"), "111111");
+    await fireEvent.press(screen.getByRole("button", { name: "Verificar" }));
+    expect(await screen.findByText("Ese código no es válido o ya venció. Pide uno nuevo.")).toBeTruthy();
+  });
+
+  it("Ajustes muestra si el correo está verificado y ofrece verificarlo", async () => {
+    await iniciarSesionDePrueba();
+    simular({ "GET /auth/yo": PERFIL, "GET /hogares": [HOGAR] });
+    await renderizar(<Ajustes />);
+    expect(await screen.findByText("Correo sin verificar")).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: "Verificar mi correo" }));
+    expect(router.push).toHaveBeenCalledWith("/verificar-correo");
+  });
+
+  it("con el correo ya verificado Ajustes no insiste", async () => {
+    await iniciarSesionDePrueba();
+    simular({ "GET /auth/yo": { ...PERFIL, email_verificado: true }, "GET /hogares": [HOGAR] });
+    await renderizar(<Ajustes />);
+    expect(await screen.findByText("Correo verificado")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Verificar mi correo" })).toBeNull();
   });
 });
 

@@ -21,6 +21,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/olvide-contrasena": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Olvide Contrasena
+         * @description Manda un código al correo si tiene cuenta. La respuesta es siempre la misma: no se revela quién tiene cuenta.
+         */
+        post: operations["olvide_contrasena_auth_olvide_contrasena_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/restablecer-contrasena": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restablecer Contrasena
+         * @description Con el código del correo se elige una contraseña nueva. Las sesiones abiertas se cierran.
+         */
+        post: operations["restablecer_contrasena_auth_restablecer_contrasena_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/verificar-correo/enviar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enviar Verificacion */
+        post: operations["enviar_verificacion_auth_verificar_correo_enviar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/verificar-correo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verificar Correo */
+        post: operations["verificar_correo_auth_verificar_correo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/login": {
         parameters: {
             query?: never;
@@ -69,7 +143,11 @@ export interface paths {
         get: operations["yo_auth_yo_get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Eliminar Cuenta
+         * @description Borra la cuenta y sus datos (derecho de supresión, Ley 1581). No pide haber aceptado el tratamiento: quien no lo acepta debe poder irse.
+         */
+        delete: operations["eliminar_cuenta_auth_yo_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -238,7 +316,11 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Borrar Casa
+         * @description Solo el titular. Borra la casa con todo lo suyo y no se puede deshacer.
+         */
+        delete: operations["borrar_casa_hogares__hogar_id__delete"];
         options?: never;
         head?: never;
         /** Actualizar */
@@ -261,6 +343,26 @@ export interface paths {
         head?: never;
         /** Renombrar Agente */
         patch: operations["renombrar_agente_hogares__hogar_id__agentes__agente_id__patch"];
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/lecturas-medidor/{lectura_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Borrar Lectura
+         * @description Para corregir un error de digitación: se borra la lectura mala y se anota la correcta.
+         */
+        delete: operations["borrar_lectura_hogares__hogar_id__lecturas_medidor__lectura_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/hogares/{hogar_id}/lecturas-medidor": {
@@ -821,6 +923,11 @@ export interface components {
             /** Code Verifier */
             code_verifier: string;
         };
+        /** CodigoIn */
+        CodigoIn: {
+            /** Codigo */
+            codigo: string;
+        };
         /** ComandoOut */
         ComandoOut: {
             /**
@@ -984,6 +1091,11 @@ export interface components {
             costo_hoy_cop: number | null;
             /** Costo Mes Cop */
             costo_mes_cop: number | null;
+        };
+        /** EliminarCuentaIn */
+        EliminarCuentaIn: {
+            /** Contrasena */
+            contrasena?: string | null;
         };
         /** EnchufeConfigOut */
         EnchufeConfigOut: {
@@ -1171,6 +1283,14 @@ export interface components {
             /** Valor Cop */
             valor_cop?: number | null;
         };
+        /** OlvideContrasenaIn */
+        OlvideContrasenaIn: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+        };
         /** PerfilOut */
         PerfilOut: {
             /**
@@ -1191,6 +1311,11 @@ export interface components {
             tiene_contrasena: boolean;
             /** Tiene Google */
             tiene_google: boolean;
+            /**
+             * Email Verificado
+             * @default false
+             */
+            email_verificado: boolean;
         };
         /** PreferenciasAlertas */
         PreferenciasAlertas: {
@@ -1262,6 +1387,18 @@ export interface components {
         RenovarIn: {
             /** Refresh Token */
             refresh_token: string;
+        };
+        /** RestablecerContrasenaIn */
+        RestablecerContrasenaIn: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Codigo */
+            codigo: string;
+            /** Contrasena Nueva */
+            contrasena_nueva: string;
         };
         /** ResumenOut */
         ResumenOut: {
@@ -1576,6 +1713,123 @@ export interface operations {
             };
         };
     };
+    olvide_contrasena_auth_olvide_contrasena_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OlvideContrasenaIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restablecer_contrasena_auth_restablecer_contrasena_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestablecerContrasenaIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enviar_verificacion_auth_verificar_correo_enviar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    verificar_correo_auth_verificar_correo_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CodigoIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerfilOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     login_auth_login_post: {
         parameters: {
             query?: never;
@@ -1658,6 +1912,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PerfilOut"];
+                };
+            };
+        };
+    };
+    eliminar_cuenta_auth_yo_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EliminarCuentaIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1967,6 +2252,35 @@ export interface operations {
             };
         };
     };
+    borrar_casa_hogares__hogar_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     actualizar_hogares__hogar_id__patch: {
         parameters: {
             query?: never;
@@ -2056,6 +2370,36 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AgenteOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    borrar_lectura_hogares__hogar_id__lecturas_medidor__lectura_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+                lectura_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
