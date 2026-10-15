@@ -23,7 +23,7 @@ Estado de las fases (detalle y decisiones en `docs/decisiones/`, historias en `d
 Pendiente del usuario: crear el cliente OAuth de Google y poner `GOOGLE_CLIENT_ID/SECRET` en Render; revisar el despliegue en Render; probar la app en Android e iPhone; (hecho) factura de EPM verificada (ADR 0002);
 rotar la contraseña de Neon y el Access Secret de Tuya (quedaron expuestos en el chat).
 
-Siguiente: Fase 6 (verificar cada criterio de calidad, ensayo de 30 min, video de respaldo) y Fase 7 (lanzamiento). Falta en las reglas: el aviso de consumo anómalo por aparato ("la nevera gasta 18 % más") y precisión de potencia con bombillo incandescente.
+Siguiente: Fase 6 (verificar cada criterio de calidad, ensayo de 30 min, video de respaldo) y Fase 7 (lanzamiento). El aviso de consumo anómalo por aparato ya está hecho (ADR 0007, umbrales por confirmar). Falta la precisión de potencia con bombillo incandescente.
 
 ---
 
