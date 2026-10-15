@@ -150,6 +150,8 @@ export const crearRutina = (hogarId: string, datos: RutinaDatos) => api<Rutina>(
 export const actualizarRutina = (hogarId: string, id: string, datos: RutinaDatos) => api<Rutina>(`/hogares/${hogarId}/rutinas/${id}`, "PUT", datos);
 export const borrarRutina = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/rutinas/${id}`, "DELETE");
 export const listarLecturasMedidor = (hogarId: string) => api<LecturaMedidor[]>(`/hogares/${hogarId}/lecturas-medidor`);
+export const borrarLecturaMedidor = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/lecturas-medidor/${id}`, "DELETE");
+export const borrarHogar = (hogarId: string) => api<void>(`/hogares/${hogarId}`, "DELETE");
 export const registrarLecturaMedidor = (hogarId: string, lectura: number) =>
   api<LecturaMedidor>(`/hogares/${hogarId}/lecturas-medidor`, "POST", { lectura_kwh: lectura });
 export const registrarTokenPush = (token: string, plataforma: "android" | "ios") => api<void>("/usuarios/yo/tokens-push", "PUT", { token, plataforma });

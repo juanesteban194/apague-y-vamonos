@@ -1,6 +1,8 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { Pressable, View } from "react-native";
+import { Alert, Pressable, View } from "react-native";
 
+import { borrarHogar } from "@/api/cliente";
 import { useHogarActual, useTarifa } from "@/api/hogar";
 import { Boton } from "@/components/Boton";
 import { FilaDato } from "@/components/FilaDato";
@@ -16,8 +18,29 @@ import { colores, espacio } from "@/theme";
 
 /** Todas las casas de la cuenta y los datos de la que estás viendo (estrato, tarifa, medidor). */
 export default function Casas() {
+  const cliente = useQueryClient();
   const { hogar, hogares } = useHogarActual();
   const { data: tarifa, isError: sinTarifa } = useTarifa(hogar?.id);
+
+  function confirmarBorrado() {
+    const cuantas = hogares?.length ?? 0;
+    Alert.alert(
+      `¿Eliminar "${hogar!.nombre}"?`,
+      `Se borra todo lo de esta casa: enchufes, historial de consumo, agentes, avisos, facturas y rutinas. No se puede deshacer.${cuantas === 1 ? " Es tu única casa: tendrás que crear una nueva para seguir usando la app." : ""}`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: async () => {
+            await borrarHogar(hogar!.id);
+            await elegirCasa(null); // pasa a la primera casa que quede
+            await cliente.invalidateQueries();
+          },
+        },
+      ],
+    );
+  }
 
   return (
     <Pantalla>
@@ -58,6 +81,7 @@ export default function Casas() {
             <FilaDato etiqueta="Tipo de medidor" detalle="Cómo te llega la energía" valor={hogar.tipo_medidor ? hogar.tipo_medidor[0].toUpperCase() + hogar.tipo_medidor.slice(1) : "Sin indicar"} ultima />
           </Tarjeta>
           <Boton titulo="Editar esta casa" variante="secundario" icono={<Icono nombre="editar" />} onPress={() => router.push("/hogar/editar")} />
+          <Boton titulo="Eliminar esta casa" variante="secundario" icono={<Icono nombre="borrar" color={colores.rojo} />} onPress={confirmarBorrado} />
         </>
       )}
     </Pantalla>

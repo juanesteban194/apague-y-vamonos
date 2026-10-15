@@ -1,8 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
+import { Alert, Pressable, View } from "react-native";
 
-import { ErrorApi, registrarLecturaMedidor } from "@/api/cliente";
+import { borrarLecturaMedidor, ErrorApi, registrarLecturaMedidor } from "@/api/cliente";
+import type { LecturaMedidor as LecturaMedidorTipo } from "@/api/tipos";
 import { useHogarActual } from "@/api/hogar";
 import { Boton } from "@/components/Boton";
 import { Campo } from "@/components/Campo";
@@ -11,7 +13,8 @@ import { Tarjeta } from "@/components/Tarjeta";
 import { Texto } from "@/components/Texto";
 import { useLecturasMedidor } from "@/features/prepago/hooks";
 import { formatoNumero } from "@/lib/formato";
-import { colores } from "@/theme";
+import { Icono } from "@/components/Icono";
+import { AREA_TOQUE_MIN, colores } from "@/theme";
 
 export default function LecturaMedidor() {
   const cliente = useQueryClient();
@@ -22,6 +25,24 @@ export default function LecturaMedidor() {
   const [error, setError] = useState<string | null>(null);
   const numero = Number(texto.replace(",", "."));
   const valida = texto.trim() !== "" && Number.isFinite(numero) && numero >= 0;
+
+  function confirmarBorrado(l: LecturaMedidorTipo) {
+    Alert.alert(
+      `¿Borrar la lectura ${formatoNumero(l.lectura_kwh)}?`,
+      `Anotada para el ${l.fecha}. Después puedes anotar la correcta.`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Borrar",
+          style: "destructive",
+          onPress: async () => {
+            await borrarLecturaMedidor(hogar!.id, l.id).catch(() => {});
+            await cliente.invalidateQueries();
+          },
+        },
+      ],
+    );
+  }
 
   async function guardar() {
     if (!hogar || !valida) return;
@@ -53,10 +74,21 @@ export default function LecturaMedidor() {
       {lecturas && lecturas.length > 0 && (
         <Tarjeta style={{ gap: 6 }}>
           <Texto variante="subtitulo">Anotaciones anteriores</Texto>
+          <Texto variante="secundario" color={colores.textoSecundario}>¿Te equivocaste al escribir un número? Bórralo y anota el correcto.</Texto>
           {lecturas.map((l) => (
-            <Texto key={l.id} color={colores.textoSecundario}>
-              {formatoNumero(l.lectura_kwh)} · {l.fecha}
-            </Texto>
+            <View key={l.id} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, minHeight: 48 }}>
+              <Texto color={colores.textoSecundario} style={{ flex: 1 }}>
+                {formatoNumero(l.lectura_kwh)} · {l.fecha}
+              </Texto>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Borrar la lectura ${formatoNumero(l.lectura_kwh)} del ${l.fecha}`}
+                onPress={() => confirmarBorrado(l)}
+                style={{ minWidth: AREA_TOQUE_MIN, minHeight: AREA_TOQUE_MIN, alignItems: "center", justifyContent: "center" }}
+              >
+                <Icono nombre="borrar" tamano={22} color={colores.rojo} />
+              </Pressable>
+            </View>
           ))}
         </Tarjeta>
       )}

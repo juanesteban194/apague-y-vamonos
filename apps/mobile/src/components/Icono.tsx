@@ -38,6 +38,7 @@ const ICONOS = {
   adelante: ["ion", "chevron-forward"],
   abajo: ["ion", "chevron-down"],
   editar: ["ion", "create-outline"],
+  borrar: ["ion", "trash-outline"],
   conectado: ["ion", "wifi"],
   tv: ["ion", "tv"],
   celular: ["ion", "battery-charging"],

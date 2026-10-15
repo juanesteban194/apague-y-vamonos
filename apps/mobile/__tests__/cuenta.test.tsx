@@ -29,6 +29,7 @@ import Agentes from "../app/agentes";
 import PantallaAyuda from "../app/ayuda/[tema]";
 import NuevaCasa from "../app/casa/nueva";
 import Casas from "../app/casas";
+import Medidor from "../app/medidor";
 import Enchufes from "../app/enchufes";
 import Facturas from "../app/facturas";
 import Instrucciones from "../app/instrucciones";
@@ -525,6 +526,90 @@ describe("Ayuda", () => {
     useAyudaVista.setState({ cargada: true, vistas: ["agentes", "enchufes"] });
     await reiniciarAyuda();
     expect(useAyudaVista.getState().vistas).toEqual([]);
+  });
+});
+
+describe("Eliminar casa y corregir lecturas del medidor", () => {
+  const OTRA = { ...HOGAR, id: "h2", nombre: "Casa de los papás" };
+  const sinContenido = () => ({ ok: true, status: 204, json: async () => undefined }) as Response;
+  const borrados = () => fetchMock.mock.calls.filter(([, i]) => i?.method === "DELETE").map(([u]) => String(u).replace("https://api.test", ""));
+
+  it("eliminar una casa pide confirmación, la nombra y avisa qué se pierde", async () => {
+    await iniciarSesionDePrueba();
+    const alerta = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    simular({ "GET /hogares": [HOGAR, OTRA], "GET /hogares/h1/tarifa": TARIFA, "DELETE /hogares/h1": sinContenido });
+    await renderizar(<Casas />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Eliminar esta casa" }));
+    const [titulo, mensaje, botones] = alerta.mock.calls[0];
+    expect(titulo).toBe('¿Eliminar "Casa demo"?');
+    expect(mensaje).toMatch(/enchufes, historial de consumo, agentes, avisos, facturas y rutinas/);
+    expect(mensaje).not.toMatch(/única casa/); // hay otra casa
+    expect(borrados()).toEqual([]); // todavía no
+    await botones!.find((b) => b.text === "Eliminar")!.onPress!();
+    await waitFor(() => expect(borrados()).toEqual(["/hogares/h1"]));
+    alerta.mockRestore();
+  });
+
+  it("si es la única casa lo dice", async () => {
+    await iniciarSesionDePrueba();
+    const alerta = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    simular({ "GET /hogares": [HOGAR], "GET /hogares/h1/tarifa": TARIFA });
+    await renderizar(<Casas />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Eliminar esta casa" }));
+    expect(alerta.mock.calls[0][1]).toMatch(/única casa/);
+    alerta.mockRestore();
+  });
+
+  it("cancelar no borra nada", async () => {
+    await iniciarSesionDePrueba();
+    const alerta = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    simular({ "GET /hogares": [HOGAR], "GET /hogares/h1/tarifa": TARIFA });
+    await renderizar(<Casas />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Eliminar esta casa" }));
+    const cancelar = alerta.mock.calls[0][2]!.find((b) => b.text === "Cancelar")!;
+    expect(cancelar.onPress).toBeUndefined();
+    expect(borrados()).toEqual([]);
+    alerta.mockRestore();
+  });
+
+  it("después de eliminar la casa elegida se pasa a la que queda", async () => {
+    await iniciarSesionDePrueba();
+    await elegirCasa("h1");
+    const alerta = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    let quedan = [HOGAR, OTRA];
+    fetchMock.mockImplementation(async (url: string, init: RequestInit = {}) => {
+      const clave = `${init.method ?? "GET"} ${String(url).replace("https://api.test", "")}`;
+      if (clave === "GET /hogares") return respuestaJson(quedan);
+      if (clave === "DELETE /hogares/h1") {
+        quedan = [OTRA];
+        return sinContenido();
+      }
+      if (clave.startsWith("GET /hogares/h")) return respuestaJson(TARIFA);
+      return respuestaJson({ detail: `sin simular ${clave}` }, 404);
+    });
+    await renderizar(<Casas />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Eliminar esta casa" }));
+    await alerta.mock.calls[0][2]!.find((b) => b.text === "Eliminar")!.onPress!();
+    expect(await screen.findByText("Datos de Casa de los papás")).toBeTruthy();
+    expect(useCasaSeleccionada.getState().id).toBeNull();
+    alerta.mockRestore();
+  });
+
+  it("medidor: cada anotación se puede borrar (con confirmación) para corregir un error", async () => {
+    await iniciarSesionDePrueba();
+    const alerta = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    simular({
+      "GET /hogares": [HOGAR],
+      "GET /hogares/h1/lecturas-medidor": [{ id: "l1", lectura_kwh: 4523800, fecha: "2026-10-10" }, { id: "l0", lectura_kwh: 45000, fecha: "2026-10-01" }],
+      "DELETE /hogares/h1/lecturas-medidor/l1": sinContenido,
+    });
+    await renderizar(<Medidor />);
+    await fireEvent.press(await screen.findByRole("button", { name: /Borrar la lectura .* del 2026-10-10/ }));
+    expect(alerta.mock.calls[0][0]).toMatch(/¿Borrar la lectura .*4.*523.*800\?/);
+    expect(borrados()).toEqual([]);
+    await alerta.mock.calls[0][2]!.find((b) => b.text === "Borrar")!.onPress!();
+    await waitFor(() => expect(borrados()).toEqual(["/hogares/h1/lecturas-medidor/l1"]));
+    alerta.mockRestore();
   });
 });
 
