@@ -4,13 +4,15 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import usuario_actual_id
+from app.core.security import decodificar_token_con_version, token_bearer
 from app.modules.auth.models import Usuario
 
 
-def usuario_actual(db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_actual_id)) -> Usuario:
+def usuario_actual(db: Session = Depends(get_db), token: str = Depends(token_bearer)) -> Usuario:
+    usuario_id, version = decodificar_token_con_version(token, "access")
     usuario = db.get(Usuario, usuario_id)
-    if usuario is None:
+    # Al restablecer la contraseña la versión sube: las sesiones abiertas antes dejan de servir.
+    if usuario is None or version != usuario.version_sesion:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido o vencido")
     return usuario
 

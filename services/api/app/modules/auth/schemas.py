@@ -46,6 +46,21 @@ class PerfilOut(BaseModel):
     tiene_consentimiento: bool
     tiene_contrasena: bool
     tiene_google: bool
+    email_verificado: bool = False
+
+
+class OlvideContrasenaIn(BaseModel):
+    email: EmailStr
+
+
+class RestablecerContrasenaIn(BaseModel):
+    email: EmailStr
+    codigo: str = Field(pattern=r"^\d{6}$")
+    contrasena_nueva: str = Field(min_length=8, max_length=128)
+
+
+class CodigoIn(BaseModel):
+    codigo: str = Field(pattern=r"^\d{6}$")
 
 
 class CanjeGoogleIn(BaseModel):
