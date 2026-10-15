@@ -86,6 +86,7 @@ function Navegacion() {
         <Stack.Protected guard={paso === "sesion"}>
           <Stack.Screen name="(auth)/login" />
           <Stack.Screen name="(auth)/registro" />
+          <Stack.Screen name="(auth)/recuperar" options={{ ...opcionesCabecera, title: "Recuperar contraseña" }} />
         </Stack.Protected>
         <Stack.Protected guard={paso === "consentimiento"}>
           <Stack.Screen name="(onboarding)/consentimiento" />
@@ -114,6 +115,7 @@ function Navegacion() {
           <Stack.Screen name="rutina/nueva" options={{ ...opcionesCabecera, title: "Nueva rutina" }} />
           <Stack.Screen name="rutina/[id]" options={{ ...opcionesCabecera, title: "Rutina" }} />
           <Stack.Screen name="instrucciones" options={{ ...opcionesCabecera, title: "Instrucciones" }} />
+          <Stack.Screen name="verificar-correo" options={{ ...opcionesCabecera, title: "Verificar correo" }} />
           <Stack.Screen name="eliminar-cuenta" options={{ ...opcionesCabecera, title: "Eliminar mi cuenta" }} />
           <Stack.Screen name="ayuda/[tema]" options={{ ...opcionesCabecera, title: "Cómo funciona" }} />
         </Stack.Protected>

@@ -152,6 +152,17 @@ Los precios de la hamburguesa (Big Mac, $32.900) y la caja de leche (Colanta 1 L
 | 46 | Confirma con la contraseña buena | Vuelve a la pantalla de entrada; esa cuenta ya no existe y su correo se puede registrar de nuevo |
 | 47 | Mira el ícono de la app en el teléfono y la pantalla de arranque | Rayo verde sobre fondo oscuro; arranque crema con rayo verde (con Expo Go se ve el de Expo: el nuestro aparece al compilar la app) |
 
+## 5h. Recuperar la contraseña y verificar el correo
+Necesita el envío de correos activo (ADR 0010, «Activarlo»). Sin él, el servidor lo dice en su registro y no llega nada; en desarrollo local usa `CORREO_CONSOLA=true` y mira el código en el log de uvicorn.
+| # | Prueba | Debe pasar |
+| --- | --- | --- |
+| 48 | En el login, «¿Olvidaste tu contraseña?» → tu correo → «Enviarme el código» | Dice «Revisa tu correo»; llega un código de 6 números (mira en «spam») |
+| 49 | Escribe el código con una contraseña nueva | «¡Listo! Cambiaste tu contraseña»; entras con la nueva y la vieja ya no sirve |
+| 50 | Con el teléfono A con sesión abierta, haz la recuperación desde el teléfono B | Al abrir el A, pide entrar de nuevo (se cerró su sesión) |
+| 51 | Escribe un código malo 5 veces | Después ni el bueno sirve: pide uno nuevo |
+| 52 | **Ajustes**: «Correo sin verificar» → «Verificar mi correo» → código | Pasa a «Correo verificado» |
+| 53 | Entra con Google | El correo ya sale verificado |
+
 ## 6. Si algo falla
 | Síntoma | Causa probable y qué hacer |
 | --- | --- |

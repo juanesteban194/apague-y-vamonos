@@ -111,6 +111,11 @@ export async function canjearGoogle(code: string, codeVerifier: string): Promise
 }
 
 export { cerrarSesion };
+export const olvideContrasena = (email: string) => api<{ detalle: string }>("/auth/olvide-contrasena", "POST", { email });
+export const restablecerContrasena = (email: string, codigo: string, contrasenaNueva: string) =>
+  api<void>("/auth/restablecer-contrasena", "POST", { email, codigo, contrasena_nueva: contrasenaNueva });
+export const enviarCodigoDeVerificacion = () => api<{ detalle: string }>("/auth/verificar-correo/enviar", "POST");
+export const verificarCorreo = (codigo: string) => api<Perfil>("/auth/verificar-correo", "POST", { codigo });
 export const eliminarCuenta = (contrasena?: string) => api<void>("/auth/yo", "DELETE", { contrasena: contrasena ?? null });
 export const obtenerPerfil = () => api<Perfil>("/auth/yo");
 export const aceptarConsentimiento = () => api<Perfil>("/auth/consentimiento", "POST");

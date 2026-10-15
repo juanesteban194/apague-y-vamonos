@@ -30,12 +30,18 @@ export default function Ajustes() {
                   {perfil.email}
                   {perfil.tiene_google ? " · con Google" : ""}
                 </Texto>
+                <Texto variante="secundario" color={perfil.email_verificado ? colores.verde : colores.ambar} style={{ fontWeight: "700" }}>
+                  {perfil.email_verificado ? "Correo verificado" : "Correo sin verificar"}
+                </Texto>
               </>
             ) : (
               <Texto color={colores.textoSecundario}>Cargando…</Texto>
             )}
           </View>
         </View>
+        {perfil && !perfil.email_verificado && (
+          <Boton titulo="Verificar mi correo" variante="secundario" icono={<Icono nombre="correo" />} onPress={() => router.push("/verificar-correo")} />
+        )}
       </Tarjeta>
 
       <Tarjeta style={{ gap: espacio.s }}>

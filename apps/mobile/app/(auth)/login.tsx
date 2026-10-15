@@ -75,6 +75,10 @@ export default function Login() {
       {tardando && <Texto variante="secundario" color={colores.textoSecundario}>Despertando el servidor, puede tardar hasta un minuto…</Texto>}
       <Boton titulo="Entrar" onPress={entrar} cargando={cargando} deshabilitado={!email || !contrasena} />
 
+      <Link href="/recuperar" accessibilityRole="link" style={{ minHeight: AREA_TOQUE_MIN, textAlign: "center", paddingVertical: 12, fontSize: 17, fontWeight: "600", color: colores.textoSecundario }}>
+        ¿Olvidaste tu contraseña?
+      </Link>
+
       <Link href="/registro" accessibilityRole="link" style={{ minHeight: AREA_TOQUE_MIN, textAlign: "center", paddingVertical: 12, fontSize: 17, fontWeight: "600", color: colores.primario }}>
         ¿No tienes cuenta? Crear cuenta
       </Link>
