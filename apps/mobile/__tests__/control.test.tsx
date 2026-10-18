@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import { cerrarSesion } from "@/api/sesion";
 import Dispositivo from "../app/dispositivo/[id]";
+import Inicio from "../app/(tabs)/index";
 
 import { CONSUMO_DIA, HOGAR, iniciarSesionDePrueba, renderizar, respuestaJson, RESUMEN, WebSocketFalso } from "./auxiliares";
 
@@ -84,5 +85,71 @@ describe("Interruptor del dispositivo", () => {
     expect(sw.props.accessibilityState.disabled).toBe(true);
     await fireEvent.press(sw);
     expect(ordenes()).toEqual([]);
+  });
+});
+
+describe("Interruptor en la tarjeta de Inicio", () => {
+  const apagar = () => screen.findByRole("switch", { name: "Apagar Enchufe BSD04" });
+
+  it("cada dispositivo de Inicio tiene su botón de prender y apagar, con su nombre", async () => {
+    api();
+    await renderizar(<Inicio />);
+    const sw = await apagar();
+    expect(sw.props.accessibilityState.checked).toBe(true);
+    expect(sw.props.accessibilityState.disabled).toBe(false);
+  });
+
+  it("apagar desde la tarjeta llama a la API y la tarjeta pasa a «Apagado» y el botón a «Prender»", async () => {
+    api({ "POST /dispositivos/d1/apagar": () => respuestaJson({ dispositivo_id: "d1", encendido: false, via: "agente" }) });
+    await renderizar(<Inicio />);
+    await fireEvent.press(await apagar());
+    await waitFor(() => expect(ordenes()).toEqual(["/dispositivos/d1/apagar"]));
+    expect(await screen.findByRole("switch", { name: "Prender Enchufe BSD04" })).toBeTruthy();
+    expect(await screen.findByText("Apagado")).toBeTruthy();
+  });
+
+  it("prender un dispositivo apagado usa /encender", async () => {
+    api(
+      { "POST /dispositivos/d1/encender": () => respuestaJson({ dispositivo_id: "d1", encendido: true, via: "agente" }) },
+      { ...RESUMEN, dispositivos: [{ ...RESUMEN.dispositivos[0], encendido: false, potencia_w: 0 }] },
+    );
+    await renderizar(<Inicio />);
+    await fireEvent.press(await screen.findByRole("switch", { name: "Prender Enchufe BSD04" }));
+    await waitFor(() => expect(ordenes()).toEqual(["/dispositivos/d1/encender"]));
+  });
+
+  it("si no se pudo, dice por qué en la misma tarjeta y no cambia el estado", async () => {
+    api({ "POST /dispositivos/d1/apagar": () => respuestaJson({ detail: "No se pudo apagar el dispositivo: el agente «Sala», que lee este enchufe, no está conectado." }, 503) });
+    await renderizar(<Inicio />);
+    await fireEvent.press(await apagar());
+    expect(await screen.findByText(/el agente «Sala», que lee este enchufe, no está conectado/)).toBeTruthy();
+    expect(screen.getByRole("switch", { name: "Apagar Enchufe BSD04" })).toBeTruthy(); // sigue prendido
+  });
+
+  it("sin datos del enchufe el botón está apagado y no manda nada", async () => {
+    api({}, { ...RESUMEN, dispositivos: [{ ...RESUMEN.dispositivos[0], encendido: null, potencia_w: null, ultima_lectura: null, en_linea: false }] });
+    await renderizar(<Inicio />);
+    const sw = await screen.findByRole("switch", { name: /sin datos, no se puede controlar todavía/ });
+    expect(sw.props.accessibilityState.disabled).toBe(true);
+    await fireEvent.press(sw);
+    expect(ordenes()).toEqual([]);
+  });
+
+  it("tocar el nombre sigue abriendo el detalle y no manda ninguna orden", async () => {
+    const { router } = require("expo-router");
+    api();
+    await renderizar(<Inicio />);
+    await fireEvent.press(await screen.findByRole("button", { name: /^Enchufe BSD04, Encendido/ }));
+    expect(router.push).toHaveBeenCalledWith("/dispositivo/d1");
+    expect(ordenes()).toEqual([]);
+  });
+
+  it("el botón tiene un área de toque de al menos 44 px", async () => {
+    api();
+    await renderizar(<Inicio />);
+    const estilo = (await apagar()).props.style;
+    const plano = typeof estilo === "function" ? estilo({ pressed: false }) : estilo;
+    expect(plano.minHeight).toBeGreaterThanOrEqual(44);
+    expect(plano.minWidth).toBeGreaterThanOrEqual(44);
   });
 });

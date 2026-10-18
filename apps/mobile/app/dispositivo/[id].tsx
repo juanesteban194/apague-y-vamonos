@@ -1,9 +1,7 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 
-import { apagarDispositivo, encenderDispositivo, ErrorApi } from "@/api/cliente";
 import { useHogarActual } from "@/api/hogar";
 import type { Periodo } from "@/api/tipos";
 import { BarrasConsumo } from "@/components/BarrasConsumo";
@@ -14,7 +12,7 @@ import { Pantalla } from "@/components/Pantalla";
 import { Tarjeta } from "@/components/Tarjeta";
 import { Texto } from "@/components/Texto";
 import { useConsumo, useResumen } from "@/features/consumo/hooks";
-import { aplicarEvento } from "@/features/consumo/tiempoReal";
+import { useControlDispositivo } from "@/features/consumo/control";
 import { formatoCOP, formatoPotencia } from "@/lib/formato";
 import { useTiempoReal } from "@/realtime/estado";
 import { colores, espacio } from "@/theme";
@@ -27,29 +25,13 @@ const PERIODOS: { valor: Periodo; titulo: string; resumen: string }[] = [
 
 export default function Dispositivo() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const cliente = useQueryClient();
   const { hogar } = useHogarActual();
   const { data: resumen } = useResumen(hogar?.id);
   const conexion = useTiempoReal((t) => t.conexion);
   const [periodo, setPeriodo] = useState<Periodo>("dia");
   const { data: consumo, error, isLoading, isFetching, refetch } = useConsumo(id, periodo);
 
-  const [enviando, setEnviando] = useState(false);
-  const [errorControl, setErrorControl] = useState<string | null>(null);
-
-  async function cambiarEstado(encender: boolean) {
-    setErrorControl(null);
-    setEnviando(true);
-    try {
-      const r = await (encender ? encenderDispositivo(id) : apagarDispositivo(id));
-      // El agente confirmará con una lectura nueva en segundos; mientras, se refleja lo que la API acaba de lograr.
-      if (hogar) aplicarEvento(cliente, hogar.id, { tipo: "estado_enchufe", dispositivo_id: id, encendido: r.encendido, fecha_hora: new Date().toISOString() });
-    } catch (e) {
-      setErrorControl(e instanceof ErrorApi ? e.message : `No se pudo ${encender ? "prender" : "apagar"} el dispositivo.`);
-    } finally {
-      setEnviando(false);
-    }
-  }
+  const control = useControlDispositivo(hogar?.id, id);
 
   const d = resumen?.dispositivos.find((x) => x.id === id);
   const actual = PERIODOS.find((p) => p.valor === periodo)!;
@@ -84,10 +66,10 @@ export default function Dispositivo() {
 
       {d && (
         <Tarjeta>
-          <Interruptor encendido={d.encendido} cargando={enviando} alCambiar={cambiarEstado} />
-          {errorControl && (
+          <Interruptor encendido={d.encendido} cargando={control.enviando} alCambiar={(encender) => void control.cambiar(encender)} />
+          {control.error && (
             <Texto accessibilityRole="alert" variante="secundario" color={colores.rojo} style={{ fontWeight: "600" }}>
-              {errorControl}
+              {control.error}
             </Texto>
           )}
         </Tarjeta>
