@@ -144,7 +144,7 @@ describe("Mis facturas", () => {
     await fireEvent.changeText(screen.getByLabelText(etiqueta(0, "lo que pagó (opcional)")), "$150.000");
     await fireEvent.changeText(screen.getByLabelText(etiqueta(1, "kWh gastados")), "194,5");
     await fireEvent.changeText(screen.getByLabelText(etiqueta(2, "kWh gastados")), "152");
-    expect(screen.queryByText(/anote al menos 3/)).toBeNull();
+    expect(screen.queryByText(/anota al menos 3/)).toBeNull();
     await fireEvent.press(screen.getByRole("button", { name: "Guardar mis facturas" }));
     await waitFor(() =>
       expect(enviado("PUT /hogares/h1/historial-consumo")).toEqual({
@@ -164,7 +164,7 @@ describe("Mis facturas", () => {
     const primero = mesesAnteriores(6)[0].nombre;
     const campo = await screen.findByLabelText(`${primero[0].toUpperCase()}${primero.slice(1)}: kWh gastados`);
     await fireEvent.changeText(campo, "170");
-    expect(screen.getByText(/anote al menos 3/)).toBeTruthy();
+    expect(screen.getByText(/anota al menos 3/)).toBeTruthy();
     await fireEvent.changeText(campo, "mucho");
     expect(screen.getByRole("button", { name: "Guardar mis facturas" }).props.accessibilityState.disabled).toBe(true);
   });
