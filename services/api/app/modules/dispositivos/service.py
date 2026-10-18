@@ -15,7 +15,7 @@ def _exigir_agente_de_la_casa(db: Session, hogar_id: uuid.UUID, agente_id: uuid.
         return
     agente = db.get(Agente, agente_id)
     if agente is None or agente.hogar_id != hogar_id:
-        raise HTTPException(422, "Ese agente no es de esta casa")
+        raise HTTPException(422, "Ese agente no es de esta casa. Elige uno de la lista.")
 
 
 def crear(db: Session, hogar_id: uuid.UUID, datos: DispositivoIn) -> Dispositivo:
@@ -26,7 +26,7 @@ def crear(db: Session, hogar_id: uuid.UUID, datos: DispositivoIn) -> Dispositivo
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status.HTTP_409_CONFLICT, "Ese ID de Tuya ya está registrado en esta casa") from None
+        raise HTTPException(status.HTTP_409_CONFLICT, "Ese enchufe ya está registrado en esta casa.") from None
     return dispositivo
 
 
@@ -37,7 +37,7 @@ def listar(db: Session, hogar_id: uuid.UUID) -> list[Dispositivo]:
 def obtener(db: Session, hogar_id: uuid.UUID, dispositivo_id: uuid.UUID) -> Dispositivo:
     dispositivo = db.get(Dispositivo, dispositivo_id)
     if dispositivo is None or dispositivo.hogar_id != hogar_id:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Dispositivo no encontrado")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese dispositivo.")
     return dispositivo
 
 

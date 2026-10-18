@@ -22,6 +22,11 @@ VARIACION_MAXIMA = 0.10  # desviación / promedio: si la carga oscila más, el p
 FACTOR_MINIMO, FACTOR_MAXIMO = 0.5, 1.5  # más de 50 % de diferencia casi seguro es un medidor mal puesto, no un error del enchufe
 
 
+def _vatios(valor: float) -> str:
+    """Con formato colombiano y un decimal como máximo: 1.180 W, 44 W, 3,5 W."""
+    return f"{round(valor, 1):,}".removesuffix(".0").replace(",", " ").replace(".", ",").replace(" ", ".")
+
+
 def calibrar(db: Session, dispositivo: Dispositivo, referencia_w: float, ahora: datetime | None = None) -> CalibracionOut:
     ahora = ahora or datetime.now(UTC)
     desde = ahora - VENTANA
@@ -36,22 +41,22 @@ def calibrar(db: Session, dispositivo: Dispositivo, referencia_w: float, ahora: 
     if len(guardadas) < LECTURAS_MINIMAS:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
-            "Todavía no hay suficientes lecturas recientes. Deja el dispositivo prendido, con el agente corriendo, y vuelve a intentar en unos segundos.",
+            "Todavía no hay suficientes lecturas recientes. Deja el dispositivo prendido, con el agente funcionando, e intenta de nuevo en unos segundos.",
         )
     promedio_guardado = statistics.fmean(guardadas)
     cruda = promedio_guardado / dispositivo.factor_calibracion  # lo que leyó el enchufe antes de cualquier ajuste
     if cruda < POTENCIA_MINIMA_W:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
-            f"El enchufe lee muy poco ({cruda:.1f} W): con menos de {POTENCIA_MINIMA_W:g} W no se puede calibrar bien. Usa un dispositivo que gaste más, por ejemplo un bombillo de 40 W.",
+            f"El enchufe marca muy poco ({_vatios(cruda)} W). Con menos de {_vatios(POTENCIA_MINIMA_W)} W no se puede calibrar bien. Usa un dispositivo que gaste más, por ejemplo un bombillo de 40 W.",
         )
     if len(guardadas) > 1 and statistics.pstdev(guardadas) / promedio_guardado > VARIACION_MAXIMA:
-        raise HTTPException(status.HTTP_409_CONFLICT, "La lectura está variando mucho. Espera a que el dispositivo se estabilice (que no cambie de potencia) y vuelve a intentar.")
+        raise HTTPException(status.HTTP_409_CONFLICT, "La lectura está variando mucho. Espera a que el consumo se quede quieto e intenta de nuevo.")
     factor = referencia_w / cruda
     if not FACTOR_MINIMO <= factor <= FACTOR_MAXIMO:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
-            f"El enchufe lee {cruda:.1f} W y tu medidor marca {referencia_w:g} W: la diferencia es de más del 50 %. Revisa que el medidor esté midiendo este mismo dispositivo.",
+            f"El enchufe marca {_vatios(cruda)} W y tu medidor {_vatios(referencia_w)} W: la diferencia es de más del 50 %. Revisa que el medidor esté midiendo este mismo dispositivo.",
         )
     dispositivo.factor_calibracion = factor
     dispositivo.calibrado_en = ahora

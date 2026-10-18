@@ -76,7 +76,7 @@ EN_TOTAL_POR_MINUTO = 30
 
 def vincular(db: Session, codigo: str, origen: str, ahora: datetime | None = None) -> VinculadoOut:
     if not (limitador.permitir(f"origen:{origen}", POR_ORIGEN_POR_MINUTO) and limitador.permitir("total", EN_TOTAL_POR_MINUTO)):
-        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Demasiados intentos. Espera un minuto e intenta de nuevo.")
+        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Hiciste muchos intentos seguidos. Espera un minuto e intenta de nuevo.")
     ahora = ahora or datetime.now(UTC)
     agente = db.scalar(select(Agente).where(Agente.codigo_hash == _hash_codigo(codigo)))
     if agente is None or agente.codigo_expira_en is None or agente.codigo_expira_en < ahora:

@@ -27,7 +27,7 @@ def tarifa_del_hogar(
     hoy = datetime.now(BOGOTA).date()
     tarifa = service.tarifa_vigente(db, hogar.estrato, hoy)
     if tarifa is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, f"No hay tarifa cargada para el estrato {hogar.estrato}")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, f"Todavía no tenemos la tarifa de EPM para el estrato {hogar.estrato}.")
     return TarifaOut(
         estrato=tarifa.estrato,
         mes=tarifa.mes,

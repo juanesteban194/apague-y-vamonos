@@ -27,7 +27,7 @@ limitador = LimitadorIntentos(ventana_s=3600.0)
 
 TEXTOS = {
     "recuperar": ("Tu código para recuperar la contraseña", "Usa este código para elegir una contraseña nueva en «Apague y vámonos»"),
-    "verificar": ("Tu código para verificar el correo", "Usa este código para verificar tu correo en «Apague y vámonos»"),
+    "verificar": ("Tu código para verificar tu correo", "Usa este código para verificar tu correo en «Apague y vámonos»"),
 }
 
 
@@ -39,14 +39,15 @@ def _mensaje(usuario: Usuario, proposito: str, codigo: str) -> correo.Mensaje:
     asunto, frase = TEXTOS[proposito]
     texto = (
         f"Hola {usuario.nombre.split()[0]},\n\n{frase}:\n\n    {codigo}\n\n"
-        f"Vale 15 minutos y sirve una sola vez. Si no lo pediste tú, ignora este correo: nadie puede entrar a tu cuenta solo con él.\n\n"
-        "Apague y vámonos"
+        f"Vence en 15 minutos y sirve una sola vez.\n\nSi no lo pediste, ignora este correo. Nadie puede entrar a tu cuenta solo con este código.\n\n"
+        "El equipo de «Apague y vámonos»"
     )
     html = (
         f"<p>Hola {usuario.nombre.split()[0]},</p><p>{frase}:</p>"
         f'<p style="font-size:32px;font-weight:700;letter-spacing:6px">{codigo}</p>'
-        "<p>Vale 15 minutos y sirve una sola vez. Si no lo pediste tú, ignora este correo: nadie puede entrar a tu cuenta solo con él.</p>"
-        "<p>Apague y vámonos</p>"
+        "<p>Vence en 15 minutos y sirve una sola vez.</p>"
+        "<p>Si no lo pediste, ignora este correo. Nadie puede entrar a tu cuenta solo con este código.</p>"
+        "<p>El equipo de «Apague y vámonos»</p>"
     )
     return correo.Mensaje(para=usuario.email, asunto=asunto, texto=texto, html=html)
 

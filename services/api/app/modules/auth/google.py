@@ -47,7 +47,7 @@ class PerfilGoogle:
 def exigir_configuracion() -> None:
     s = get_settings()
     if not s.google_client_id or not s.google_client_secret:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "El inicio de sesión con Google no está configurado")
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Entrar con Google no está disponible por ahora. Entra con tu correo y contraseña.")
 
 
 def redirect_valido(uri: str) -> bool:
@@ -68,9 +68,9 @@ def _leer(token: str, tipo: str) -> dict:
     try:
         claims = jwt.decode(token, get_settings().jwt_secret, algorithms=["HS256"])
     except jwt.InvalidTokenError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Solicitud de inicio de sesión inválida o vencida") from None
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "El inicio de sesión con Google venció o no es válido. Intenta de nuevo.") from None
     if claims.get("type") != tipo:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Solicitud de inicio de sesión inválida o vencida")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "El inicio de sesión con Google venció o no es válido. Intenta de nuevo.")
     return claims
 
 
@@ -157,12 +157,12 @@ def canjear_codigo(codigo: str, code_verifier: str) -> uuid.UUID:
     """Valida el código (vigente, de un solo uso y con el verificador que corresponde al reto) y devuelve el usuario."""
     claims = _leer(codigo, "canje_google")
     if not secrets.compare_digest(_reto(code_verifier), claims["challenge"]):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Solicitud de inicio de sesión inválida o vencida")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "El inicio de sesión con Google venció o no es válido. Intenta de nuevo.")
     ahora = time.time()
     with _cerrojo:
         for jti in [j for j, vence in _codigos_usados.items() if vence < ahora]:
             del _codigos_usados[jti]
         if claims["jti"] in _codigos_usados:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Solicitud de inicio de sesión inválida o vencida")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "El inicio de sesión con Google venció o no es válido. Intenta de nuevo.")
         _codigos_usados[claims["jti"]] = claims["exp"]
     return uuid.UUID(claims["sub"])

@@ -12,11 +12,16 @@ from app.modules.hogares.models import Agente, Hogar, LecturaMedidor, MiembroHog
 from app.modules.hogares.schemas import AgenteIn, AgenteOut, EnchufeDeAgenteOut, HogarActualizarIn, HogarIn, LecturaMedidorIn
 
 
+def _numero(valor: float) -> str:
+    """Con formato colombiano: 12.345,6 (sin decimales si es entero)."""
+    return f"{round(valor, 2):,}".removesuffix(".0").replace(",", " ").replace(".", ",").replace(" ", ".")
+
+
 def exigir_miembro(db: Session, usuario_id: uuid.UUID, hogar_id: uuid.UUID, rol: str | None = None) -> MiembroHogar:
     """Verifica que el usuario pertenece al hogar (y, opcionalmente, con ese rol)."""
     miembro = db.get(MiembroHogar, (usuario_id, hogar_id))
     if miembro is None or (rol is not None and miembro.rol != rol):
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "No tienes acceso a esta casa")
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "No tienes acceso a esta casa.")
     return miembro
 
 
@@ -82,7 +87,7 @@ def agentes_con_enchufes(db: Session, hogar_id: uuid.UUID) -> list[AgenteOut]:
 def renombrar_agente(db: Session, hogar_id: uuid.UUID, agente_id: uuid.UUID, nombre: str) -> Agente:
     agente = db.get(Agente, agente_id)
     if agente is None or agente.hogar_id != hogar_id:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Agente no encontrado")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese agente.")
     agente.nombre = nombre
     db.commit()
     return agente
@@ -91,7 +96,7 @@ def renombrar_agente(db: Session, hogar_id: uuid.UUID, agente_id: uuid.UUID, nom
 def revocar_agente(db: Session, hogar_id: uuid.UUID, agente_id: uuid.UUID) -> None:
     agente = db.get(Agente, agente_id)
     if agente is None or agente.hogar_id != hogar_id:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Agente no encontrado")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese agente.")
     db.delete(agente)
     db.commit()
 
@@ -100,7 +105,7 @@ def borrar_hogar(db: Session, hogar_id: uuid.UUID) -> None:
     """Borra la casa con todo lo suyo (enchufes, lecturas, agentes, avisos, prepago, rutinas, facturas…): las llaves foráneas lo hacen en cascada."""
     hogar = db.get(Hogar, hogar_id)
     if hogar is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Casa no encontrada")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos esa casa.")
     db.delete(hogar)
     db.commit()
 
@@ -108,7 +113,7 @@ def borrar_hogar(db: Session, hogar_id: uuid.UUID) -> None:
 def borrar_lectura_medidor(db: Session, hogar_id: uuid.UUID, lectura_id: uuid.UUID) -> None:
     lectura = db.get(LecturaMedidor, lectura_id)
     if lectura is None or lectura.hogar_id != hogar_id:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Lectura no encontrada")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos esa lectura.")
     db.delete(lectura)
     db.commit()
 
@@ -120,7 +125,7 @@ def registrar_lectura_medidor(db: Session, hogar_id: uuid.UUID, datos: LecturaMe
         select(LecturaMedidor).where(LecturaMedidor.hogar_id == hogar_id, LecturaMedidor.fecha <= fecha).order_by(LecturaMedidor.fecha.desc(), LecturaMedidor.lectura_kwh.desc()).limit(1)
     )
     if anterior is not None and datos.lectura_kwh < anterior.lectura_kwh:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"La lectura no puede ser menor que la anterior ({anterior.lectura_kwh:g}).")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"La lectura no puede ser menor que la anterior ({_numero(anterior.lectura_kwh)}). Revisa el número del medidor e intenta de nuevo.")
     lectura = LecturaMedidor(hogar_id=hogar_id, lectura_kwh=datos.lectura_kwh, fecha=fecha)
     db.add(lectura)
     db.commit()

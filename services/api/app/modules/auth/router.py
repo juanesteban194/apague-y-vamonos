@@ -43,7 +43,7 @@ def olvide_contrasena(datos: OlvideContrasenaIn, peticion: Request, segundo_plan
     mensaje = recuperacion.pedir_recuperacion(db, datos.email, origen)
     if mensaje is not None:
         segundo_plano.add_task(correo.enviar, mensaje)
-    return {"detalle": "Si ese correo tiene una cuenta, te enviamos un código. Vale 15 minutos."}
+    return {"detalle": "Si ese correo tiene una cuenta, te enviamos un código. Vence en 15 minutos."}
 
 
 @router.post("/restablecer-contrasena", status_code=status.HTTP_204_NO_CONTENT)
@@ -63,7 +63,7 @@ def enviar_verificacion(
     if not recuperacion.permitir_pedido(usuario.email, origen):
         raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Pediste varios códigos seguidos. Espera un rato e intenta de nuevo.")
     segundo_plano.add_task(correo.enviar, recuperacion.emitir_codigo(db, usuario, "verificar"))
-    return {"detalle": "Te enviamos un código a tu correo. Vale 15 minutos."}
+    return {"detalle": "Te enviamos un código a tu correo. Vence en 15 minutos."}
 
 
 @router.post("/verificar-correo", response_model=PerfilOut)

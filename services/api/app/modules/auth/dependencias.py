@@ -13,7 +13,7 @@ def usuario_actual(db: Session = Depends(get_db), token: str = Depends(token_bea
     usuario = db.get(Usuario, usuario_id)
     # Al restablecer la contraseña la versión sube: las sesiones abiertas antes dejan de servir.
     if usuario is None or version != usuario.version_sesion:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido o vencido")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Tu sesión venció. Vuelve a entrar.")
     return usuario
 
 

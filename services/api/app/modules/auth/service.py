@@ -33,7 +33,7 @@ def registrar(db: Session, datos: RegistroIn) -> Usuario:
     if not datos.acepta_tratamiento_datos:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
-            "Debes aceptar el tratamiento de datos personales (Ley 1581 de 2012)",
+            "Para crear la cuenta, acepta el tratamiento de tus datos personales (Ley 1581 de 2012).",
         )
     usuario = Usuario(
         email=datos.email.lower(),
@@ -46,7 +46,7 @@ def registrar(db: Session, datos: RegistroIn) -> Usuario:
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status.HTTP_409_CONFLICT, "Ese correo ya está registrado") from None
+        raise HTTPException(status.HTTP_409_CONFLICT, "Ese correo ya tiene una cuenta. Entra o usa otro correo.") from None
     return usuario
 
 
@@ -63,7 +63,7 @@ def renovar(db: Session, refresh_token: str) -> TokensOut:
     usuario_id, version = decodificar_token_con_version(refresh_token, "refresh")
     usuario = db.get(Usuario, usuario_id)
     if usuario is None or version != usuario.version_sesion:  # tras restablecer la contraseña, los tokens viejos no renuevan
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido o vencido")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Tu sesión venció. Vuelve a entrar.")
     return _tokens(usuario)
 
 
@@ -105,7 +105,7 @@ def usuario_desde_google(db: Session, perfil: PerfilGoogle) -> Usuario:
 def tokens_de(db: Session, usuario_id) -> TokensOut:
     usuario = db.get(Usuario, usuario_id)
     if usuario is None:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido o vencido")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Tu sesión venció. Vuelve a entrar.")
     return _tokens(usuario)
 
 
@@ -115,7 +115,7 @@ def eliminar_cuenta(db: Session, usuario: Usuario, contrasena: str | None) -> li
     - Una casa donde la persona era la única miembro se borra con todo lo suyo.
     - En una casa compartida solo sale la persona; si era la única titular, pasa a titular otro miembro (la casa no queda sin dueño)."""
     if usuario.hash_contrasena is not None and not (contrasena and verificar_contrasena(contrasena, usuario.hash_contrasena)):
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "La contraseña no es correcta")
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "La contraseña no es correcta. Revísala e intenta de nuevo.")
     borradas = []
     for m in list(db.scalars(select(MiembroHogar).where(MiembroHogar.usuario_id == usuario.id))):
         otros = list(db.scalars(select(MiembroHogar).where(MiembroHogar.hogar_id == m.hogar_id, MiembroHogar.usuario_id != usuario.id)))

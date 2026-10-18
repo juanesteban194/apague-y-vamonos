@@ -83,7 +83,7 @@ def codigo_nuevo(
     service.exigir_miembro(db, usuario_id, hogar_id, rol="titular")
     agente = db.get(Agente, agente_id)
     if agente is None or agente.hogar_id != hogar_id:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Agente no encontrado")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese agente.")
     return agentes_service.generar_codigo(db, agente)
 
 

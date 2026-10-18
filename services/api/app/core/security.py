@@ -50,7 +50,7 @@ def decodificar_token_con_version(token: str, tipo: str) -> tuple[UUID, int]:
             raise jwt.InvalidTokenError("tipo de token incorrecto")
         return UUID(claims["sub"]), int(claims.get("ver", 0))
     except (jwt.InvalidTokenError, KeyError, ValueError):
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido o vencido") from None
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Tu sesión venció. Vuelve a entrar.") from None
 
 
 def decodificar_token(token: str, tipo: str) -> UUID:
@@ -71,7 +71,7 @@ def usuario_actual_id(
     credenciales: HTTPAuthorizationCredentials | None = Depends(_bearer),
 ) -> UUID:
     if credenciales is None:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Falta el token de acceso")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Entra a tu cuenta para seguir.")
     return decodificar_token(credenciales.credentials, "access")
 
 
