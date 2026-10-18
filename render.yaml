@@ -21,6 +21,10 @@ services:
       # Cifra las claves locales de los enchufes guardadas en la base (ADR 0008). Si se cambia, las claves se vuelven a pedir a Tuya.
       - key: CLAVE_MAESTRA
         generateValue: true
+      # SOLO PRUEBAS (un único enchufe físico): varias cuentas pueden registrar el mismo ID de Tuya y todas ven sus lecturas.
+      # APAGAR (poner "false") antes de abrir la app a otras personas: con esto, quien registre un ID ajeno vería su consumo.
+      - key: COMPARTIR_ENCHUFES
+        value: "true"
       # Inicio de sesión con Google (cliente OAuth "Aplicación web"). Sin ellos el botón de Google responde 503.
       - key: GOOGLE_CLIENT_ID
         sync: false

@@ -26,7 +26,7 @@ def crear(db: Session, hogar_id: uuid.UUID, datos: DispositivoIn) -> Dispositivo
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status.HTTP_409_CONFLICT, "Ese ID de Tuya ya está registrado") from None
+        raise HTTPException(status.HTTP_409_CONFLICT, "Ese ID de Tuya ya está registrado en esta casa") from None
     return dispositivo
 
 

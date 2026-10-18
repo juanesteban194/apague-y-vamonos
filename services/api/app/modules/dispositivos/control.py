@@ -8,6 +8,7 @@ from collections import defaultdict, deque
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
@@ -68,6 +69,13 @@ def _agente_del_enchufe(dispositivo_id: uuid.UUID) -> tuple[uuid.UUID | None, st
         return d.agente_id, agente.nombre if agente else None
 
 
+def _gemelos(dispositivo_id: uuid.UUID, tuya_id: str) -> list[tuple[uuid.UUID, uuid.UUID]]:
+    """(casa, agente) de los demás registros del mismo enchufe físico que tienen agente."""
+    with get_sessionmaker()() as db:
+        filas = db.execute(select(Dispositivo.hogar_id, Dispositivo.agente_id).where(Dispositivo.tuya_id == tuya_id, Dispositivo.id != dispositivo_id, Dispositivo.agente_id.is_not(None)))
+        return [(h, a) for h, a in filas]
+
+
 async def ejecutar_comando(hogar_id: uuid.UUID, dispositivo_id: uuid.UUID, tuya_id: str, accion: Accion) -> ComandoOut:
     """La orden va al agente asignado a ese enchufe; si no está conectado o no pudo, al respaldo por la nube.
     Lanza HTTPException 503 si ninguna vía funcionó, diciendo por qué."""
@@ -86,6 +94,12 @@ async def ejecutar_comando(hogar_id: uuid.UUID, dispositivo_id: uuid.UUID, tuya_
     if resultado is not None:
         quien = f"el agente «{nombre}»" if nombre else "el agente"
         motivo = f"{quien} no pudo ejecutarlo: {resultado.detalle or 'sin detalle'}"
+    if get_settings().compartir_enchufes:
+        # Modo de pruebas: el mismo enchufe físico está registrado en varias cuentas y lo lee el agente de una de ellas.
+        for otro_hogar, otro_agente in await run_in_threadpool(_gemelos, dispositivo_id, tuya_id):
+            resultado = await gestor_agentes.enviar(otro_hogar, tuya_id, accion, agente_id=otro_agente)
+            if resultado is not None and resultado.ok:
+                return ComandoOut(dispositivo_id=dispositivo_id, encendido=encender, via="agente")
     if cliente_tuya.configurado():
         try:
             await cliente_tuya.enviar_comando(tuya_id, encender)

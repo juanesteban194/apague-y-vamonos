@@ -68,7 +68,7 @@ cd $P/services/api
 ipconfig getifaddr en0                                       # IP del Mac: úsala en EXPO_PUBLIC_API_URL=http://<IP>:8000
 docker compose -f $P/infra/local/docker-compose.yml down        # apagar la base (los datos se conservan)
 ```
-Variables en el `.env` de la raíz (nunca se suben): `DATABASE_URL`, `JWT_SECRET` (≥ 32 caracteres), `CLAVE_MAESTRA` (cifra las claves de los enchufes: `openssl rand -hex 24`), `GOOGLE_CLIENT_ID/SECRET`, `BREVO_API_KEY` y `CORREO_REMITENTE_EMAIL` (envío de códigos por correo; en desarrollo `CORREO_CONSOLA=true` escribe el código en el log del servidor), y `TUYA_ACCESS_ID/SECRET` si quieres que la API pida las claves a Tuya. Nombres en [.env.example](../.env.example).
+Variables en el `.env` de la raíz (nunca se suben): `DATABASE_URL`, `JWT_SECRET` (≥ 32 caracteres), `CLAVE_MAESTRA` (cifra las claves de los enchufes: `openssl rand -hex 24`), `GOOGLE_CLIENT_ID/SECRET`, `COMPARTIR_ENCHUFES` (solo pruebas: varias cuentas con el mismo enchufe; ver ADR 0011), `BREVO_API_KEY` y `CORREO_REMITENTE_EMAIL` (envío de códigos por correo; en desarrollo `CORREO_CONSOLA=true` escribe el código en el log del servidor), y `TUYA_ACCESS_ID/SECRET` si quieres que la API pida las claves a Tuya. Nombres en [.env.example](../.env.example).
 
 ## 2. Base de datos
 ```

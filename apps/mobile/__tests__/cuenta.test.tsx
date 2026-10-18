@@ -913,13 +913,13 @@ describe("Enchufes", () => {
 
   it("si el ID de Tuya ya está registrado muestra el error del servidor", async () => {
     await iniciarSesionDePrueba();
-    simular({ ...base, "POST /hogares/h1/dispositivos": () => respuestaJson({ detail: "Ese ID de Tuya ya está registrado" }, 409) });
+    simular({ ...base, "POST /hogares/h1/dispositivos": () => respuestaJson({ detail: "Ese ID de Tuya ya está registrado en esta casa" }, 409) });
     await renderizar(<NuevoEnchufe />);
     await screen.findByLabelText("Nombre");
     await fireEvent.changeText(screen.getByLabelText("Nombre"), "X");
     await fireEvent.changeText(screen.getByLabelText("ID del dispositivo en Tuya"), "abc");
     await fireEvent.press(screen.getByRole("button", { name: "Agregar" }));
-    expect(await screen.findByText("Ese ID de Tuya ya está registrado")).toBeTruthy();
+    expect(await screen.findByText("Ese ID de Tuya ya está registrado en esta casa")).toBeTruthy();
   });
 
   it("edita un enchufe sin dejar cambiar su ID de Tuya", async () => {

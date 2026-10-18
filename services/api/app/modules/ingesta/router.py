@@ -17,7 +17,7 @@ def recibir_lecturas(
     agente: Agente = Depends(service.agente_actual),
     db: Session = Depends(get_db),
 ):
-    salida, eventos = service.guardar_lecturas(db, agente, datos)
-    if eventos:  # se publica después de responder al agente: no le suma latencia
-        en_segundo_plano.add_task(gestor.publicar, agente.hogar_id, eventos)
+    salida, eventos_por_hogar = service.guardar_lecturas(db, agente, datos)
+    for hogar_id, eventos in eventos_por_hogar.items():  # se publica después de responder al agente: no le suma latencia
+        en_segundo_plano.add_task(gestor.publicar, hogar_id, eventos)
     return salida

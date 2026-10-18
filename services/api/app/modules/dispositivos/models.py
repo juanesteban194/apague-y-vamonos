@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, false, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, false, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base, nuevo_id
@@ -9,11 +9,13 @@ from app.core.database import Base, nuevo_id
 
 class Dispositivo(Base):
     __tablename__ = "dispositivos"
+    __table_args__ = (UniqueConstraint("hogar_id", "tuya_id", name="uq_dispositivos_hogar_tuya"),)
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=nuevo_id)
     hogar_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("hogares.id", ondelete="CASCADE"), index=True)
     # ID de Tuya (no es secreto). La clave local no va en esta tabla (ver ADR 0008).
-    tuya_id: Mapped[str] = mapped_column(String(64), unique=True)
+    # Único dentro de cada casa (no en todo el sistema): en las pruebas un mismo enchufe físico se registra en varias cuentas.
+    tuya_id: Mapped[str] = mapped_column(String(64), index=True)
     nombre: Mapped[str] = mapped_column(String(120))
     tipo_aparato: Mapped[str | None] = mapped_column(String(60))
     alto_riesgo: Mapped[bool] = mapped_column(Boolean, server_default=false(), default=False)

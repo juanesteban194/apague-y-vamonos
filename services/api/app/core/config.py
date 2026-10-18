@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     # Solo para desarrollo: escribe el código en el registro en vez de enviarlo. Nunca activar en producción.
     correo_consola: bool = False
 
+    # SOLO PRUEBAS: con un único enchufe físico, varias cuentas pueden registrarlo y todas ven sus lecturas y pueden prenderlo y apagarlo.
+    # Es una fuga de privacidad si hay usuarios reales (quien registre un ID ajeno vería su consumo): apagarlo antes de abrir la app a otras personas.
+    compartir_enchufes: bool = False
+
     # Respaldo por la nube de Tuya (solo cuando el agente no responde). Sin credenciales, no hay respaldo.
     tuya_access_id: str | None = None
     tuya_access_secret: str | None = None
