@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TextInput, View, type TextInputProps } from "react-native";
+import { Platform, TextInput, View, type TextInputProps } from "react-native";
 
 import { AREA_TOQUE_MIN, colores, espacio, fuentes, radios } from "@/theme";
 
@@ -41,6 +41,8 @@ export function Campo({ etiqueta, ayuda, error, style, onFocus, onBlur, ...resto
             color: colores.texto,
             backgroundColor: enfocado ? colores.tarjeta : colores.tarjetaHundida,
           },
+          // En la web, el navegador agrega su contorno azul de enfoque; aquí el enfoque ya lo marca el borde.
+          Platform.OS === "web" && ({ outlineStyle: "none" } as object),
           style,
         ]}
       />
