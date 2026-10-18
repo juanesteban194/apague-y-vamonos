@@ -1,7 +1,10 @@
-import { ActivityIndicator, Pressable, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { ActivityIndicator, Animated, Platform, Pressable, View } from "react-native";
 
+import { seleccionar } from "@/lib/haptica";
 import { AREA_TOQUE_MIN, colores, espacio } from "@/theme";
 
+import { Icono } from "./Icono";
 import { Texto } from "./Texto";
 
 type Props = {
@@ -14,7 +17,12 @@ type Props = {
   ayudaApagado?: string;
 };
 
-/** Interruptor grande (mockup: «Está prendido · Toca para apagarlo desde aquí»). Toda la fila es el área de toque. */
+const RIEL = { ancho: 52, alto: 32, margen: 3 };
+const BOTON = RIEL.alto - RIEL.margen * 2;
+const RECORRIDO = RIEL.ancho - BOTON - RIEL.margen * 2;
+
+/** Interruptor grande (mockup: «Está prendido · Toca para apagarlo desde aquí»). Toda la fila es el área de toque.
+ *  A la izquierda, el ícono de encendido en verde (prendido) o gris (apagado); a la derecha, un riel como el de iOS. */
 export function Interruptor({
   encendido,
   cargando,
@@ -26,42 +34,72 @@ export function Interruptor({
 }: Props) {
   const sinDatos = encendido == null;
   const prendido = encendido === true;
+  const posicion = useRef(new Animated.Value(prendido ? 1 : 0)).current;
+  useEffect(() => {
+    Animated.spring(posicion, { toValue: prendido ? 1 : 0, useNativeDriver: Platform.OS !== "web", speed: 18, bounciness: 4 }).start();
+  }, [prendido, posicion]);
+
   return (
     <Pressable
       accessibilityRole="switch"
       accessibilityState={{ checked: prendido, disabled: sinDatos || !!cargando, busy: !!cargando }}
       accessibilityLabel={sinDatos ? "Sin datos del enchufe" : prendido ? etiquetaEncendido : etiquetaApagado}
       disabled={sinDatos || cargando}
-      onPress={() => alCambiar(!prendido)}
+      onPress={() => {
+        seleccionar();
+        alCambiar(!prendido);
+      }}
       style={({ pressed }) => ({
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
-        gap: espacio.l,
+        gap: espacio.m,
         minHeight: AREA_TOQUE_MIN + 20,
-        opacity: pressed || sinDatos ? 0.7 : 1,
+        opacity: sinDatos ? 0.6 : pressed ? 0.8 : 1,
       })}
     >
-      <View style={{ flex: 1 }}>
-        <Texto variante="subtitulo">{sinDatos ? "Sin datos del enchufe" : prendido ? etiquetaEncendido : etiquetaApagado}</Texto>
+      <View
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 11,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: prendido ? colores.verdeFondo : colores.tarjetaHundida,
+        }}
+      >
+        <Icono nombre="apagar" tamano={20} color={prendido ? colores.verde : colores.apagado} />
+      </View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Texto variante="cuerpo" style={{ fontWeight: "600" }}>
+          {sinDatos ? "Sin datos del enchufe" : prendido ? etiquetaEncendido : etiquetaApagado}
+        </Texto>
         <Texto variante="secundario" color={colores.textoSecundario}>
-          {sinDatos ? "Cuando el agente envíe lecturas podrás controlarlo." : prendido ? ayudaEncendido : ayudaApagado}
+          {sinDatos ? "Cuando el enchufe mande datos, podrás controlarlo desde aquí." : prendido ? ayudaEncendido : ayudaApagado}
         </Texto>
       </View>
       <View
         style={{
-          width: 56,
-          height: 34,
-          borderRadius: 17,
-          padding: 3,
-          justifyContent: "center",
-          alignItems: prendido ? "flex-end" : "flex-start",
+          width: RIEL.ancho,
+          height: RIEL.alto,
+          borderRadius: RIEL.alto / 2,
+          padding: RIEL.margen,
           backgroundColor: prendido ? colores.semaforoVerde : colores.interruptorApagado,
         }}
       >
-        <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", boxShadow: "0px 2px 4px rgba(0,0,0,0.12)" }}>
+        <Animated.View
+          style={{
+            width: BOTON,
+            height: BOTON,
+            borderRadius: BOTON / 2,
+            backgroundColor: colores.tarjeta,
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0px 1px 1px rgba(0,0,0,0.06), 0px 3px 8px rgba(0,0,0,0.15)",
+            transform: [{ translateX: posicion.interpolate({ inputRange: [0, 1], outputRange: [0, RECORRIDO] }) }],
+          }}
+        >
           {cargando && <ActivityIndicator size="small" color={colores.textoSecundario} />}
-        </View>
+        </Animated.View>
       </View>
     </Pressable>
   );

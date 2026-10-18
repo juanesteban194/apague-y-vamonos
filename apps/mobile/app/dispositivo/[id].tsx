@@ -5,23 +5,38 @@ import { View } from "react-native";
 import { useHogarActual } from "@/api/hogar";
 import type { Periodo } from "@/api/tipos";
 import { BarrasConsumo } from "@/components/BarrasConsumo";
-import { Boton } from "@/components/Boton";
-import { Interruptor } from "@/components/Interruptor";
+import { ConsumoSegmentado } from "@/components/ConsumoSegmentado";
 import { EstadoConexion } from "@/components/EstadoConexion";
+import { Interruptor } from "@/components/Interruptor";
 import { Pantalla } from "@/components/Pantalla";
+import { Pastilla } from "@/components/Primitivos";
 import { Tarjeta } from "@/components/Tarjeta";
 import { Texto } from "@/components/Texto";
 import { useConsumo, useResumen } from "@/features/consumo/hooks";
 import { useControlDispositivo } from "@/features/consumo/control";
 import { formatoCOP, formatoPotencia } from "@/lib/formato";
 import { useTiempoReal } from "@/realtime/estado";
-import { colores, espacio } from "@/theme";
+import { BORDE_FINO, colores, espacio, radios } from "@/theme";
 
 const PERIODOS: { valor: Periodo; titulo: string; resumen: string }[] = [
   { valor: "dia", titulo: "Día", resumen: "Hoy" },
   { valor: "semana", titulo: "Semana", resumen: "Últimos 7 días" },
   { valor: "mes", titulo: "Mes", resumen: "Este mes" },
 ];
+
+/** Un costo con su etiqueta encima («Gastado hoy · $1.280»). */
+function Costo({ etiqueta, valor }: { etiqueta: string; valor: string }) {
+  return (
+    <View accessible accessibilityLabel={`${etiqueta}: ${valor}`} style={{ flex: 1, gap: 2 }}>
+      <Texto variante="secundario" color={colores.textoSecundario}>
+        {etiqueta}
+      </Texto>
+      <Texto variante="titulo" style={{ fontWeight: "600", fontVariant: ["tabular-nums"] }}>
+        {valor}
+      </Texto>
+    </View>
+  );
+}
 
 export default function Dispositivo() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,64 +50,87 @@ export default function Dispositivo() {
 
   const d = resumen?.dispositivos.find((x) => x.id === id);
   const actual = PERIODOS.find((p) => p.valor === periodo)!;
+  const conRetraso = d != null && d.ultima_lectura != null && !d.en_linea;
 
   return (
     <Pantalla refrescando={isFetching && !isLoading} alRefrescar={() => void refetch()}>
-      <Texto variante="titulo">{d?.nombre ?? "Dispositivo"}</Texto>
+      <Texto variante="tituloGrande" accessibilityRole="header" style={{ marginTop: espacio.s }}>
+        {d?.nombre ?? "Dispositivo"}
+      </Texto>
       <EstadoConexion estado={conexion} />
 
       {d && (
-        <Tarjeta>
-          <Texto variante="secundario" color={d.encendido ? colores.verde : colores.apagado} style={{ fontWeight: "700" }}>
-            {d.encendido == null ? "Sin datos" : d.encendido ? "Encendido" : "Apagado"}
+        <Tarjeta style={{ padding: 20, gap: 0, borderRadius: radios.xl }}>
+          {/* Estado de un vistazo y la potencia de ahora como cifra protagonista */}
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: espacio.s, flexWrap: "wrap" }}>
+            <Texto variante="secundario" color={colores.textoSecundario} style={{ fontWeight: "500" }}>
+              Consumiendo ahora
+            </Texto>
+            <View style={{ flexDirection: "row", gap: espacio.s }}>
+              {conRetraso && <Pastilla texto="Dato con retraso" tono="ambar" icono="reloj" />}
+              <Pastilla texto={d.encendido == null ? "Sin datos" : d.encendido ? "Encendido" : "Apagado"} tono={d.encendido ? "verde" : "neutro"} />
+            </View>
+          </View>
+          <Texto variante="cifra" style={{ marginTop: 2 }}>
+            {d.potencia_w != null && d.encendido ? formatoPotencia(d.potencia_w) : "—"}
           </Texto>
-          <Texto variante="cifraMedia">{d.potencia_w != null && d.encendido ? formatoPotencia(d.potencia_w) : "—"}</Texto>
-          <Texto variante="secundario" color={colores.textoSecundario}>consumiendo ahora</Texto>
-          {d.ultima_lectura != null && !d.en_linea && (
-            <Texto variante="secundario" color={colores.ambar} style={{ fontWeight: "700" }}>Dato con retraso</Texto>
-          )}
-          <View style={{ flexDirection: "row", gap: espacio.xl, marginTop: espacio.s }}>
-            <View>
-              <Texto variante="subtitulo">{formatoCOP(d.costo_hoy_cop)}</Texto>
-              <Texto variante="secundario" color={colores.textoSecundario}>hoy</Texto>
-            </View>
-            <View>
-              <Texto variante="subtitulo">{formatoCOP(d.costo_mes_cop)}</Texto>
-              <Texto variante="secundario" color={colores.textoSecundario}>este mes</Texto>
-            </View>
+          <View style={{ height: BORDE_FINO, backgroundColor: colores.separador, marginVertical: espacio.l }} />
+          <View style={{ flexDirection: "row", gap: espacio.l }}>
+            <Costo etiqueta="Gastado hoy" valor={formatoCOP(d.costo_hoy_cop)} />
+            <View style={{ width: BORDE_FINO, backgroundColor: colores.separador }} />
+            <Costo etiqueta="Este mes" valor={formatoCOP(d.costo_mes_cop)} />
           </View>
         </Tarjeta>
       )}
 
       {d && (
-        <Tarjeta>
+        <Tarjeta style={{ paddingVertical: 10, paddingHorizontal: 16, gap: espacio.s }}>
           <Interruptor encendido={d.encendido} cargando={control.enviando} alCambiar={(encender) => void control.cambiar(encender)} />
           {control.error && (
-            <Texto accessibilityRole="alert" variante="secundario" color={colores.rojo} style={{ fontWeight: "600" }}>
+            <Texto accessibilityRole="alert" variante="secundario" color={colores.rojo} style={{ fontWeight: "500", paddingBottom: espacio.s }}>
               {control.error}
             </Texto>
           )}
         </Tarjeta>
       )}
 
-      <View accessibilityRole="tablist" style={{ flexDirection: "row", gap: espacio.s }}>
-        {PERIODOS.map((p) => (
-          <Boton key={p.valor} flex titulo={p.titulo} variante="secundario" seleccionado={p.valor === periodo} onPress={() => setPeriodo(p.valor)} />
-        ))}
+      <View style={{ gap: espacio.m, marginTop: espacio.s }}>
+        <Texto variante="subtitulo" accessibilityRole="header">
+          Cuánto ha costado
+        </Texto>
+        <ConsumoSegmentado etiqueta="Periodo" opciones={PERIODOS} valor={periodo} alCambiar={setPeriodo} />
       </View>
 
-      <Tarjeta>
-        {isLoading && <Texto color={colores.textoSecundario}>Cargando…</Texto>}
-        {error && <Texto color={colores.rojo} style={{ fontWeight: "600" }}>{error.message}</Texto>}
+      <Tarjeta style={{ padding: 20, gap: espacio.l }}>
+        {isLoading && (
+          <View accessible accessibilityLabel="Cargando el consumo" style={{ gap: espacio.m }}>
+            <View style={{ width: 90, height: 16, borderRadius: 6, backgroundColor: colores.tarjetaHundida }} />
+            <View style={{ width: 140, height: 30, borderRadius: 8, backgroundColor: colores.tarjetaHundida }} />
+            <View style={{ height: 168, borderRadius: radios.m, backgroundColor: colores.fondoElevado }} />
+          </View>
+        )}
+        {error && (
+          <Texto color={colores.rojo} style={{ fontWeight: "500" }}>
+            {error.message}
+          </Texto>
+        )}
         {consumo && (
           <>
-            <Texto variante="secundario" color={colores.textoSecundario}>{actual.resumen}</Texto>
-            <Texto variante="cifraMedia">{formatoCOP(consumo.costo_total_cop)}</Texto>
-            {consumo.costo_total_cop == null && (
-              <Texto variante="secundario" color={colores.ambar}>Aún no hay tarifa cargada: no se puede calcular el costo.</Texto>
-            )}
+            <View style={{ gap: 2 }}>
+              <Texto variante="secundario" color={colores.textoSecundario} style={{ fontWeight: "500" }}>
+                {actual.resumen}
+              </Texto>
+              <Texto variante="cifraMedia">{formatoCOP(consumo.costo_total_cop)}</Texto>
+              {consumo.costo_total_cop == null && (
+                <Texto variante="secundario" color={colores.ambar}>
+                  Aún no hay tarifa cargada: no podemos calcular el costo.
+                </Texto>
+              )}
+            </View>
             <BarrasConsumo serie={consumo.serie} periodo={periodo} />
-            <Texto variante="secundario" color={colores.textoSecundario}>Costo en pesos por {periodo === "dia" ? "hora" : "día"}.</Texto>
+            <Texto variante="secundario" color={colores.textoSecundario}>
+              Costo en pesos por {periodo === "dia" ? "hora" : "día"}.
+            </Texto>
           </>
         )}
       </Tarjeta>
