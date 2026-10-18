@@ -82,7 +82,6 @@ function Navegacion() {
     <>
       {hogarId && <ProveedorTiempoReal key={hogarId} hogarId={hogarId} />}
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colores.fondo } }}>
-        <Stack.Screen name="politica" options={{ ...opcionesCabecera, title: "Tus datos" }} />
         <Stack.Protected guard={paso === "sesion"}>
           <Stack.Screen name="(auth)/login" />
           <Stack.Screen name="(auth)/registro" />
@@ -119,6 +118,8 @@ function Navegacion() {
           <Stack.Screen name="eliminar-cuenta" options={{ ...opcionesCabecera, title: "Eliminar mi cuenta" }} />
           <Stack.Screen name="ayuda/[tema]" options={{ ...opcionesCabecera, title: "Cómo funciona" }} />
         </Stack.Protected>
+        {/* SIEMPRE al final: el navegador abre la primera pantalla de la lista, y la política no tiene cómo ir a entrar ni a crear la cuenta. */}
+        <Stack.Screen name="politica" options={{ ...opcionesCabecera, title: "Tus datos" }} />
       </Stack>
     </>
   );
