@@ -28,6 +28,18 @@ class ConfiguracionOut(BaseModel):
     nombre: str
     enchufes: list[EnchufeConfigOut]
     sin_clave: list[str]  # IDs de enchufes asignados a este agente de los que aún no se tiene la clave
+    motivos: dict[str, str] = {}  # por qué falta cada una (para que el agente y quien lo instala sepan qué arreglar)
+
+
+class ClavesIn(BaseModel):
+    """Claves locales que el agente ya tiene (por ejemplo de su devices.json), por ID de Tuya."""
+
+    claves: dict[str, str] = Field(min_length=1, max_length=50)
+
+
+class ClavesGuardadasOut(BaseModel):
+    guardadas: list[str]
+    ignoradas: list[str]  # no son enchufes asignados a este agente
 
 
 class AgenteConCodigoOut(BaseModel):

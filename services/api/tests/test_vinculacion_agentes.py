@@ -276,3 +276,70 @@ def test_tuya_sin_clave_en_la_respuesta_da_error_claro(monkeypatch):
     c = ClienteTuyaCloud(httpx.AsyncClient(transport=httpx.MockTransport(manejador)))
     with pytest.raises(ErrorTuyaCloud, match="no entregó la clave local"):
         asyncio.run(c.clave_local("dev1"))
+
+
+# --- motivos y claves subidas por el agente ----------------------------------------------------------------------------------
+def asignado_y_vinculado(client, auth, hogar, enchufe):
+    sala = con_codigo(client, auth, hogar)
+    configurar(client, auth, hogar, enchufe, sala)
+    return vincular(client, sala["codigo"]).json()["token"]
+
+
+def test_sin_credenciales_de_tuya_la_configuracion_dice_por_que_y_que_hacer(client, auth, hogar, enchufe, monkeypatch):
+    monkeypatch.setattr(service.cliente_tuya, "configurado", lambda: False)
+    token = asignado_y_vinculado(client, auth, hogar, enchufe)
+    c = client.get("/agentes/configuracion", headers=cabecera(token)).json()
+    assert c["sin_clave"] == [enchufe["tuya_id"]]
+    assert "TUYA_ACCESS_ID" in c["motivos"][enchufe["tuya_id"]] and "devices.json" in c["motivos"][enchufe["tuya_id"]]
+
+
+def test_sin_clave_maestra_el_motivo_es_ese(client, auth, hogar, enchufe, monkeypatch):
+    token = asignado_y_vinculado(client, auth, hogar, enchufe)
+    monkeypatch.setattr(get_settings(), "clave_maestra", None)
+    c = client.get("/agentes/configuracion", headers=cabecera(token)).json()
+    assert "CLAVE_MAESTRA" in c["motivos"][enchufe["tuya_id"]]
+
+
+def test_si_tuya_la_rechaza_el_motivo_trae_lo_que_dijo_tuya(client, auth, hogar, enchufe, monkeypatch):
+    async def clave_local(tuya_id):
+        raise ErrorTuyaCloud("Tuya Cloud rechazó la petición: permission deny")
+
+    monkeypatch.setattr(service.cliente_tuya, "configurado", lambda: True)
+    monkeypatch.setattr(service.cliente_tuya, "clave_local", clave_local)
+    token = asignado_y_vinculado(client, auth, hogar, enchufe)
+    for _ in range(2):  # la segunda sale del caché: mismo motivo, sin volver a preguntar
+        c = client.get("/agentes/configuracion", headers=cabecera(token)).json()
+        assert "permission deny" in c["motivos"][enchufe["tuya_id"]]
+
+
+def test_el_agente_sube_la_clave_de_su_devices_json_y_queda_cifrada(client, auth, hogar, enchufe, monkeypatch):
+    monkeypatch.setattr(service.cliente_tuya, "configurado", lambda: False)
+    token = asignado_y_vinculado(client, auth, hogar, enchufe)
+    r = client.post("/agentes/claves", json={"claves": {enchufe["tuya_id"]: "clave-de-devices-json"}}, headers=cabecera(token))
+    assert r.status_code == 200 and r.json() == {"guardadas": [enchufe["tuya_id"]], "ignoradas": []}
+    c = client.get("/agentes/configuracion", headers=cabecera(token)).json()
+    assert c["sin_clave"] == [] and c["enchufes"][0]["clave_local"] == "clave-de-devices-json"
+    with get_sessionmaker()() as db:
+        assert "clave-de-devices-json" not in db.scalar(select(Dispositivo.clave_local_cifrada))
+
+
+def test_un_agente_no_puede_subir_claves_de_enchufes_que_no_son_suyos(client, auth, hogar, enchufe, monkeypatch):
+    sala, patio = con_codigo(client, auth, hogar, "Sala"), con_codigo(client, auth, hogar, "Patio")
+    configurar(client, auth, hogar, enchufe, sala)  # el enchufe es de Sala
+    token_patio = vincular(client, patio["codigo"]).json()["token"]
+    r = client.post("/agentes/claves", json={"claves": {enchufe["tuya_id"]: "robada", "z9": "otra"}}, headers=cabecera(token_patio))
+    assert r.json() == {"guardadas": [], "ignoradas": sorted([enchufe["tuya_id"], "z9"])}
+    with get_sessionmaker()() as db:
+        assert db.scalar(select(Dispositivo.clave_local_cifrada)) is None
+
+
+def test_subir_claves_pide_el_token_del_agente(client):
+    assert client.post("/agentes/claves", json={"claves": {"a": "b"}}).status_code in (401, 403)
+    assert client.post("/agentes/claves", json={"claves": {"a": "b"}}, headers=cabecera("falso")).status_code == 401
+
+
+def test_sin_clave_maestra_subir_claves_responde_503_claro(client, auth, hogar, enchufe, monkeypatch):
+    token = asignado_y_vinculado(client, auth, hogar, enchufe)
+    monkeypatch.setattr(get_settings(), "clave_maestra", None)
+    r = client.post("/agentes/claves", json={"claves": {enchufe["tuya_id"]: "x"}}, headers=cabecera(token))
+    assert r.status_code == 503 and "CLAVE_MAESTRA" in r.json()["detail"]

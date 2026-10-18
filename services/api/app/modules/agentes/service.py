@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.core import cifrado
 from app.core.security import generar_token_agente, hash_token_agente
 from app.integrations.tuya_cloud.cliente import ErrorTuyaCloud, cliente_tuya
-from app.modules.agentes.schemas import AgenteConCodigoOut, ConfiguracionOut, EnchufeConfigOut, VinculadoOut
+from app.modules.agentes.schemas import AgenteConCodigoOut, ClavesGuardadasOut, ConfiguracionOut, EnchufeConfigOut, VinculadoOut
 from app.modules.dispositivos.models import Dispositivo
 from app.modules.hogares.models import Agente, Hogar
 
@@ -21,6 +21,7 @@ log = logging.getLogger("agentes")
 VIGENCIA_CODIGO = timedelta(minutes=10)
 REINTENTO_CLAVE_S = 3600  # si Tuya no dio la clave de un enchufe, no se vuelve a preguntar en una hora (cada pregunta gasta cuota)
 _sin_clave_hasta: dict[str, float] = {}
+_motivo_tuya: dict[str, str] = {}
 
 
 def _hash_codigo(codigo: str) -> str:
@@ -101,25 +102,46 @@ def configuracion(db: Session, agente: Agente) -> ConfiguracionOut:
 
 def sin_claves(db: Session, agente: Agente) -> ConfiguracionOut:
     ids = list(db.scalars(select(Dispositivo.tuya_id).where(Dispositivo.agente_id == agente.id).order_by(Dispositivo.creado_en)))
-    return ConfiguracionOut(agente_id=agente.id, nombre=agente.nombre, enchufes=[], sin_clave=ids)
+    motivo = "al servidor le falta CLAVE_MAESTRA (variable de entorno): no puede guardar claves"
+    return ConfiguracionOut(agente_id=agente.id, nombre=agente.nombre, enchufes=[], sin_clave=ids, motivos={i: motivo for i in ids})
+
+
+def guardar_claves(db: Session, agente: Agente, claves: dict[str, str]) -> ClavesGuardadasOut:
+    """El agente sube las claves locales que ya tiene (de su devices.json). Solo se aceptan las de enchufes asignados a ÉL; se guardan cifradas."""
+    if not cifrado.disponible():
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "El servidor no tiene CLAVE_MAESTRA: no puede guardar claves de enchufes")
+    suyos = {d.tuya_id: d for d in db.scalars(select(Dispositivo).where(Dispositivo.agente_id == agente.id, Dispositivo.tuya_id.in_(list(claves))))}
+    for tuya_id, d in suyos.items():
+        d.clave_local_cifrada = cifrado.cifrar(claves[tuya_id])
+    db.commit()
+    return ClavesGuardadasOut(guardadas=sorted(suyos), ignoradas=sorted(set(claves) - set(suyos)))
 
 
 async def completar_claves(db: Session, agente: Agente, config: ConfiguracionOut) -> ConfiguracionOut:
     """A los enchufes del agente que aún no tienen clave guardada se la pide a Tuya Cloud (una vez), la guarda cifrada y la incluye.
-    Nunca falla: si no se puede, el enchufe queda en `sin_clave` y el agente lo avisa."""
-    if not config.sin_clave or not cifrado.disponible() or not cliente_tuya.configurado():
+    Nunca falla: si no se puede, el enchufe queda en `sin_clave` con su motivo y el agente lo avisa."""
+    if not config.sin_clave:
         return config
-    pendientes = []
+    if not cifrado.disponible():
+        config.motivos = {i: "al servidor le falta CLAVE_MAESTRA" for i in config.sin_clave}
+        return config
+    if not cliente_tuya.configurado():
+        config.motivos = {i: "el servidor no tiene TUYA_ACCESS_ID y TUYA_ACCESS_SECRET; el agente puede subir la clave desde su devices.json" for i in config.sin_clave}
+        return config
+    pendientes, motivos = [], {}
     for tuya_id in config.sin_clave:
         if _sin_clave_hasta.get(tuya_id, 0) > time.monotonic():
             pendientes.append(tuya_id)
+            motivos[tuya_id] = _motivo_tuya.get(tuya_id, "Tuya no la entregó; se vuelve a intentar más tarde")
             continue
         try:
             clave = await cliente_tuya.clave_local(tuya_id)
         except ErrorTuyaCloud as e:
             log.warning("no se pudo obtener la clave local de %s: %s", tuya_id, e)
             _sin_clave_hasta[tuya_id] = time.monotonic() + REINTENTO_CLAVE_S
+            _motivo_tuya[tuya_id] = f"Tuya respondió: {e}"
             pendientes.append(tuya_id)
+            motivos[tuya_id] = _motivo_tuya[tuya_id]
             continue
         d = db.scalar(select(Dispositivo).where(Dispositivo.tuya_id == tuya_id, Dispositivo.agente_id == agente.id))
         if d is None:
@@ -128,4 +150,5 @@ async def completar_claves(db: Session, agente: Agente, config: ConfiguracionOut
         db.commit()
         config.enchufes.append(EnchufeConfigOut(tuya_id=tuya_id, nombre=d.nombre, clave_local=clave))
     config.sin_clave = pendientes
+    config.motivos = motivos
     return config

@@ -6,7 +6,7 @@ from starlette.concurrency import run_in_threadpool
 from app.core import cifrado
 from app.core.database import get_db
 from app.modules.agentes import service
-from app.modules.agentes.schemas import ConfiguracionOut, VincularIn, VinculadoOut
+from app.modules.agentes.schemas import ClavesGuardadasOut, ClavesIn, ConfiguracionOut, VincularIn, VinculadoOut
 from app.modules.hogares.models import Agente
 from app.modules.ingesta.service import agente_actual
 
@@ -31,3 +31,9 @@ async def configuracion(agente: Agente = Depends(agente_actual), db: Session = D
         resultado = await service.completar_claves(db, agente, resultado)
     await run_in_threadpool(db.commit)  # agente_actual anotó la última conexión
     return resultado
+
+
+@router.post("/claves", response_model=ClavesGuardadasOut)
+def subir_claves(datos: ClavesIn, agente: Agente = Depends(agente_actual), db: Session = Depends(get_db)):
+    """El agente sube las claves locales que ya tiene (de su devices.json) cuando la API no pudo pedírselas a Tuya. Solo de SUS enchufes."""
+    return service.guardar_claves(db, agente, datos.claves)

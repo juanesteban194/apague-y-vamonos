@@ -46,7 +46,7 @@ class Agente:
             threading.Thread(target=self._comandos.correr, args=(parar,), name="comandos", daemon=True),
         ]
         if self._remoto:
-            hilos.append(threading.Thread(target=bucle_config, args=(self._cliente, self._registro, parar), name="configuracion", daemon=True))
+            hilos.append(threading.Thread(target=bucle_config, args=(self._cliente, self._registro, parar, self._ajustes.ruta_devices), name="configuracion", daemon=True))
         for h in hilos:
             h.start()
         parar.wait()

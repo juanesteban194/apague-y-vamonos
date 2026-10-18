@@ -172,7 +172,7 @@ def test_avisa_de_los_enchufes_asignados_sin_clave(monkeypatch, caplog):
     monkeypatch.setattr(remota, "LectorEnchufe", LectorFalso)
     with caplog.at_level(logging.WARNING, logger="agente.config"):
         sincronizar(api([httpx.Response(200, json=config(sin_clave=["t9"]))]), Registro())
-    assert "sin clave local" in caplog.text and "t9" in caplog.text
+    assert "no tiene su clave local" in caplog.text and "t9" in caplog.text
 
 
 def test_sin_internet_se_sigue_con_lo_ultimo_que_se_sabia(monkeypatch):
@@ -207,3 +207,89 @@ def test_el_agente_ve_los_cambios_del_registro_sin_reiniciar(monkeypatch):
     assert comandos._registro.get("t1") is None
     reg.actualizar([{"tuya_id": "t1", "nombre": "Nevera", "clave_local": "k"}], LectorFalso)
     assert comandos._registro.get("t1").nombre == "Nevera"
+
+
+# --- subir la clave de devices.json cuando la API no la tiene ------------------------------------------------------------------------
+def devices(tmp_path, *pares):
+    ruta = tmp_path / "devices.json"
+    ruta.write_text(json.dumps([{"id": i, "key": k, "name": "x"} for i, k in pares]))
+    return ruta
+
+
+def test_las_claves_locales_se_leen_de_devices_json(tmp_path):
+    from agent.config.remota import claves_locales
+
+    assert claves_locales(devices(tmp_path, ("t1", "k1"), ("t2", "k2"))) == {"t1": "k1", "t2": "k2"}
+    assert claves_locales(tmp_path / "no-existe.json") == {}
+    (tmp_path / "malo.json").write_text("{no es json")
+    assert claves_locales(tmp_path / "malo.json") == {}
+    assert claves_locales(None) == {}
+
+
+def test_si_la_api_no_tiene_la_clave_y_este_equipo_si_se_la_sube_y_empieza_a_leer(monkeypatch, tmp_path, caplog):
+    import agent.config.remota as remota
+
+    monkeypatch.setattr(remota, "LectorEnchufe", LectorFalso)
+    vistas = {"subidas": None, "claves": False}
+
+    def manejador(request):
+        if request.url.path == "/agentes/claves":
+            vistas["subidas"] = json.loads(request.content)
+            vistas["claves"] = True
+            return httpx.Response(200, json={"guardadas": ["t1"], "ignoradas": []})
+        if vistas["claves"]:
+            return httpx.Response(200, json=config(("t1", "Nevera", "k1")))
+        return httpx.Response(200, json=config(sin_clave=["t1"]))
+
+    reg = Registro()
+    with caplog.at_level(logging.INFO, logger="agente.config"):
+        assert sincronizar(cliente(manejador), reg, devices(tmp_path, ("t1", "k1"), ("otro", "kx"))) is True
+    assert vistas["subidas"] == {"claves": {"t1": "k1"}}  # solo la del enchufe que falta, no todas
+    assert [l.nombre for l in reg.lectores()] == ["Nevera"]
+    assert "Subí a la API la clave de t1" in caplog.text
+
+
+def test_sin_devices_json_no_sube_nada_y_dice_el_motivo(monkeypatch, tmp_path, caplog):
+    import agent.config.remota as remota
+
+    monkeypatch.setattr(remota, "LectorEnchufe", LectorFalso)
+    llamadas = []
+
+    def manejador(request):
+        llamadas.append(request.url.path)
+        return httpx.Response(200, json={**config(sin_clave=["t1"]), "motivos": {"t1": "el servidor no tiene TUYA_ACCESS_ID"}})
+
+    with caplog.at_level(logging.WARNING, logger="agente.config"):
+        sincronizar(cliente(manejador), Registro(), tmp_path / "no-existe.json")
+    assert "/agentes/claves" not in llamadas
+    assert "el servidor no tiene TUYA_ACCESS_ID" in caplog.text  # el motivo llega al registro del agente
+
+
+def test_si_subir_falla_se_sigue_y_se_avisa(monkeypatch, tmp_path, caplog):
+    import agent.config.remota as remota
+
+    monkeypatch.setattr(remota, "LectorEnchufe", LectorFalso)
+
+    def manejador(request):
+        if request.url.path == "/agentes/claves":
+            return httpx.Response(503, json={"detail": "sin CLAVE_MAESTRA"})
+        return httpx.Response(200, json=config(sin_clave=["t1"]))
+
+    reg = Registro()
+    with caplog.at_level(logging.WARNING, logger="agente.config"):
+        assert sincronizar(cliente(manejador), reg, devices(tmp_path, ("t1", "k1"))) is True
+    assert "No se pudieron subir" in caplog.text and reg.lectores() == []
+
+
+def test_no_sube_claves_que_la_api_ya_tiene(monkeypatch, tmp_path):
+    import agent.config.remota as remota
+
+    monkeypatch.setattr(remota, "LectorEnchufe", LectorFalso)
+    llamadas = []
+
+    def manejador(request):
+        llamadas.append(request.url.path)
+        return httpx.Response(200, json=config(("t1", "Nevera", "k1")))
+
+    sincronizar(cliente(manejador), Registro(), devices(tmp_path, ("t1", "k1")))
+    assert "/agentes/claves" not in llamadas

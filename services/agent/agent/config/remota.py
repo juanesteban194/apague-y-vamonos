@@ -1,9 +1,11 @@
 """Configuración que el agente pide a la API (qué enchufes le tocan y sus claves) en vez de leer devices.json.
 
 Cada minuto se vuelve a pedir: si en la app se le asigna o quita un enchufe, el agente lo empieza o deja de leer sin reiniciar."""
+import json
 import logging
 import threading
 from collections.abc import Callable
+from pathlib import Path
 
 import httpx
 
@@ -56,10 +58,40 @@ def pedir(cliente: httpx.Client) -> dict:
     return r.json()
 
 
-def sincronizar(cliente: httpx.Client, registro: Registro) -> bool:
-    """Una pasada. True si se pudo hablar con la API. Nunca lanza: sin internet se sigue con lo último que se sabía."""
+def claves_locales(ruta) -> dict[str, str]:
+    """{ID de Tuya: clave local} del devices.json de este equipo (formato del asistente de TinyTuya). Vacío si no existe o no sirve."""
+    try:
+        return {d["id"]: d["key"] for d in json.loads(Path(ruta).read_text()) if d.get("id") and d.get("key")}
+    except (OSError, ValueError, TypeError, AttributeError):
+        return {}
+
+
+def _subir_claves(cliente: httpx.Client, faltan: list[str], ruta) -> list[str]:
+    """Sube a la API las claves que este equipo ya tiene de los enchufes que le faltan. Devuelve las que se guardaron."""
+    locales = claves_locales(ruta) if ruta else {}
+    subir = {i: locales[i] for i in faltan if i in locales}
+    if not subir:
+        return []
+    try:
+        r = cliente.post("/agentes/claves", json={"claves": subir})
+        r.raise_for_status()
+        return r.json().get("guardadas", [])
+    except (httpx.HTTPError, ValueError) as e:
+        log.warning("No se pudieron subir las claves de devices.json (%s)", type(e).__name__)
+        return []
+
+
+def sincronizar(cliente: httpx.Client, registro: Registro, ruta_devices=None) -> bool:
+    """Una pasada. True si se pudo hablar con la API. Nunca lanza: sin internet se sigue con lo último que se sabía.
+
+    Si la API no tiene la clave de un enchufe asignado y este equipo sí (devices.json), se la sube una vez: no depende de Tuya Cloud."""
     try:
         config = pedir(cliente)
+        if config["sin_clave"]:
+            guardadas = _subir_claves(cliente, config["sin_clave"], ruta_devices)
+            if guardadas:
+                log.info("Subí a la API la clave de %s (de devices.json); queda guardada cifrada", ", ".join(guardadas))
+                config = pedir(cliente)
     except PermissionError as e:
         log.error("%s: vuelve a vincularlo con un código nuevo de la app", e)
         return False
@@ -71,12 +103,13 @@ def sincronizar(cliente: httpx.Client, registro: Registro) -> bool:
         log.info("Ahora lee: %s", ", ".join(agregados))
     if quitados:
         log.info("Dejó de leer: %s (ya no están asignados a este agente)", ", ".join(quitados))
-    if config["sin_clave"]:
-        log.warning("%d enchufe(s) asignados sin clave local guardada todavía: %s", len(config["sin_clave"]), ", ".join(config["sin_clave"]))
+    for tuya_id in config["sin_clave"]:
+        motivo = (config.get("motivos") or {}).get(tuya_id, "motivo desconocido")
+        log.warning("El enchufe %s está asignado a este agente pero la API no tiene su clave local: %s", tuya_id, motivo)
     return True
 
 
-def bucle(cliente: httpx.Client, registro: Registro, parar: threading.Event) -> None:
+def bucle(cliente: httpx.Client, registro: Registro, parar: threading.Event, ruta_devices=None) -> None:
     while not parar.is_set():
-        sincronizar(cliente, registro)
+        sincronizar(cliente, registro, ruta_devices)
         parar.wait(CADA_S)
