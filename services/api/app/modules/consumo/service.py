@@ -135,9 +135,7 @@ def consumo_dispositivo(db: Session, hogar: Hogar, dispositivo: Dispositivo, per
     elif periodo == "semana":
         desde, cubeta, paso, n = hoy_local - timedelta(days=6), "day", timedelta(days=1), 7
     else:
-        desde = inicio_mes_bogota(ahora).astimezone(BOGOTA)
-        n = (_mes_siguiente(desde).astimezone(BOGOTA) - desde).days
-        cubeta, paso = "day", timedelta(days=1)
+        return _consumo_por_meses(db, hogar, dispositivo, ahora)
     hasta = desde + paso * n
 
     energia = energia_hibrida(db, [dispositivo.id], desde, hasta, cubeta)
@@ -162,6 +160,44 @@ def consumo_dispositivo(db: Session, hogar: Hogar, dispositivo: Dispositivo, per
     return ConsumoOut(
         dispositivo_id=dispositivo.id,
         periodo=periodo,
+        desde=desde,
+        hasta=hasta,
+        tarifa_mes=tarifa_actual.mes if tarifa_actual else None,
+        kwh_total=total_kwh,
+        costo_total_cop=_cop(total_cop) if hay_costo else None,
+        serie=serie,
+    )
+
+
+MESES_EN_LA_SERIE = 12
+
+
+def _consumo_por_meses(db: Session, hogar: Hogar, dispositivo: Dispositivo, ahora: datetime) -> ConsumoOut:
+    """Periodo «mes»: una barra por mes, los últimos 12 (el actual va hasta ahora). Cada mes se cobra con su propia tarifa."""
+    meses = [inicio_mes_bogota(ahora)]
+    for _ in range(MESES_EN_LA_SERIE - 1):
+        meses.insert(0, inicio_mes_bogota(meses[0] - timedelta(days=1)))
+    desde, hasta = meses[0].astimezone(BOGOTA), _mes_siguiente(meses[-1].astimezone(BOGOTA))
+
+    por_dia = energia_hibrida(db, [dispositivo.id], desde, hasta, "day")
+    kwh_mes = {m: 0.0 for m in meses}
+    for (_, dia), kwh in por_dia.items():
+        kwh_mes[inicio_mes_bogota(dia)] = kwh_mes.get(inicio_mes_bogota(dia), 0.0) + kwh
+
+    ids_hogar = list(db.scalars(select(Dispositivo.id).where(Dispositivo.hogar_id == hogar.id)))
+    serie, total_kwh, total_cop, hay_costo, tarifa_actual = [], 0.0, Decimal(0), True, None
+    for m in meses:
+        precio, tarifa = precio_del_mes(db, hogar, ids_hogar, m)
+        kwh = kwh_mes[m]
+        costo = costo_de(kwh, precio) if precio else None
+        hay_costo &= costo is not None or kwh == 0
+        total_kwh += kwh
+        total_cop += costo or Decimal(0)
+        serie.append(PuntoConsumo(inicio=m.astimezone(BOGOTA), kwh=kwh, costo_cop=_cop(costo) if costo is not None else (0.0 if kwh == 0 else None)))
+        tarifa_actual = tarifa
+    return ConsumoOut(
+        dispositivo_id=dispositivo.id,
+        periodo="mes",
         desde=desde,
         hasta=hasta,
         tarifa_mes=tarifa_actual.mes if tarifa_actual else None,

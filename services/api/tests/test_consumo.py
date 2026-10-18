@@ -78,13 +78,38 @@ def test_consumo_por_periodo(client, auth, hogar, enchufe, periodo, n):
     assert sum(1 for p in r["serie"] if p["kwh"] > 0) in (1, 2)  # 2 si el minuto cruza el borde de hora
 
 
-def test_consumo_del_mes_tiene_un_punto_por_dia(client, auth, hogar, enchufe):
+def test_consumo_por_meses_tiene_los_ultimos_12_y_el_actual_al_final(client, auth, hogar, enchufe):
     cargar_tarifa_del_mes()
     sembrar_un_minuto(uuid.UUID(enchufe["id"]))
     r = client.get(f"/dispositivos/{enchufe['id']}/consumo", params={"periodo": "mes"}, headers=auth).json()
+    assert len(r["serie"]) == 12
+    inicios = [datetime.fromisoformat(p["inicio"]).astimezone(BOGOTA) for p in r["serie"]]
+    assert all(i.day == 1 and i.hour == 0 for i in inicios)  # cada punto es el comienzo de un mes en Bogotá
     hoy = datetime.now(BOGOTA)
-    siguiente = (hoy.replace(day=28) + timedelta(days=4)).replace(day=1)
-    assert len(r["serie"]) == (siguiente - hoy.replace(day=1)).days
+    assert (inicios[-1].year, inicios[-1].month) == (hoy.year, hoy.month)
+    assert len({(i.year, i.month) for i in inicios}) == 12
+    assert r["serie"][-1]["kwh"] == pytest.approx(0.01) and r["serie"][-1]["costo_cop"] == 8.15
+    assert r["kwh_total"] == pytest.approx(0.01) and r["costo_total_cop"] == 8.15
+
+
+def test_consumo_por_meses_suma_un_mes_viejo_desde_el_consolidado(client, auth, hogar, enchufe):
+    """Hace 3 meses ya no hay lecturas crudas (se purgan a los 30 días): el mes sale de consumo_horario."""
+    from app.modules.consumo.models import ConsumoHorario
+
+    cargar_tarifa_del_mes()
+    hoy = datetime.now(BOGOTA)
+    mes = hoy.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    for _ in range(3):
+        mes = (mes - timedelta(days=1)).replace(day=1)
+    with get_sessionmaker()() as db:
+        for dia in (2, 15):
+            db.add(ConsumoHorario(dispositivo_id=uuid.UUID(enchufe["id"]), hora=mes.replace(day=dia, hour=10).astimezone(UTC), kwh=1.5))
+        db.commit()
+    r = client.get(f"/dispositivos/{enchufe['id']}/consumo", params={"periodo": "mes"}, headers=auth).json()
+    punto = r["serie"][-4]
+    assert datetime.fromisoformat(punto["inicio"]).astimezone(BOGOTA).month == mes.month
+    assert punto["kwh"] == pytest.approx(3.0)
+    assert all(p["kwh"] == 0 for i, p in enumerate(r["serie"]) if i != 8)
 
 
 def test_periodo_invalido(client, auth, enchufe):
