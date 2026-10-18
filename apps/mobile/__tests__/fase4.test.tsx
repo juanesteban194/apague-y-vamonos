@@ -58,7 +58,7 @@ describe("Saldo prepago", () => {
     api();
     await renderizar(<Prepago />);
     expect(await screen.findByText(/te alcanza hasta el .* Son unos 5 días\./)).toBeTruthy(); // 4,5 días → "unos 5 días" como lo diría la persona
-    expect(screen.getByText("Sus anotaciones")).toBeTruthy();
+    expect(screen.getByText("Tus anotaciones")).toBeTruthy();
     expect(screen.getAllByText(/\$22\.000 · hace 24 h|\$22\.000 · hace 1 día|\$22\.000/).length).toBeGreaterThan(0);
   });
 
@@ -67,7 +67,7 @@ describe("Saldo prepago", () => {
     await renderizar(<Prepago />);
     const guardar = await screen.findByRole("button", { name: "Guardar saldo" });
     expect(guardar.props.accessibilityState.disabled).toBe(true);
-    await fireEvent.changeText(screen.getByLabelText("Saldo que muestra su medidor ahora"), "$28.500");
+    await fireEvent.changeText(screen.getByLabelText("Saldo que muestra tu medidor ahora"), "$28.500");
     await fireEvent.press(screen.getByRole("button", { name: "Guardar saldo" }));
     await waitFor(() => expect(enviado("PUT /hogares/h1/prepago")).toEqual({ saldo_cop: 28500 }));
     expect(router.back).toHaveBeenCalled();
@@ -76,8 +76,8 @@ describe("Saldo prepago", () => {
   it("si el servidor rechaza el saldo muestra el motivo", async () => {
     api({ "PUT /hogares/h1/prepago": () => respuestaJson({ detail: "Saldo inválido" }, 422) });
     await renderizar(<Prepago />);
-    await screen.findByText("Sus anotaciones");
-    await fireEvent.changeText(screen.getByLabelText("Saldo que muestra su medidor ahora"), "100");
+    await screen.findByText("Tus anotaciones");
+    await fireEvent.changeText(screen.getByLabelText("Saldo que muestra tu medidor ahora"), "100");
     await fireEvent.press(screen.getByRole("button", { name: "Guardar saldo" }));
     expect(await screen.findByText("Saldo inválido")).toBeTruthy();
   });
