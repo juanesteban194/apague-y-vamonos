@@ -7,9 +7,11 @@ import { useDispositivos } from "@/api/cuenta";
 import { useHogarActual } from "@/api/hogar";
 import { Boton } from "@/components/Boton";
 import { FormularioRutina } from "@/components/FormularioRutina";
+import { Icono } from "@/components/Icono";
 import { PantallaFormulario } from "@/components/PantallaCompleta";
 import { Texto } from "@/components/Texto";
 import { useRutinas } from "@/features/rutinas/hooks";
+import { colores } from "@/theme";
 
 export default function EditarRutina() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -36,8 +38,10 @@ export default function EditarRutina() {
   }
 
   return (
-    <PantallaFormulario>
-      <Texto variante="titulo">Editar rutina</Texto>
+    <PantallaFormulario centrado={false}>
+      <Texto variante="titulo" accessibilityRole="header">
+        Editar rutina
+      </Texto>
       <FormularioRutina
         dispositivos={dispositivos}
         inicial={rutina}
@@ -48,7 +52,7 @@ export default function EditarRutina() {
           router.back();
         }}
       />
-      <Boton titulo="Borrar rutina" variante="secundario" onPress={confirmarBorrado} />
+      <Boton titulo="Borrar rutina" variante="peligro" icono={<Icono nombre="borrar" tamano={20} color={colores.rojo} />} onPress={confirmarBorrado} />
     </PantallaFormulario>
   );
 }

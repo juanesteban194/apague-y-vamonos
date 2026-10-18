@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
+import { View } from "react-native";
 
 import { crearRutina } from "@/api/cliente";
 import { useDispositivos } from "@/api/cuenta";
@@ -7,7 +8,7 @@ import { useHogarActual } from "@/api/hogar";
 import { FormularioRutina } from "@/components/FormularioRutina";
 import { PantallaFormulario } from "@/components/PantallaCompleta";
 import { Texto } from "@/components/Texto";
-import { colores } from "@/theme";
+import { colores, espacio } from "@/theme";
 
 export default function NuevaRutina() {
   const { dispositivo } = useLocalSearchParams<{ dispositivo?: string }>();
@@ -16,9 +17,13 @@ export default function NuevaRutina() {
   const { data: dispositivos } = useDispositivos(hogar?.id);
   if (!hogar || !dispositivos) return null;
   return (
-    <PantallaFormulario>
-      <Texto variante="titulo">Nueva rutina</Texto>
-      <Texto color={colores.textoSecundario}>Apagamos el dispositivo solo, a la hora que usted diga, aunque no esté en casa.</Texto>
+    <PantallaFormulario centrado={false}>
+      <View style={{ gap: espacio.s }}>
+        <Texto variante="titulo" accessibilityRole="header">
+          Nueva rutina
+        </Texto>
+        <Texto color={colores.textoSecundario}>Tu dispositivo se apaga solo a la hora que elijas, aunque no estés en casa.</Texto>
+      </View>
       <FormularioRutina
         dispositivos={dispositivos}
         predeterminado={dispositivo ? { dispositivoId: dispositivo, apagado: "23:00", encendido: "05:00" } : undefined}
