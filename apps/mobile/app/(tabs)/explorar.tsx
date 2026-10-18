@@ -1,17 +1,42 @@
 import { router, type Href } from "expo-router";
 import { Pressable, View } from "react-native";
 
-import type { NombreIcono } from "@/components/Icono";
+import { Icono, type NombreIcono } from "@/components/Icono";
 import { Pantalla } from "@/components/Pantalla";
-import { IconoEnCaja, type Tono } from "@/components/Primitivos";
+import { Separador, colorDelTono, type Tono } from "@/components/Primitivos";
 import { Texto } from "@/components/Texto";
-import { BORDE_FINO, colores, espacio, radios, sombras } from "@/theme";
+import { colores, espacio } from "@/theme";
 
 type Entrada = { titulo: string; detalle: string; icono: NombreIcono; ruta: Href };
 type Categoria = { titulo: string; tono: Tono; entradas: Entrada[] };
 
-/** Las categorías de la app, como en una app de banco: cada mosaico lleva a todo lo relacionado con eso.
- *  Íconos en tonos suaves: el verde se reserva para el ahorro (igual que en el semáforo) y el ámbar para la plata. */
+/** Un acceso como en una app de banco: ícono en un círculo suave y el nombre debajo, sin tarjeta alrededor. */
+function Acceso({ entrada, tono }: { entrada: Entrada; tono: Tono }) {
+  const t = colorDelTono(tono);
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={entrada.titulo}
+      accessibilityHint={entrada.detalle}
+      onPress={() => router.push(entrada.ruta)}
+      style={{ width: "33.33%", minHeight: 104, alignItems: "center", gap: 10, paddingHorizontal: 4 }}
+    >
+      {({ pressed }) => (
+        <>
+          <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: t.fondo, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] }}>
+            <Icono nombre={entrada.icono} tamano={26} color={t.tinta} />
+          </View>
+          <Texto variante="secundario" numberOfLines={2} style={{ textAlign: "center", fontWeight: "500", color: colores.texto }}>
+            {entrada.titulo}
+          </Texto>
+        </>
+      )}
+    </Pressable>
+  );
+}
+
+/** Las categorías de la app, como en una app de banco: cada ícono lleva a todo lo relacionado con eso.
+ *  El verde se reserva para el ahorro (igual que en el semáforo) y el ámbar para la plata. */
 const CATEGORIAS: Categoria[] = [
   {
     titulo: "Mis dispositivos",
@@ -48,62 +73,22 @@ const CATEGORIAS: Categoria[] = [
   },
 ];
 
-const superficie = { backgroundColor: colores.tarjeta, borderRadius: radios.l, borderWidth: BORDE_FINO, borderColor: colores.borde, ...sombras.suave };
-
-/** Un mosaico: ícono, nombre y una línea que dice qué hay adentro. `ancho` ocupa toda la fila (la última de una categoría impar). */
-function Mosaico({ entrada, tono, ancho }: { entrada: Entrada; tono: Tono; ancho?: boolean }) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={entrada.titulo}
-      accessibilityHint={entrada.detalle}
-      onPress={() => router.push(entrada.ruta)}
-      style={({ pressed }) => [
-        superficie,
-        ancho ? { minHeight: 68, flexDirection: "row", alignItems: "center", gap: 14 } : { flex: 1, minHeight: 112, gap: espacio.m },
-        { padding: 14 },
-        pressed && { transform: [{ scale: 0.98 }], backgroundColor: colores.fondoElevado },
-      ]}
-    >
-      <IconoEnCaja nombre={entrada.icono} tono={tono} tamano={36} />
-      <View style={{ flex: ancho ? 1 : undefined, gap: 1 }}>
-        <Texto style={{ fontWeight: "600" }}>{entrada.titulo}</Texto>
-        <Texto variante="secundario" color={colores.textoSecundario}>
-          {entrada.detalle}
-        </Texto>
-      </View>
-    </Pressable>
-  );
-}
-
-function Seccion({ categoria }: { categoria: Categoria }) {
-  const { entradas } = categoria;
-  const filas: Entrada[][] = [];
-  for (let i = 0; i + 1 < entradas.length; i += 2) filas.push(entradas.slice(i, i + 2));
-  const suelta = entradas.length % 2 === 1 ? entradas[entradas.length - 1] : null;
-  return (
-    <View style={{ gap: espacio.m }}>
-      <Texto variante="subtitulo" accessibilityRole="header" style={{ marginLeft: 2 }}>
-        {categoria.titulo}
-      </Texto>
-      {filas.map((fila) => (
-        <View key={fila[0].titulo} style={{ flexDirection: "row", gap: espacio.m }}>
-          {fila.map((e) => (
-            <Mosaico key={e.titulo} entrada={e} tono={categoria.tono} />
-          ))}
-        </View>
-      ))}
-      {suelta && <Mosaico entrada={suelta} tono={categoria.tono} ancho />}
-    </View>
-  );
-}
-
 export default function Explorar() {
   return (
     <Pantalla titulo="Explorar" subtitulo="Todo lo de tu casa, ordenado por tema.">
-      <View style={{ gap: espacio.xxl - 4 }}>
-        {CATEGORIAS.map((c) => (
-          <Seccion key={c.titulo} categoria={c} />
+      <View style={{ gap: espacio.xl }}>
+        {CATEGORIAS.map((c, i) => (
+          <View key={c.titulo} style={{ gap: espacio.l }}>
+            {i > 0 && <Separador />}
+            <Texto variante="subtitulo" accessibilityRole="header">
+              {c.titulo}
+            </Texto>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", marginHorizontal: -4 }}>
+              {c.entradas.map((e) => (
+                <Acceso key={e.titulo} entrada={e} tono={c.tono} />
+              ))}
+            </View>
+          </View>
         ))}
       </View>
     </Pantalla>
