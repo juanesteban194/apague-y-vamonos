@@ -93,6 +93,8 @@ export default function Ajustes() {
       </Grupo>
 
       <Grupo titulo="Ayuda">
+        <FilaLista titulo="Ayuda al cliente" detalle="Escríbenos por WhatsApp o correo" icono="soporte" etiquetaAccesible="Ayuda al cliente" alPulsar={() => router.push("/soporte")} />
+        <Separador sangria={SANGRIA} />
         <FilaLista titulo="Instrucciones" detalle="Cómo funciona cada parte" icono="instrucciones" etiquetaAccesible="Instrucciones" alPulsar={() => router.push("/instrucciones")} />
         <Separador sangria={SANGRIA} />
         <FilaLista

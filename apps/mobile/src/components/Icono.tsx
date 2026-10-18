@@ -29,6 +29,8 @@ import { FanIcon } from "phosphor-react-native/src/icons/Fan";
 import { GaugeIcon } from "phosphor-react-native/src/icons/Gauge";
 import { GearSixIcon } from "phosphor-react-native/src/icons/GearSix";
 import { HamburgerIcon } from "phosphor-react-native/src/icons/Hamburger";
+import { HeadsetIcon } from "phosphor-react-native/src/icons/Headset";
+import { WhatsappLogoIcon } from "phosphor-react-native/src/icons/WhatsappLogo";
 import { HouseIcon } from "phosphor-react-native/src/icons/House";
 import { InfoIcon } from "phosphor-react-native/src/icons/Info";
 import { KeyIcon } from "phosphor-react-native/src/icons/Key";
@@ -174,6 +176,9 @@ const ICONOS = {
   celular: [BatteryChargingIcon, "light"],
   hamburguesa: [HamburgerIcon, "light"],
   leche: [DropIcon, "light"],
+  soporte: [HeadsetIcon, "light"],
+  whatsapp: [WhatsappLogoIcon, "light"],
+  correoLinea: [EnvelopeIcon, "light"],
   // Phosphor no tiene nevera: se dibuja aquí con su misma retícula y su mismo trazo.
   nevera: ["nevera", "light"],
 } as const satisfies Record<string, readonly [IconoPhosphor | "nevera", PesoIcono]>;

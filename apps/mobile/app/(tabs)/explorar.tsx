@@ -69,6 +69,7 @@ const CATEGORIAS: Categoria[] = [
     entradas: [
       { titulo: "Mis casas", detalle: "Datos y tarifa", icono: "casaLinea", ruta: "/casas" },
       { titulo: "Instrucciones", detalle: "Cómo funciona", icono: "instrucciones", ruta: "/instrucciones" },
+      { titulo: "Ayuda al cliente", detalle: "WhatsApp o correo", icono: "soporte", ruta: "/soporte" },
     ],
   },
 ];

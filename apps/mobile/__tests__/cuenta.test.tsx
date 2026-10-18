@@ -468,6 +468,7 @@ describe("Categorías de la casa", () => {
     const destinos: [string, string][] = [
       ["Enchufes", "/enchufes"], ["Agentes", "/agentes"], ["Rutinas", "/rutinas"], ["Facturas y medidor", "/facturas"], ["Saldo prepago", "/prepago"],
       ["Consejos", "/consejos"], ["Cambiar un dispositivo", "/simulador"], ["Mis casas", "/casas"], ["Instrucciones", "/instrucciones"],
+      ["Ayuda al cliente", "/soporte"],
     ];
     for (const [nombre] of destinos) await fireEvent.press(screen.getByRole("button", { name: nombre }));
     expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(destinos.map(([, ruta]) => ruta));

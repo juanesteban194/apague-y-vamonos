@@ -42,6 +42,7 @@ export const PANTALLAS = [
   { nombre: "rutinas", ruta: "/rutinas" },
   { nombre: "rutina-nueva", ruta: "/rutina/nueva" },
   { nombre: "instrucciones", ruta: "/instrucciones" },
+  { nombre: "soporte", ruta: "/soporte" },
   { nombre: "ayuda", ruta: "/ayuda/agentes" },
   { nombre: "politica", ruta: "/politica" },
   { nombre: "verificar-correo", ruta: "/verificar-correo", rutas: { "GET /auth/yo": { ...RUTAS["GET /auth/yo"], email_verificado: false } } },

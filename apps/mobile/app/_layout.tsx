@@ -131,6 +131,7 @@ function Navegacion() {
           <Stack.Screen name="rutina/nueva" options={{ ...opcionesCabecera, title: "Nueva rutina" }} />
           <Stack.Screen name="rutina/[id]" options={{ ...opcionesCabecera, title: "Rutina" }} />
           <Stack.Screen name="instrucciones" options={{ ...opcionesCabecera, title: "Instrucciones" }} />
+          <Stack.Screen name="soporte" options={{ ...opcionesCabecera, title: "Ayuda al cliente" }} />
           <Stack.Screen name="verificar-correo" options={{ ...opcionesCabecera, title: "Verificar correo" }} />
           <Stack.Screen name="eliminar-cuenta" options={{ ...opcionesCabecera, title: "Eliminar mi cuenta" }} />
           <Stack.Screen name="ayuda/[tema]" options={{ ...opcionesCabecera, title: "Cómo funciona" }} />
