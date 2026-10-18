@@ -3,7 +3,7 @@
 App Expo SDK 57 (React Native, TypeScript estricto, Expo Router). Ver **App móvil** en [CLAUDE.md](../../CLAUDE.md).
 La app nunca habla con Tuya: solo con la API (REST + WebSocket).
 
-## Correrla (Fase 3: Expo Go, sin compilar nada)
+## Correrla (Expo Go, sin compilar nada)
 ```
 cd apps/mobile
 cp ../../.env.example .env        # y completa EXPO_PUBLIC_API_URL=https://gestion-consumo-api.onrender.com
@@ -15,7 +15,7 @@ el primer inicio de sesión tarda hasta ~1 min (la pantalla lo avisa). Usuario d
 Si Expo Go no abre el proyecto: (1) iPhone: *Ajustes > Expo Go > Red local* activado; (2) el teléfono en la misma WiFi
 que el Mac y sin datos móviles; (3) prueba abrir `http://<IP del Mac>:8081` en el navegador del teléfono: debe mostrar un JSON.
 Si la red aísla los dispositivos (WiFi de la universidad, invitados), usa `npm run start:tunnel`.
-Expo Go no recibe push en Android: eso llega en la Fase 4 con un *development build*.
+Expo Go no recibe push en Android (los avisos se ven dentro de la app); el push con la app cerrada necesita un *development build* (Fase 7).
 
 ## Comandos
 - `npm run start:tunnel`: como `start`, pero por un túnel de internet (funciona aunque la WiFi aísle los dispositivos; más lento).
