@@ -59,7 +59,7 @@ def reemplazar(db: Session, hogar_id: uuid.UUID, datos: HistorialIn) -> Historia
     """La persona manda todos los meses que anotó: lo anterior se reemplaza (más simple que editar mes por mes)."""
     meses = [m.mes for m in datos.meses]
     if len(set(meses)) != len(meses):
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Hay un mes repetido en el histórico")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Anotaste el mismo mes dos veces. Deja solo uno e intenta de nuevo.")
     db.execute(delete(HistorialFactura).where(HistorialFactura.hogar_id == hogar_id))
     db.add_all(HistorialFactura(hogar_id=hogar_id, mes=m.mes, kwh=m.kwh, valor_cop=m.valor_cop) for m in datos.meses)
     db.commit()

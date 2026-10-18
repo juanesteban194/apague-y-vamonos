@@ -33,7 +33,7 @@ def consumo(
 ):
     dispositivo = db.get(Dispositivo, dispositivo_id)
     if dispositivo is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Dispositivo no encontrado")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese dispositivo.")
     exigir_miembro(db, usuario_id, dispositivo.hogar_id)
     return service.consumo_dispositivo(db, db.get(Hogar, dispositivo.hogar_id), dispositivo, periodo)
 

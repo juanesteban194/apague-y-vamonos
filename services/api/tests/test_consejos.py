@@ -69,7 +69,7 @@ def test_va_por_encima_del_promedio_lo_dice(client, auth, hogar, enchufe):
     for lectura, fecha in ((1000, "2026-10-01"), (1090, "2026-10-13")):  # 90/12×31 = 232 kWh contra 150
         client.post(f"/hogares/{hogar['id']}/lecturas-medidor", json={"lectura_kwh": lectura, "fecha": fecha}, headers=auth)
     c = [x for x in generar(hogar).values() if x.tipo == "sobre_promedio"]
-    assert len(c) == 1 and "más que su promedio" in c[0].mensaje
+    assert len(c) == 1 and "más que tu promedio" in c[0].mensaje
 
 
 def montar_casa(client, auth, hogar):
@@ -109,7 +109,7 @@ def test_nunca_sugiere_apagar_la_nevera_de_noche(client, auth, hogar):
 def test_ofrece_el_simulador_para_la_nevera_con_lo_que_mide(client, auth, hogar):
     nevera, _ = montar_casa(client, auth, hogar)
     c = next(x for x in generar(hogar).values() if x.tipo == "retiq")
-    assert c.dispositivo_id == nevera and c.accion == "simulador" and "¿Le conviene cambiar Nevera?" == c.titulo
+    assert c.dispositivo_id == nevera and c.accion == "simulador" and "¿Te conviene cambiar Nevera?" == c.titulo
     assert c.consumo_kwh_mes == approx(100 / 1000 * 24 * 30, abs=0.1)  # 72 kWh al mes medidos
 
 

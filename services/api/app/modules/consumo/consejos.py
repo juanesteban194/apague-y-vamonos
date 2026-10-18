@@ -75,19 +75,19 @@ def generar(db: Session, hogar: Hogar, ahora: datetime) -> list[Consejo]:
     dispositivos = list(db.scalars(select(Dispositivo).where(Dispositivo.hogar_id == hogar.id).order_by(Dispositivo.creado_en)))
     estado = semaforo.calcular(db, hogar, ahora)
 
-    # 1. Lo que falta para poder decir "va por encima o por debajo de su promedio"
+    # 1. Lo que falta para poder decir "vas por encima o por debajo de tu promedio"
     if estado.estado == "sin_historial":
-        consejos.append(Consejo("completar-historial", "completar", "receipt", "Anote su factura de EPM",
-                                "Con los meses del histórico de su factura sabemos cuánto es \"lo normal\" en su casa y le decimos si va ahorrando.", accion="historial"))
+        consejos.append(Consejo("completar-historial", "completar", "receipt", "Anota tu factura de EPM",
+                                "Con el histórico de tu factura sabemos cuánto gasta normalmente tu casa. Así te decimos si vas ahorrando.", accion="historial"))
     if estado.estado == "sin_medidor":
-        consejos.append(Consejo("completar-medidor", "completar", "gauge", "Anote la lectura de su medidor",
-                                "Anótela hoy y otra en unos días: así proyectamos cómo cierra el mes frente a su promedio.", accion="medidor"))
+        consejos.append(Consejo("completar-medidor", "completar", "gauge", "Anota la lectura de tu medidor",
+                                "Anótala hoy y otra vez en unos días. Así calculamos cómo cerraría el mes frente a tu promedio.", accion="medidor"))
     if not dispositivos:
-        consejos.append(Consejo("completar-enchufe", "completar", "plug", "Conecte su primer enchufe", "Así vemos qué dispositivo gasta más y le contamos cómo bajar la cuenta.", accion="enchufe"))
+        consejos.append(Consejo("completar-enchufe", "completar", "plug", "Conecta tu primer enchufe", "Así vemos qué dispositivo gasta más y te contamos cómo bajar la cuenta.", accion="enchufe"))
 
     # 2. Va por encima de su promedio
     if estado.estado == "ok" and estado.nivel in ("amarillo", "rojo"):
-        consejos.append(Consejo("sobre-el-promedio", "sobre_promedio", "alert", "Va por encima de su promedio", estado.mensaje))
+        consejos.append(Consejo("sobre-el-promedio", "sobre_promedio", "alert", "Vas por encima de tu promedio", estado.mensaje))
 
     # 3. Lo que dicen los enchufes
     ids = [d.id for d in dispositivos]
@@ -99,18 +99,18 @@ def generar(db: Session, hogar: Hogar, ahora: datetime) -> list[Consejo]:
         total = sum(m[0] for _, m in mediciones)
         if total > 0:
             consejos.append(Consejo(f"mayor-gasto-{d.id}", "mayor_gasto", "chart", f"{d.nombre} es lo que más gasta",
-                                    f"Gasta unos {_pesos(kwh * float(precio))} al mes, el {round(kwh / total * 100)} % de lo que miden sus enchufes.", dispositivo_id=d.id))
+                                    f"Gasta unos {_pesos(kwh * float(precio))} al mes, el {round(kwh / total * 100)} % de lo que miden tus enchufes.", dispositivo_id=d.id))
 
     if precio:
         for d, (_, noche) in mediciones:
             ahorro = noche * float(precio)
             if ahorro >= AHORRO_MINIMO_COP_MES and not _es(d, SIEMPRE_PRENDIDOS):
                 consejos.append(Consejo(f"noche-{d.id}", "rutina", "moon", f"{d.nombre} gasta de noche",
-                                        f"Entre las 11 p. m. y las 5 a. m. gasta unos {_pesos(ahorro)} al mes. Si no lo necesita a esas horas, programe que se apague solo.",
+                                        f"Entre las 11 p. m. y las 5 a. m. gasta unos {_pesos(ahorro)} al mes. Si a esa hora no hace falta, programa que se apague solo.",
                                         ahorro_cop_mes=round(ahorro, 2), accion="rutina", dispositivo_id=d.id))
         for d, (kwh, _) in mediciones:
             if _es(d, CUBIERTOS_POR_RETIQ) and kwh > 0:
-                consejos.append(Consejo(f"retiq-{d.id}", "retiq", "swap", f"¿Le conviene cambiar {d.nombre}?",
-                                        f"Gasta unos {_pesos(kwh * float(precio))} al mes. Compare con uno nuevo usando la etiqueta de eficiencia (RETIQ).",
+                consejos.append(Consejo(f"retiq-{d.id}", "retiq", "swap", f"¿Te conviene cambiar {d.nombre}?",
+                                        f"Gasta unos {_pesos(kwh * float(precio))} al mes. Mira cuánto ahorrarías con uno nuevo según su etiqueta de eficiencia (RETIQ).",
                                         accion="simulador", dispositivo_id=d.id, consumo_kwh_mes=round(kwh, 2)))
     return consejos

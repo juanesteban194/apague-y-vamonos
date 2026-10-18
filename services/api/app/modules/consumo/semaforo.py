@@ -43,11 +43,11 @@ def _pesos(valor: float) -> str:
 def calcular(db: Session, hogar: Hogar, ahora: datetime) -> Semaforo:
     _, promedio, _ = historial.promedios(historial.leer(db, hogar.id))
     if promedio is None:
-        return Semaforo("sin_historial", None, "Falta su histórico", "Anote los meses de su factura de EPM para saber si va por encima o por debajo de lo normal.")
+        return Semaforo("sin_historial", None, "Falta tu histórico", "Anota los meses de tu factura de EPM y te decimos si vas por encima o por debajo de lo normal.")
     par = subsistencia.lecturas_del_mes(db, hogar, inicio_mes_bogota(ahora))
     dias = (par[1].fecha - par[0].fecha).days if par else 0
     if par is None or dias < 1:
-        return Semaforo("sin_medidor", None, "Falta la lectura del medidor", "Anote la lectura de su medidor en dos días distintos y le proyectamos cómo cierra el mes.", promedio_kwh=round(promedio, 2))
+        return Semaforo("sin_medidor", None, "Falta la lectura del medidor", "Anota la lectura de tu medidor en dos días distintos y te mostramos cómo cerraría el mes.", promedio_kwh=round(promedio, 2))
 
     local = ahora.astimezone(BOGOTA)
     consumo = max(0.0, par[1].lectura_kwh - par[0].lectura_kwh)
@@ -63,9 +63,9 @@ def calcular(db: Session, hogar: Hogar, ahora: datetime) -> Semaforo:
 
     titulo = {"verde": "Vas bien", "amarillo": "Vas medio alto", "rojo": "Vas alto"}[nivel]
     if diferencia is None:
-        mensaje = "Si sigue así, este mes gasta " + ("menos" if nivel == "verde" else "más") + " que su promedio."
+        mensaje = "Si sigues así, este mes gastas " + ("menos" if nivel == "verde" else "más") + " que tu promedio."
     elif nivel == "verde":
-        mensaje = f"Si sigue así, este mes paga unos {_pesos(diferencia)} menos que su promedio." if diferencia < 0 else "Si sigue así, este mes paga lo mismo que su promedio."
+        mensaje = f"Si sigues así, este mes pagas unos {_pesos(diferencia)} menos que tu promedio." if diferencia < 0 else "Si sigues así, este mes pagas lo mismo que tu promedio."
     else:
-        mensaje = f"Si sigue así, este mes paga unos {_pesos(diferencia)} más que su promedio."
+        mensaje = f"Si sigues así, este mes pagas unos {_pesos(diferencia)} más que tu promedio."
     return Semaforo("ok", nivel, titulo, mensaje, round(promedio, 2), round(proyeccion, 2), None if diferencia is None else round(diferencia, 2))

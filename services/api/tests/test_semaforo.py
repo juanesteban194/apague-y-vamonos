@@ -112,7 +112,7 @@ def test_verde_proyecta_el_mes_con_el_ritmo_y_dice_cuanto_ahorra(client, auth, h
     # ambos pasan de 130 kWh: la diferencia es (155 − 179,17) kWh × $958,38 (tarifa sobre subsistencia)
     esperado = (155 - PROMEDIO) * 958.38
     assert s.diferencia_cop == approx(esperado, abs=2)
-    assert f"unos ${round(abs(esperado)):,}".replace(",", ".") + " menos que su promedio" in s.mensaje
+    assert f"unos ${round(abs(esperado)):,}".replace(",", ".") + " menos que tu promedio" in s.mensaje
 
 
 def test_amarillo_y_rojo_dicen_cuanto_pagaria_de_mas(client, auth, hogar):
@@ -121,7 +121,7 @@ def test_amarillo_y_rojo_dicen_cuanto_pagaria_de_mas(client, auth, hogar):
     lectura(client, auth, hogar, 1000, "2026-10-01")
     lectura(client, auth, hogar, 1074, "2026-10-13")  # 74/12×31 = 191,2 kWh → 6,7 % sobre el promedio
     s = calcular(hogar)
-    assert (s.nivel, s.titulo) == ("amarillo", "Vas medio alto") and "más que su promedio" in s.mensaje and s.diferencia_cop > 0
+    assert (s.nivel, s.titulo) == ("amarillo", "Vas medio alto") and "más que tu promedio" in s.mensaje and s.diferencia_cop > 0
     lectura(client, auth, hogar, 1090, "2026-10-13")  # 90/12×31 = 232,5 kWh → 30 % sobre el promedio
     s2 = calcular(hogar)
     assert (s2.nivel, s2.titulo) == ("rojo", "Vas alto") and s2.diferencia_cop > s.diferencia_cop
