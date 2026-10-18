@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useRef } from "react";
-import { ActivityIndicator, Animated, Pressable, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Animated, Platform, Pressable, StyleSheet, View } from "react-native";
 
 import { AREA_TOQUE_MIN, BORDE_FINO, colores, radios } from "@/theme";
 
@@ -21,6 +21,8 @@ type Props = {
   indicador?: string; // punto de color a la izquierda (estado de un enchufe)
   icono?: ReactNode; // ícono a la izquierda del título
   compacto?: boolean; // un poco más bajo, para filas de botones
+  /** Lo que dice el lector de pantalla si debe ser más completo que el título visible. */
+  etiquetaAccesible?: string;
 };
 
 const COLOR_TEXTO: Record<VarianteBoton, string> = {
@@ -31,15 +33,19 @@ const COLOR_TEXTO: Record<VarianteBoton, string> = {
   peligro: colores.rojo,
 };
 
-export function Boton({ titulo, onPress, variante = "primario", seleccionado, cargando, deshabilitado, flex, indicador, icono, compacto }: Props) {
+export function Boton({ titulo, onPress, variante = "primario", seleccionado, cargando, deshabilitado, flex, indicador, icono, compacto, etiquetaAccesible }: Props) {
   const escala = useRef(new Animated.Value(1)).current;
   const lleno = variante === "primario" || seleccionado;
-  const animar = (a: number) => Animated.spring(escala, { toValue: a, useNativeDriver: true, speed: 40, bounciness: 0 }).start();
+  // Deshabilitado, el primario no queda como un bloque gris pesado: pasa a relleno hundido con texto secundario.
+  const apagado = !!deshabilitado && lleno;
+  const colorTexto = apagado ? colores.textoSecundario : lleno ? colores.sobrePrimario : COLOR_TEXTO[variante];
+  // En la web no hay controlador nativo de animaciones (evita un aviso en la consola).
+  const animar = (a: number) => Animated.spring(escala, { toValue: a, useNativeDriver: Platform.OS !== "web", speed: 40, bounciness: 0 }).start();
   return (
     <Animated.View style={[{ transform: [{ scale: escala }] }, flex && { flex: 1 }]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={titulo} // el ícono es decorativo: el lector dice solo el título
+        accessibilityLabel={etiquetaAccesible ?? titulo} // el ícono es decorativo: el lector dice solo el título
         accessibilityState={{ disabled: !!deshabilitado || !!cargando, selected: seleccionado }}
         disabled={deshabilitado || cargando}
         onPress={onPress}
@@ -50,7 +56,8 @@ export function Boton({ titulo, onPress, variante = "primario", seleccionado, ca
           compacto && estilos.compacto,
           lleno ? estilos.primario : estilos[variante],
           pressed && { opacity: 0.86 },
-          deshabilitado && { opacity: 0.42 },
+          apagado && estilos.apagado,
+          deshabilitado && !apagado && { opacity: 0.45 },
         ]}
       >
         {cargando ? (
@@ -59,7 +66,7 @@ export function Boton({ titulo, onPress, variante = "primario", seleccionado, ca
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             {icono}
             {indicador && <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: indicador }} />}
-            <Texto variante="cuerpo" color={lleno ? colores.sobrePrimario : COLOR_TEXTO[variante]} style={{ fontWeight: "600", flexShrink: 1, textAlign: "center" }}>
+            <Texto variante="cuerpo" color={colorTexto} style={{ fontWeight: "600", flexShrink: 1, textAlign: "center" }}>
               {titulo}
             </Texto>
           </View>
@@ -74,7 +81,8 @@ const estilos = StyleSheet.create({
   compacto: { minHeight: AREA_TOQUE_MIN, paddingHorizontal: 16 },
   primario: { backgroundColor: colores.primario },
   secundario: { backgroundColor: colores.tarjetaHundida },
-  contorno: { backgroundColor: colores.tarjeta, borderWidth: BORDE_FINO * 2, borderColor: colores.bordeFuerte },
+  contorno: { backgroundColor: colores.tarjeta, borderWidth: BORDE_FINO, borderColor: colores.bordeFuerte },
   texto: { backgroundColor: "transparent", paddingHorizontal: 8 },
   peligro: { backgroundColor: colores.rojoFondo },
+  apagado: { backgroundColor: colores.tarjetaHundida },
 });

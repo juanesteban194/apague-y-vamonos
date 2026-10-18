@@ -25,9 +25,9 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colores.primario,
         tabBarInactiveTintColor: colores.textoSecundario,
-        tabBarLabelStyle: { fontSize: 15, fontFamily: fuentes.media }, // texto ≥ 15 px
+        tabBarLabelStyle: { fontSize: 15, lineHeight: 20, fontFamily: fuentes.media }, // texto ≥ 15 px
         // Alto pensado para etiquetas de 15 px (el valor por omisión las corta), más la zona segura de abajo del teléfono.
-        tabBarStyle: { backgroundColor: colores.fondoElevado, borderTopWidth: BORDE_FINO, borderTopColor: colores.borde, paddingTop: 8, height: 72 + margen.bottom, paddingBottom: margen.bottom + 10 },
+        tabBarStyle: { backgroundColor: colores.fondoElevado, borderTopWidth: BORDE_FINO, borderTopColor: colores.borde, paddingTop: 8, height: 78 + margen.bottom, paddingBottom: margen.bottom + 12 },
         tabBarItemStyle: { minHeight: 44 },
       }}
     >

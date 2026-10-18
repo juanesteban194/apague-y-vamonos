@@ -4,7 +4,7 @@
  * de un iPhone (390 × 844 a 2×). Sirve para VER el diseño sin teléfono ni simulador. No usa la API real.
  *
  * 1) En otra terminal, la app en modo web con la API falsa (déjala corriendo; recarga sola al guardar):
- *      cd apps/mobile && CI=1 EXPO_PUBLIC_API_URL=https://api.vitrina npx expo start --web --port 8090
+ *      cd apps/mobile && npm run vitrina:servidor   (sin CI=1: así recarga en caliente)
  * 2) Las capturas:
  *      node scripts/vitrina/capturar.mjs <carpeta-de-salida> [pantalla …]
  *    Sin pantallas, saca todas. Cada una sale dos veces: <nombre>.png (lo que se ve sin desplazarse) y <nombre>-completa.png (toda la página).
