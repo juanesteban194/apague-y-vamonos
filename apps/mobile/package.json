@@ -33,7 +33,6 @@
     "react-native-svg": "15.15.4",
     "react-native-web": "^0.21.4",
     "react-native-worklets": "0.10.1",
-    "victory-native": "^36.9.2",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
@@ -65,7 +64,7 @@
       "<rootDir>/jest.setup.ts"
     ],
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|phosphor-react-native|victory-.*|d3-.*|delaunay-.*|internmap|robust-predicates|lodash-es)"
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|phosphor-react-native)"
     ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
