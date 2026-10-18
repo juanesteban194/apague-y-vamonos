@@ -15,8 +15,8 @@ describe("Gráfica de barras propia", () => {
     const serie = Array.from({ length: 24 }, (_, h) => hora(h, h <= 15 ? [20, 30, 58, 41][h % 4] : 0));
     await render(<BarrasConsumo serie={serie} periodo="dia" />);
     const grafica = screen.getByRole("image");
-    expect(grafica.props.accessibilityLabel).toMatch(/^Gráfica del costo por hora\. Lo más alto: \$58,00 a las 2:00\. El último: \$41,00 a las 15:00\.$/);
-    expect(screen.getByText(/^Esta hora\s+\$41,00$/)).toBeTruthy(); // leyenda de la barra resaltada
+    expect(grafica.props.accessibilityLabel).toMatch(/^Gráfica del costo por hora\. Lo más alto: \$58 a las 2:00\. El último: \$41 a las 15:00\.$/);
+    expect(screen.getByText(/^Esta hora\s+\$41$/)).toBeTruthy(); // leyenda de la barra resaltada
     expect(screen.getByText("$60")).toBeTruthy(); // tope redondo del eje, justo por encima de $58
     expect(screen.queryByText(/kWh/)).toBeNull();
   });

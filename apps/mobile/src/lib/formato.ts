@@ -2,7 +2,8 @@
 export function formatoCOP(valor: number | null | undefined): string {
   if (valor == null || Number.isNaN(valor)) return "—";
   const abs = Math.abs(valor);
-  const [entero, decimales] = abs.toFixed(abs < 100 ? 2 : 0).split(".");
+  // Centavos solo cuando dicen algo (montos pequeños como $8,15); «$52,00» se escribe «$52».
+  const [entero, decimales] = abs.toFixed(abs < 100 ? 2 : 0).replace(/\.00$/, "").split(".");
   const miles = entero.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   return `${valor < 0 ? "-" : ""}$${miles}${decimales ? "," + decimales : ""}`;
 }

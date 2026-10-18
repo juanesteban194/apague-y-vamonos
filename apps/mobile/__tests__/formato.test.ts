@@ -9,8 +9,10 @@ describe("formatoCOP", () => {
     [100, "$100"],
     [1234567, "$1.234.567"],
     [814.63, "$815"],
-    [0, "$0,00"],
-    [-5, "-$5,00"],
+    [0, "$0"],
+    [-5, "-$5"],
+    [52, "$52"],
+    [52.4, "$52,40"],
   ])("%p → %p", (valor, esperado) => expect(formatoCOP(valor)).toBe(esperado));
 
   it("sin dato muestra una raya, no $0", () => {
