@@ -14,7 +14,7 @@ import { mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import puppeteer from "puppeteer-core";
 
-import { RUTAS } from "./datos.mjs";
+import { RUTAS, SIMULACION } from "./datos.mjs";
 
 const BASE = process.env.VITRINA_URL ?? "http://localhost:8090";
 const API = "https://api.vitrina";
@@ -56,6 +56,22 @@ export const PANTALLAS = [
   // Entrada: cuenta nueva de Google sin consentimiento y primera casa
   { nombre: "consentimiento", ruta: "/consentimiento", rutas: { "GET /auth/yo": { ...RUTAS["GET /auth/yo"], tiene_consentimiento: false } } },
   { nombre: "onboarding-hogar", ruta: "/hogar", rutas: { "GET /hogares": [] } },
+  // Avisos sin nada pendiente y sin ningún aviso
+  { nombre: "avisos-al-dia", ruta: "/avisos", rutas: { "GET /hogares/h1/alertas": RUTAS["GET /hogares/h1/alertas"].map((a) => ({ ...a, leida: true })) } },
+  { nombre: "avisos-vacio", ruta: "/avisos", rutas: { "GET /hogares/h1/alertas": [] } },
+  // Simulador con el resultado: llena los campos y toca «Calcular» (la respuesta es la que daría la API para estos datos)
+  {
+    nombre: "simulador-resultado",
+    ruta: "/simulador?dispositivo=d1&kwh=45",
+    rutas: { "POST /simulador/retiq": SIMULACION },
+    accion: async (pagina) => {
+      const campos = await pagina.$$("input");
+      await campos[1].type("22");
+      await campos[2].type("1400000");
+      await pagina.click('[aria-label="Calcular"]');
+      await esperar(1200);
+    },
+  },
 ];
 
 const JWT = (segundos) => `cabecera.${Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + segundos })).toString("base64url")}.firma`;
@@ -160,6 +176,7 @@ async function capturar(navegador, pantalla, salida, soloVista) {
   });
   await pagina.goto(BASE + pantalla.ruta, { waitUntil: "networkidle0", timeout: 90_000 });
   await esperar(1400); // fuentes, animaciones de entrada
+  if (pantalla.accion) await pantalla.accion(pagina);
   await ocultarAvisosDeDesarrollo(pagina);
   await pagina.screenshot({ path: `${salida}/${pantalla.nombre}.png` });
   if (!soloVista) {

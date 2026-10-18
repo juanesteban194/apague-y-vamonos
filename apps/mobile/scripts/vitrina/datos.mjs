@@ -107,6 +107,23 @@ export const CONSUMO = {
 };
 
 /** Respuesta para cada ruta GET de la API. Lo que no está aquí responde 404 (y la app debe manejarlo con gracia). */
+/** Resultado del simulador para una nevera de 45 kWh al mes contra una nueva de 22 kWh que cuesta $1.400.000, con la fórmula de la API
+ *  (services/api/app/modules/retiq/service.py): tasa 12 % anual y 10 años. */
+export const SIMULACION = (() => {
+  const precioKwh = 958.38;
+  const ahorroKwh = 45 - 22;
+  const ahorro = ahorroKwh * precioKwh;
+  const meses = 1_400_000 / ahorro;
+  const i = 1.12 ** (1 / 12) - 1;
+  const vpn = -1_400_000 + (ahorro * (1 - (1 + i) ** -120)) / i;
+  const total = Math.round(meses);
+  return {
+    ahorro_kwh_mes: ahorroKwh, ahorro_cop_mes: Math.round(ahorro * 100) / 100, precio_kwh_usado: precioKwh, conviene: vpn > 0,
+    meses_recuperacion: Math.round(meses * 10) / 10, texto_recuperacion: `${Math.floor(total / 12)} años y ${total % 12} meses`,
+    vpn_cop: Math.round(vpn * 100) / 100, pagado_en_vida_util: meses <= 120,
+  };
+})();
+
 export const RUTAS = {
   "GET /auth/yo": PERFIL,
   "GET /hogares": [HOGAR, HOGAR_2],
