@@ -69,7 +69,7 @@ export function TarjetaAviso({ aviso, alLeer, alApagado, variante = "destacada" 
       <IconoEnCaja nombre={ICONO_DEL_TIPO[aviso.tipo] ?? "alertaLinea"} tono={nivel.tono} tamano={tamanoIcono} />
       <View style={{ flex: 1, gap: fila ? 2 : 4 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: espacio.s }}>
-          <Texto variante="etiqueta" color={colorDelTono(nivel.tono).tinta} style={{ flexShrink: 1 }} numberOfLines={1}>
+          <Texto variante="etiqueta" color={fila ? colores.textoSecundario : colorDelTono(nivel.tono).tinta} style={[{ flexShrink: 1 }, fila && { fontWeight: "500" }]} numberOfLines={1}>
             {nivel.palabra}
           </Texto>
           <Texto variante="secundario" color={colores.textoSecundario}>
@@ -105,7 +105,7 @@ export function TarjetaAviso({ aviso, alLeer, alApagado, variante = "destacada" 
 
   // La acción va fuera de la zona que se toca para leer: así no hay un botón dentro de otro, y queda alineada con el texto.
   const accion = puedeApagar && (
-    <View style={{ paddingLeft: relleno + tamanoIcono + 14, paddingRight: relleno, paddingBottom: relleno, marginTop: -4, gap: espacio.s }}>
+    <View style={{ paddingLeft: relleno + tamanoIcono + 14, paddingRight: relleno, paddingBottom: relleno, marginTop: -4, gap: espacio.s, alignItems: fila ? "flex-start" : "stretch" }}>
       <Boton
         titulo="Apagar ahora"
         variante={fila ? "secundario" : "primario"}

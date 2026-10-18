@@ -115,10 +115,10 @@ export default function Avisos() {
       )}
 
       {sinLeer === 0 && anteriores.length > 0 && (
-        <Tarjeta variante="verde" style={{ flexDirection: "row", alignItems: "center", gap: espacio.m }}>
+        <Tarjeta style={{ flexDirection: "row", alignItems: "center", gap: 14, padding: 16 }}>
           <IconoEnCaja nombre="okLinea" tono="verde" tamano={36} />
           <View style={{ flex: 1 }}>
-            <Texto style={{ fontWeight: "600" }} color={colores.verde}>
+            <Texto style={{ fontWeight: "600" }}>
               Estás al día
             </Texto>
             <Texto variante="secundario" color={colores.textoSecundario}>
