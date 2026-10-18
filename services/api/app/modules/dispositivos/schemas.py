@@ -14,6 +14,8 @@ class DispositivoIn(BaseModel):
 
 class DispositivoOut(DispositivoIn):
     id: uuid.UUID
+    factor_calibracion: float = 1.0  # 1 = los vatios se muestran tal cual los lee el enchufe
+    calibracion_referencia_w: float | None = None  # el medidor con el que se calibró, si se calibró
 
     model_config = {"from_attributes": True}
 
@@ -26,3 +28,16 @@ class DispositivoActualizarIn(BaseModel):
     alto_riesgo: bool | None = None
     umbral_minutos_encendido: int | None = Field(default=None, gt=0)
     agente_id: uuid.UUID | None = None  # null quita el agente
+
+
+class CalibrarIn(BaseModel):
+    """Lo que marca un medidor de referencia confiable mientras el dispositivo está prendido y estable."""
+
+    referencia_w: float = Field(gt=0, le=3000)
+
+
+class CalibracionOut(BaseModel):
+    factor_calibracion: float
+    referencia_w: float
+    lectura_antes_w: float  # lo que leía el enchufe antes del ajuste (promedio de los últimos segundos)
+    lectura_despues_w: float  # lo que leerá con el ajuste: debe coincidir con la referencia

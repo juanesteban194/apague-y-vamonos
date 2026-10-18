@@ -75,13 +75,14 @@ def guardar_lecturas(db: Session, agente: Agente, datos: LecturasIn) -> tuple[Le
     # Solo cuentan las lecturas de SUS enchufes: si el enchufe está asignado a otro agente, se descartan (lo contrario mezclaría dos fuentes).
     dispositivos = {d.tuya_id: d.id for d in del_hogar if d.agente_id == agente.id}
     ajenas = {l.tuya_id for l in datos.lecturas if l.tuya_id in {d.tuya_id for d in del_hogar} and l.tuya_id not in dispositivos}
+    factores = {d.id: d.factor_calibracion for d in del_hogar}
     propias = [
         (
             l.tuya_id,
             {
                 "dispositivo_id": dispositivos[l.tuya_id],
                 "fecha_hora": l.fecha_hora,
-                "potencia_w": l.potencia_w,
+                "potencia_w": l.potencia_w * factores[dispositivos[l.tuya_id]],  # calibración del enchufe (1 = sin ajuste)
                 "voltaje_v": l.voltaje_v,
                 "corriente_ma": l.corriente_ma,
                 "encendido": l.encendido,
@@ -97,7 +98,12 @@ def guardar_lecturas(db: Session, agente: Agente, datos: LecturasIn) -> tuple[Le
         for o in db.scalars(select(Dispositivo).where(Dispositivo.tuya_id.in_(set(dispositivos)), Dispositivo.hogar_id != agente.hogar_id)):
             gemelos.setdefault(o.tuya_id, []).append(o)
             hogar_de[o.id] = o.hogar_id
-        copias = [{**fila, "dispositivo_id": o.id} for tuya_id, fila in propias for o in gemelos.get(tuya_id, [])]
+        # Cada cuenta aplica su propia calibración sobre la lectura cruda (la de la fila propia está ya ajustada: se deshace su factor).
+        copias = [
+            {**fila, "dispositivo_id": o.id, "potencia_w": fila["potencia_w"] / factores[fila["dispositivo_id"]] * o.factor_calibracion}
+            for tuya_id, fila in propias
+            for o in gemelos.get(tuya_id, [])
+        ]
     filas = [fila for _, fila in propias]
     todas = filas + copias
     guardadas, nuevas, previo = 0, [], {}

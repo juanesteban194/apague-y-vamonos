@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.modules.auth.dependencias import usuario_con_consentimiento
-from app.modules.dispositivos import service
-from app.modules.dispositivos.schemas import DispositivoActualizarIn, DispositivoIn, DispositivoOut
+from app.modules.dispositivos import calibracion, service
+from app.modules.dispositivos.schemas import CalibracionOut, CalibrarIn, DispositivoActualizarIn, DispositivoIn, DispositivoOut
 from app.modules.hogares.service import exigir_miembro
 
 router = APIRouter(prefix="/hogares/{hogar_id}/dispositivos", tags=["dispositivos"])
@@ -54,4 +54,29 @@ def borrar(
 ):
     exigir_miembro(db, usuario_id, hogar_id, rol="titular")
     service.borrar(db, service.obtener(db, hogar_id, dispositivo_id))
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{dispositivo_id}/calibrar", response_model=CalibracionOut)
+def calibrar(
+    hogar_id: uuid.UUID,
+    dispositivo_id: uuid.UUID,
+    datos: CalibrarIn,
+    db: Session = Depends(get_db),
+    usuario_id: uuid.UUID = Depends(usuario_con_consentimiento),
+):
+    """Ajusta los vatios del enchufe para que coincidan con un medidor de referencia (cabezote, medidor de pared…)."""
+    exigir_miembro(db, usuario_id, hogar_id, rol="titular")
+    return calibracion.calibrar(db, service.obtener(db, hogar_id, dispositivo_id), datos.referencia_w)
+
+
+@router.delete("/{dispositivo_id}/calibracion", status_code=status.HTTP_204_NO_CONTENT)
+def quitar_calibracion(
+    hogar_id: uuid.UUID,
+    dispositivo_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    usuario_id: uuid.UUID = Depends(usuario_con_consentimiento),
+):
+    exigir_miembro(db, usuario_id, hogar_id, rol="titular")
+    calibracion.quitar(db, service.obtener(db, hogar_id, dispositivo_id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
