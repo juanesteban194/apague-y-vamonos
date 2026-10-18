@@ -34,7 +34,7 @@ export function SelectorCasa() {
         onPress={() => setAbierto(true)}
         style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: 8, minHeight: AREA_TOQUE_MIN, alignSelf: "flex-start", maxWidth: "100%", opacity: pressed ? 0.6 : 1 })}
       >
-        <Texto variante="tituloGrande" style={{ flexShrink: 1 }} numberOfLines={1}>
+        <Texto variante="tituloGrande" style={{ flexShrink: 1 }} numberOfLines={2}>
           {hogar.nombre}
         </Texto>
         <View style={{ width: 26, height: 26, borderRadius: 13, marginTop: 4, backgroundColor: colores.tarjetaHundida, alignItems: "center", justifyContent: "center" }}>

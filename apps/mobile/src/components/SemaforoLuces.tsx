@@ -7,9 +7,9 @@ type Nivel = "verde" | "amarillo" | "rojo";
 /** Cada luz: el color vivo cuando está encendida, un tono apagado con un asomo de su color y el halo que la rodea al brillar.
  *  Orden del mockup: arriba verde, en medio amarillo, abajo rojo. */
 const LUCES: { nivel: Nivel; encendida: string; apagada: string; halo: string }[] = [
-  { nivel: "verde", encendida: colores.semaforoVerde, apagada: "#26302A", halo: "rgba(30,158,90,0.55)" },
-  { nivel: "amarillo", encendida: colores.semaforoAmbar, apagada: "#353023", halo: "rgba(242,178,46,0.55)" },
-  { nivel: "rojo", encendida: colores.semaforoRojo, apagada: "#352625", halo: "rgba(217,69,47,0.5)" },
+  { nivel: "verde", encendida: colores.semaforoVerde, apagada: "#20372A", halo: "rgba(30,158,90,0.55)" },
+  { nivel: "amarillo", encendida: colores.semaforoAmbar, apagada: "#3B3220", halo: "rgba(242,178,46,0.55)" },
+  { nivel: "rojo", encendida: colores.semaforoRojo, apagada: "#3C2523", halo: "rgba(217,69,47,0.5)" },
 ];
 
 const LUZ = 42;

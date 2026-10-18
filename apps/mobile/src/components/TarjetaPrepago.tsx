@@ -23,7 +23,10 @@ export function TarjetaPrepago({ prepago, alActualizar }: Props) {
   else if (prepago.estado === "datos_insuficientes") mensaje = "Vuelve a anotar tu saldo mañana: con dos anotaciones de días distintos calculamos cuánto te dura.";
   else if (prepago.dias_restantes == null) mensaje = "Tu saldo no ha bajado: todavía no hay un ritmo de gasto para proyectar.";
   else if (prepago.dias_restantes === 0) mensaje = "Al ritmo de los últimos 3 días el saldo ya debería haberse acabado. Revisa tu medidor.";
-  else mensaje = `Al ritmo de los últimos 3 días te alcanza hasta el ${diaYNumero(prepago.se_acaba_el!)}. Son unos ${Math.max(1, Math.round(prepago.dias_restantes))} ${Math.round(prepago.dias_restantes) <= 1 ? "día" : "días"}.`;
+  else {
+    const dias = Math.max(1, Math.round(prepago.dias_restantes));
+    mensaje = `Al ritmo de los últimos 3 días te alcanza hasta el ${diaYNumero(prepago.se_acaba_el!)}. ${dias === 1 ? "Es más o menos un día." : `Son unos ${dias} días.`}`;
+  }
 
   return (
     <Tarjeta variante={rojo ? "rojo" : "normal"} style={{ padding: 20, gap: espacio.m }}>
