@@ -10,23 +10,17 @@ import { Icono } from "./Icono";
 import { IconoEnCaja, Pastilla } from "./Primitivos";
 import { Texto } from "./Texto";
 
-const INICIALES = ["L", "M", "M", "J", "V", "S", "D"]; // 0 = lunes, como en la API
-
-/** Una hora con su etiqueta encima («Se apaga · 23:30»). */
-function Hora({ etiqueta, hora, apagada }: { etiqueta: string; hora: string; apagada: boolean }) {
+/** Una hora dentro de la frase del horario: más grande que el texto y con números tabulares. */
+function Hora({ hora, pausada }: { hora: string; pausada: boolean }) {
   return (
-    <View style={{ gap: 0 }}>
-      <Texto variante="secundario" color={colores.textoSecundario}>
-        {etiqueta}
-      </Texto>
-      <Texto variante="cifraMedia" color={apagada ? colores.textoSecundario : colores.texto}>
-        {hora}
-      </Texto>
-    </View>
+    <Texto variante="subtitulo" color={pausada ? colores.textoSecundario : colores.texto} style={{ fontSize: 20, fontWeight: "600", letterSpacing: -0.3, fontVariant: ["tabular-nums"] }}>
+      {hora}
+    </Texto>
   );
 }
 
-/** Rutina de apagado de un vistazo: el dispositivo, la hora (grande), los días como letras y lo que ahorra. Toda la tarjeta abre la rutina. */
+/** Rutina de apagado de un vistazo: el dispositivo y sus días, el horario como una frase con las horas resaltadas y lo que ahorra.
+ *  Toda la tarjeta abre la rutina. */
 export function TarjetaRutina({ rutina: r, alPulsar }: { rutina: Rutina; alPulsar: () => void }) {
   const horario = `Apaga a las ${mostrarHora(r.hora_apagado)}${r.hora_encendido ? ` · prende a las ${mostrarHora(r.hora_encendido)}` : ""}`;
   const fallo = r.ultima_ejecucion?.resultado.startsWith("error");
@@ -46,52 +40,26 @@ export function TarjetaRutina({ rutina: r, alPulsar }: { rutina: Rutina; alPulsa
       {/* Dispositivo y estado */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: espacio.m }}>
         <IconoEnCaja nombre={pausada ? "luna" : "rutinaLinea"} tamano={40} />
-        <Texto variante="cuerpo" style={{ fontWeight: "600", flex: 1 }} numberOfLines={2}>
-          {r.dispositivo_nombre}
-        </Texto>
+        <View style={{ flex: 1, gap: 1 }}>
+          <Texto variante="cuerpo" style={{ fontWeight: "600" }} numberOfLines={2}>
+            {r.dispositivo_nombre}
+          </Texto>
+          <Texto variante="secundario" color={colores.textoSecundario}>
+            {textoDias(r.dias)}
+          </Texto>
+        </View>
         {pausada ? <Pastilla texto="Pausada" /> : <Icono nombre="adelante" tamano={18} color="rgba(20,19,17,0.3)" />}
       </View>
 
-      {/* La hora es la protagonista */}
-      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: espacio.l }}>
-        <Hora etiqueta="Se apaga" hora={mostrarHora(r.hora_apagado)} apagada={pausada} />
+      {/* El horario como una frase que se lee sola, con las horas resaltadas */}
+      <Texto color={colores.textoSecundario} style={{ lineHeight: 28 }}>
+        Apaga a las <Hora hora={mostrarHora(r.hora_apagado)} pausada={pausada} />
         {r.hora_encendido && (
           <>
-            <View style={{ paddingBottom: 9 }}>
-              <Icono nombre="flechaDerecha" tamano={18} color={colores.textoSecundario} />
-            </View>
-            <Hora etiqueta="Se prende" hora={mostrarHora(r.hora_encendido)} apagada={pausada} />
+            {" · "}prende a las <Hora hora={mostrarHora(r.hora_encendido)} pausada={pausada} />
           </>
         )}
-      </View>
-
-      {/* Los siete días: en relieve y tinta los que aplica; tenues los demás */}
-      <View style={{ flexDirection: "row", gap: 4, marginLeft: -4 }}>
-        {INICIALES.map((letra, d) => {
-          const aplica = r.dias.includes(d);
-          return (
-            <View
-              key={d}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: aplica ? colores.tarjetaHundida : "transparent",
-              }}
-            >
-              <Texto
-                variante="secundario"
-                color={aplica && !pausada ? colores.texto : "rgba(20,19,17,0.3)"}
-                style={{ fontWeight: aplica ? "600" : "400", lineHeight: 18 }}
-              >
-                {letra}
-              </Texto>
-            </View>
-          );
-        })}
-      </View>
+      </Texto>
 
       {(r.ahorro_estimado_cop_mes != null || r.ultima_ejecucion) && (
         <View style={{ gap: espacio.s }}>

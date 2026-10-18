@@ -116,7 +116,7 @@ export default function LecturaMedidor() {
                 derecha: (
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel={`Borrar la lectura ${formatoNumero(l.lectura_kwh)} del ${fechaCorta(l.fecha)}`}
+                    accessibilityLabel={`Borrar la lectura ${formatoNumero(l.lectura_kwh)} del ${l.fecha}`}
                     onPress={() => confirmarBorrado(l)}
                     hitSlop={4}
                     style={({ pressed }) => ({ minWidth: AREA_TOQUE_MIN, minHeight: AREA_TOQUE_MIN, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: pressed ? colores.rojoFondo : "transparent" })}

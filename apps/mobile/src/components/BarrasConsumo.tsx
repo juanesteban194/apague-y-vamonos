@@ -17,7 +17,7 @@ const CADA: Record<Periodo, number> = { dia: 6, semana: 1, mes: 7 }; // cada cu√
 function topeRedondo(maximo: number): number {
   if (maximo <= 0) return 1;
   const potencia = 10 ** Math.floor(Math.log10(maximo));
-  return ([1, 1.5, 2, 3, 4, 5, 6, 8, 10].find((m) => m * potencia >= maximo * 1.05) ?? 10) * potencia;
+  return ([1, 1.5, 2, 3, 4, 5, 6, 8, 10].find((m) => m * potencia >= maximo) ?? 10) * potencia;
 }
 
 /** Valor corto para el eje: $0, $5, $40, $1,2 mil. */
