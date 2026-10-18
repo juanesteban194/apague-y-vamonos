@@ -87,8 +87,9 @@ describe("Lectura del medidor", () => {
   it("guarda la lectura y lista las anteriores con miles", async () => {
     api({ "POST /hogares/h1/lecturas-medidor": () => respuestaJson({ id: "l2", lectura_kwh: 45300, fecha: "2026-10-13" }, 201) });
     await renderizar(<LecturaMedidor />);
-    expect(await screen.findByText("45.238,5 · 2026-10-01")).toBeTruthy();
-    await fireEvent.changeText(screen.getByLabelText("Número que marca su medidor"), "45300");
+    expect(await screen.findByText("45.238,5 kWh")).toBeTruthy();
+    expect(screen.getByText(/^1 de octubre/)).toBeTruthy();
+    await fireEvent.changeText(screen.getByLabelText("Número que marca tu medidor"), "45300");
     await fireEvent.press(screen.getByRole("button", { name: "Guardar lectura" }));
     await waitFor(() => expect(enviado("POST /hogares/h1/lecturas-medidor")).toEqual({ lectura_kwh: 45300 }));
   });
@@ -97,7 +98,7 @@ describe("Lectura del medidor", () => {
     api({ "POST /hogares/h1/lecturas-medidor": () => respuestaJson({ detail: "La lectura no puede ser menor que la anterior (45238.5)." }, 422) });
     await renderizar(<LecturaMedidor />);
     await screen.findByText("Anotaciones anteriores");
-    await fireEvent.changeText(screen.getByLabelText("Número que marca su medidor"), "100");
+    await fireEvent.changeText(screen.getByLabelText("Número que marca tu medidor"), "100");
     await fireEvent.press(screen.getByRole("button", { name: "Guardar lectura" }));
     expect(await screen.findByText(/no puede ser menor que la anterior/)).toBeTruthy();
   });
@@ -106,7 +107,7 @@ describe("Lectura del medidor", () => {
     api();
     await renderizar(<LecturaMedidor />);
     await screen.findByText("Anotaciones anteriores");
-    await fireEvent.changeText(screen.getByLabelText("Número que marca su medidor"), "abc");
+    await fireEvent.changeText(screen.getByLabelText("Número que marca tu medidor"), "abc");
     expect(screen.getByRole("button", { name: "Guardar lectura" }).props.accessibilityState.disabled).toBe(true);
   });
 });

@@ -98,7 +98,7 @@ export default function Prepago() {
                 detalle: haceCuanto(r.registrado_en),
                 nota: cambio == null || cambio === 0 ? undefined : cambio > 0 ? `Recarga de ${formatoCOP(cambio)}` : `Gastaste ${formatoCOP(-cambio)}`,
                 tonoNota: cambio != null && cambio > 0 ? "verde" : "neutro",
-                destacada: i === 0,
+                destacada: i === 0 && registros.length > 1,
               };
             })}
           />

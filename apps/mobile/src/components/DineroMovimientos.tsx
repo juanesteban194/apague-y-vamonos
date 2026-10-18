@@ -1,9 +1,8 @@
-import { Fragment } from "react";
-import { Pressable, View } from "react-native";
+import { Fragment, type ReactNode } from "react";
+import { View } from "react-native";
 
-import { AREA_TOQUE_MIN, colores, espacio } from "@/theme";
+import { colores, espacio } from "@/theme";
 
-import { Icono } from "./Icono";
 import { Separador } from "./Primitivos";
 import { Tarjeta } from "./Tarjeta";
 import { Texto } from "./Texto";
@@ -19,8 +18,8 @@ export type FilaMovimiento = {
   tonoNota?: "verde" | "neutro";
   /** La anotación más reciente: lleva la marca «Última». */
   destacada?: boolean;
-  /** Botón de ícono a la derecha (por ejemplo, borrar). */
-  accion?: { etiqueta: string; alPulsar: () => void };
+  /** Contenido a la derecha, por ejemplo un botón de borrar. Con él la fila no se agrupa para el lector de pantalla (así el botón se alcanza). */
+  derecha?: ReactNode;
 };
 
 /** Historial de anotaciones (saldos, lecturas del medidor) como una lista agrupada de iOS: cifra con números tabulares, cuándo se anotó
@@ -32,24 +31,22 @@ export function DineroMovimientos({ filas }: { filas: FilaMovimiento[] }) {
         <Fragment key={f.clave}>
           {i > 0 && <Separador sangria={espacio.l} />}
           <View
-            accessible={!f.accion}
-            accessibilityLabel={f.accion ? undefined : [f.valor, f.destacada ? "la última" : null, f.detalle, f.nota].filter(Boolean).join(". ")}
-            style={{ flexDirection: "row", alignItems: "center", gap: espacio.m, minHeight: 64, paddingVertical: espacio.m, paddingLeft: espacio.l, paddingRight: f.accion ? espacio.xs : espacio.l }}
+            accessible={!f.derecha}
+            accessibilityLabel={f.derecha ? undefined : [f.valor, f.destacada ? "la última" : null, f.detalle, f.nota].filter(Boolean).join(". ")}
+            style={{ flexDirection: "row", alignItems: "center", gap: espacio.m, minHeight: 64, paddingVertical: espacio.m, paddingLeft: espacio.l, paddingRight: f.derecha ? espacio.xs : espacio.l }}
           >
             <View style={{ flex: 1, gap: 2 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: espacio.s }}>
-                <Texto style={{ fontWeight: "600", fontVariant: ["tabular-nums"] }}>{f.valor}</Texto>
-                {f.destacada && (
-                  <View style={{ backgroundColor: colores.tarjetaHundida, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 1 }}>
-                    <Texto variante="secundario" color={colores.textoSecundario} style={{ fontWeight: "500" }}>
-                      Última
-                    </Texto>
-                  </View>
-                )}
-              </View>
-              {f.detalle && (
-                <Texto variante="secundario" color={colores.textoSecundario}>
+              <Texto numberOfLines={1} style={{ fontWeight: "600", fontVariant: ["tabular-nums"] }}>
+                {f.valor}
+              </Texto>
+              {(f.detalle || f.destacada) && (
+                <Texto variante="secundario" color={colores.textoSecundario} numberOfLines={1}>
                   {f.detalle}
+                  {f.destacada && (
+                    <Texto variante="secundario" color={colores.texto} style={{ fontWeight: "500" }}>
+                      {f.detalle ? "  ·  " : ""}Última
+                    </Texto>
+                  )}
                 </Texto>
               )}
             </View>
@@ -58,17 +55,7 @@ export function DineroMovimientos({ filas }: { filas: FilaMovimiento[] }) {
                 {f.nota}
               </Texto>
             )}
-            {f.accion && (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={f.accion.etiqueta}
-                onPress={f.accion.alPulsar}
-                hitSlop={4}
-                style={({ pressed }) => ({ minWidth: AREA_TOQUE_MIN, minHeight: AREA_TOQUE_MIN, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: pressed ? colores.rojoFondo : "transparent" })}
-              >
-                <Icono nombre="borrar" tamano={20} color={colores.rojo} />
-              </Pressable>
-            )}
+            {f.derecha}
           </View>
         </Fragment>
       ))}
