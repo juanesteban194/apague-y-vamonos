@@ -15,6 +15,7 @@ import type {
   RutinaDatos,
   Sensibilidad,
   AgenteConCodigo,
+  Calibracion,
   AgenteCreado,
   Consumo,
   Dispositivo,
@@ -126,6 +127,9 @@ export const crearDispositivo = (hogarId: string, datos: DispositivoNuevo) =>
   api<Dispositivo>(`/hogares/${hogarId}/dispositivos`, "POST", datos);
 export const actualizarDispositivo = (hogarId: string, id: string, cambios: DispositivoCambios) =>
   api<Dispositivo>(`/hogares/${hogarId}/dispositivos/${id}`, "PATCH", cambios);
+export const calibrarDispositivo = (hogarId: string, id: string, referenciaW: number) =>
+  api<Calibracion>(`/hogares/${hogarId}/dispositivos/${id}/calibrar`, "POST", { referencia_w: referenciaW });
+export const quitarCalibracion = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/dispositivos/${id}/calibracion`, "DELETE");
 export const borrarDispositivo = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/dispositivos/${id}`, "DELETE");
 export const listarAgentes = (hogarId: string) => api<Agente[]>(`/hogares/${hogarId}/agentes`);
 export const crearAgente = (hogarId: string, nombre: string) => api<AgenteCreado>(`/hogares/${hogarId}/agentes`, "POST", { nombre });

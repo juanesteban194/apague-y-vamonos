@@ -4,8 +4,10 @@ import { Alert } from "react-native";
 
 import { useHogarActual } from "@/api/hogar";
 import { useAgentes, useDispositivos } from "@/api/cuenta";
+import { useResumen } from "@/features/consumo/hooks";
 import { actualizarDispositivo, borrarDispositivo } from "@/api/cliente";
 import { Boton } from "@/components/Boton";
+import { TarjetaCalibracion } from "@/components/TarjetaCalibracion";
 import { FormularioEnchufe } from "@/components/FormularioEnchufe";
 import { PantallaFormulario } from "@/components/PantallaCompleta";
 import { Texto } from "@/components/Texto";
@@ -17,8 +19,11 @@ export default function EditarEnchufe() {
   const { hogar } = useHogarActual();
   const { data: dispositivos } = useDispositivos(hogar?.id);
   const { data: agentes } = useAgentes(hogar?.id);
+  const { data: resumen } = useResumen(hogar?.id);
   const dispositivo = dispositivos?.find((d) => d.id === id);
   if (!hogar || !dispositivo) return null;
+  const enVivo = resumen?.dispositivos.find((x) => x.id === dispositivo.id);
+  const lecturaActualW = enVivo?.encendido ? (enVivo.potencia_w ?? null) : null; // solo cuenta si está prendido
 
   function confirmarBorrado() {
     Alert.alert(
@@ -52,6 +57,7 @@ export default function EditarEnchufe() {
           router.back();
         }}
       />
+      <TarjetaCalibracion hogarId={hogar.id} dispositivo={dispositivo} lecturaActualW={lecturaActualW} />
       <Boton titulo="Quitar enchufe" variante="secundario" onPress={confirmarBorrado} />
       <Texto variante="secundario" color={colores.textoSecundario}>Quitarlo no lo desempareja de Smart Life.</Texto>
     </PantallaFormulario>

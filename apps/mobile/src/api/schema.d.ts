@@ -423,6 +423,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/agentes/claves": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Subir Claves
+         * @description El agente sube las claves locales que ya tiene (de su devices.json) cuando la API no pudo pedírselas a Tuya. Solo de SUS enchufes.
+         */
+        post: operations["subir_claves_agentes_claves_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/hogares/{hogar_id}/dispositivos": {
         parameters: {
             query?: never;
@@ -457,6 +477,43 @@ export interface paths {
         head?: never;
         /** Actualizar */
         patch: operations["actualizar_hogares__hogar_id__dispositivos__dispositivo_id__patch"];
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/dispositivos/{dispositivo_id}/calibrar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Calibrar
+         * @description Ajusta los vatios del enchufe para que coincidan con un medidor de referencia (cabezote, medidor de pared…).
+         */
+        post: operations["calibrar_hogares__hogar_id__dispositivos__dispositivo_id__calibrar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hogares/{hogar_id}/dispositivos/{dispositivo_id}/calibracion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Quitar Calibracion */
+        delete: operations["quitar_calibracion_hogares__hogar_id__dispositivos__dispositivo_id__calibracion_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/dispositivos/{dispositivo_id}/encender": {
@@ -916,12 +973,48 @@ export interface components {
             /** Leida */
             leida: boolean;
         };
+        /** CalibracionOut */
+        CalibracionOut: {
+            /** Factor Calibracion */
+            factor_calibracion: number;
+            /** Referencia W */
+            referencia_w: number;
+            /** Lectura Antes W */
+            lectura_antes_w: number;
+            /** Lectura Despues W */
+            lectura_despues_w: number;
+        };
+        /**
+         * CalibrarIn
+         * @description Lo que marca un medidor de referencia confiable mientras el dispositivo está prendido y estable.
+         */
+        CalibrarIn: {
+            /** Referencia W */
+            referencia_w: number;
+        };
         /** CanjeGoogleIn */
         CanjeGoogleIn: {
             /** Code */
             code: string;
             /** Code Verifier */
             code_verifier: string;
+        };
+        /** ClavesGuardadasOut */
+        ClavesGuardadasOut: {
+            /** Guardadas */
+            guardadas: string[];
+            /** Ignoradas */
+            ignoradas: string[];
+        };
+        /**
+         * ClavesIn
+         * @description Claves locales que el agente ya tiene (por ejemplo de su devices.json), por ID de Tuya.
+         */
+        ClavesIn: {
+            /** Claves */
+            claves: {
+                [key: string]: string;
+            };
         };
         /** CodigoIn */
         CodigoIn: {
@@ -956,6 +1049,13 @@ export interface components {
             enchufes: components["schemas"]["EnchufeConfigOut"][];
             /** Sin Clave */
             sin_clave: string[];
+            /**
+             * Motivos
+             * @default {}
+             */
+            motivos: {
+                [key: string]: string;
+            };
         };
         /** ConsejoOut */
         ConsejoOut: {
@@ -1065,6 +1165,13 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Factor Calibracion
+             * @default 1
+             */
+            factor_calibracion: number;
+            /** Calibracion Referencia W */
+            calibracion_referencia_w?: number | null;
         };
         /** DispositivoResumen */
         DispositivoResumen: {
@@ -1506,7 +1613,7 @@ export interface components {
         };
         /**
          * SimuladorIn
-         * @description Reemplazo de un aparato. Los consumos salen de lo que MIDE el enchufe (actual) y de la etiqueta RETIQ del aparato nuevo (kWh/mes).
+         * @description Reemplazo de un dispositivo. Los consumos salen de lo que MIDE el enchufe (actual) y de la etiqueta RETIQ del dispositivo nuevo (kWh/mes).
          */
         SimuladorIn: {
             /**
@@ -1527,7 +1634,7 @@ export interface components {
             tasa_anual: number;
             /**
              * Anios
-             * @description Años en los que se cuentan los ahorros (vida útil del aparato nuevo)
+             * @description Años en los que se cuentan los ahorros (vida útil del dispositivo nuevo)
              */
             anios: number;
         };
@@ -2531,6 +2638,39 @@ export interface operations {
             };
         };
     };
+    subir_claves_agentes_claves_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClavesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClavesGuardadasOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_hogares__hogar_id__dispositivos_get: {
         parameters: {
             query?: never;
@@ -2651,6 +2791,72 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DispositivoOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    calibrar_hogares__hogar_id__dispositivos__dispositivo_id__calibrar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+                dispositivo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalibrarIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalibracionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    quitar_calibracion_hogares__hogar_id__dispositivos__dispositivo_id__calibracion_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hogar_id: string;
+                dispositivo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

@@ -12,6 +12,7 @@ export type Perfil = components["schemas"]["PerfilOut"];
 export type Dispositivo = components["schemas"]["DispositivoOut"];
 export type DispositivoNuevo = components["schemas"]["DispositivoIn"];
 export type DispositivoCambios = components["schemas"]["DispositivoActualizarIn"];
+export type Calibracion = components["schemas"]["CalibracionOut"];
 export type Agente = components["schemas"]["AgenteOut"];
 export type AgenteConCodigo = components["schemas"]["AgenteConCodigoOut"];
 export type AgenteCreado = components["schemas"]["AgenteCreadoOut"];

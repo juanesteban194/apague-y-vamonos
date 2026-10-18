@@ -163,6 +163,15 @@ Necesita el envío de correos activo (ADR 0010, «Activarlo»). Sin él, el serv
 | 52 | **Ajustes**: «Correo sin verificar» → «Verificar mi correo» → código | Pasa a «Correo verificado» |
 | 53 | Entra con Google | El correo ya sale verificado |
 
+## 5i. Prender y apagar, y calibrar los vatios
+| # | Prueba | Debe pasar |
+| --- | --- | --- |
+| 54 | En **Inicio**, cada dispositivo tiene un interruptor a la derecha de su tarjeta | Tocarlo apaga o prende el enchufe (clic) y la tarjeta pasa a «Apagado» o «Encendido» en 1 o 2 s |
+| 55 | Detén el agente y toca el interruptor | Dice en la misma tarjeta por qué no se pudo (por ejemplo, qué agente no está conectado) y el estado no cambia |
+| 56 | **Explorar › Enchufes › el enchufe › Calibrar los vatios**. Con un dispositivo prendido, escribe lo que marca tu medidor (por ejemplo 44) | «Listo: antes leía 48 W y ahora lee 44 W»; en unos segundos Inicio muestra 44 W |
+| 57 | Escribe un número muy distinto (por ejemplo 10 contra 48) | Lo rechaza explicando que la diferencia es de más del 50 % |
+| 58 | **Quitar la calibración** | Vuelve a mostrar los vatios sin ajuste |
+
 ## 6. Si algo falla
 | Síntoma | Causa probable y qué hacer |
 | --- | --- |

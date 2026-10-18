@@ -6,7 +6,7 @@ Leyenda: ✅ verificado · 🟡 verificado en parte · ⏳ pendiente (necesita e
 | Atributo | Criterio | Estado | Evidencia | Qué falta |
 | --- | --- | --- | --- | --- |
 | Latencia | Lectura visible en la app ≤ 5 s | ✅ | Con el enchufe real: mín 0,19 s, media 0,25 s, p95 0,35 s, máx 0,44 s ([ADR 0003](decisiones/0003-calculo-de-energia-y-costo.md)); herramienta `tools/04_medir_latencia_ws.py` | Repetir en el ensayo final, con la app en un teléfono |
-| Precisión de potencia | Error ≤ 10 % frente a un bombillo incandescente | ⏳ | Escalas de los data points confirmadas contra Smart Life ([ADR 0001](decisiones/0001-escalas-data-points-bsd04.md)) | Medir un bombillo incandescente de potencia conocida: ver el procedimiento abajo |
+| Precisión de potencia | Error ≤ 10 % frente a un bombillo incandescente | 🟡 | Escalas confirmadas contra Smart Life ([ADR 0001](decisiones/0001-escalas-data-points-bsd04.md)). **Primera medición real (18-oct): el enchufe leía 48 W y un cabezote marcaba 44 W: error +9,1 %**, dentro del criterio por poco. Se agregó la [calibración](decisiones/0012-calibracion-de-vatios.md) | Calibrar con el cabezote y repetir con un bombillo incandescente de potencia nominal conocida: ver el procedimiento abajo |
 | Precisión de costo | Igual a kWh × tarifa vigente | ✅ | El modelo reproduce **al centavo** una factura real de EPM (250 kWh, $202.141,58) en `test_reproduce_una_factura_real_de_epm_al_centavo` ([ADR 0002](decisiones/0002-tarifa-epm-septiembre-2026.md)); la energía en SQL coincide con la integración directa (`test_consolidacion`, `test_energia_costo`) | Comparar una vez en vivo (procedimiento abajo) |
 | Alertas | Aviso ≤ 60 s tras cruzar el umbral | ✅ | 15 s medidos; las reglas corren cada 20 s ([ADR 0005](decisiones/0005-fase-4-avisos-control-y-tareas.md)) | Con la app abierta en el teléfono |
 | Control remoto | Cambio de estado ≤ 10 s | 🟡 | 0,96 s de la orden a la lectura, medido con el agente simulado ([ADR 0005](decisiones/0005-fase-4-avisos-control-y-tareas.md)); la orden va solo al agente asignado a ese enchufe | Medirlo con el enchufe real y el programa de Mac |
@@ -40,6 +40,8 @@ Android e iPhone con la misma cuenta, el programa de Mac vinculado y un enchufe 
 ## Resultados medidos con hardware (completar)
 | Fecha | Prueba | Resultado |
 | --- | --- | --- |
+| 2026-10-18 | Potencia: enchufe 48 W vs cabezote 44 W (sin calibrar) | error +9,1 % (cumple ≤ 10 %) |
+| — | Potencia tras calibrar con el cabezote | pendiente |
 | — | Potencia con bombillo de ___ W | pendiente |
 | — | Costo en vivo vs cálculo manual | pendiente |
 | 2026-10-18 | Enchufe real → agente (vinculado con código, clave subida desde `devices.json`) → API → app | ✅ «ya lo lee bien» (sin medir tiempos) |

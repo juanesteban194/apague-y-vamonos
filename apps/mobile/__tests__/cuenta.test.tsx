@@ -1047,3 +1047,93 @@ it("haceCuanto", () => {
   expect(haceCuanto("2026-10-12T07:00:00Z", ahora)).toBe("hace 5 h");
   expect(haceCuanto("2026-10-08T12:00:00Z", ahora)).toBe("hace 4 días");
 });
+
+describe("Calibrar los vatios de un dispositivo", () => {
+  const ENCHUFE_CAL = { ...ENCHUFE, factor_calibracion: 1, calibracion_referencia_w: null };
+  const rutas = (extra: Record<string, unknown> = {}) => ({
+    "GET /hogares": [HOGAR],
+    "GET /hogares/h1/dispositivos": [ENCHUFE_CAL],
+    "GET /hogares/h1/agentes": [],
+    "GET /hogares/h1/resumen": { ...RESUMEN, dispositivos: [{ ...RESUMEN.dispositivos[0], id: "d1", encendido: true, potencia_w: 48 }] },
+    ...extra,
+  });
+  const llamadas = (metodo: string, ruta: string) => fetchMock.mock.calls.filter(([u, i]) => (i?.method ?? "GET") === metodo && String(u) === `https://api.test${ruta}`);
+
+  it("muestra lo que el enchufe marca ahora y pide lo que marca el medidor", async () => {
+    await iniciarSesionDePrueba();
+    (globalThis as { __parametros?: object }).__parametros = { id: "d1" };
+    simular(rutas());
+    await renderizar(<EditarEnchufe />);
+    expect(await screen.findByText("El enchufe marca ahora: 48 W")).toBeTruthy();
+    expect(screen.getByText("Calibrar los vatios")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Calibrar ahora" }).props.accessibilityState.disabled).toBe(true); // sin número no se puede
+  });
+
+  it("el caso real: el enchufe lee 48 W, el medidor marca 44 W", async () => {
+    await iniciarSesionDePrueba();
+    (globalThis as { __parametros?: object }).__parametros = { id: "d1" };
+    simular(rutas({ "POST /hogares/h1/dispositivos/d1/calibrar": () => respuestaJson({ factor_calibracion: 0.9167, referencia_w: 44, lectura_antes_w: 48, lectura_despues_w: 44 }) }));
+    await renderizar(<EditarEnchufe />);
+    await fireEvent.changeText(await screen.findByLabelText("Lo que marca tu medidor (W)"), "44");
+    await fireEvent.press(screen.getByRole("button", { name: "Calibrar ahora" }));
+    expect(await screen.findByText("Listo: antes leía 48 W y ahora lee 44 W.")).toBeTruthy();
+    expect(JSON.parse(llamadas("POST", "/hogares/h1/dispositivos/d1/calibrar")[0][1].body)).toEqual({ referencia_w: 44 });
+  });
+
+  it("acepta coma decimal y rechaza números que no sirven", async () => {
+    await iniciarSesionDePrueba();
+    (globalThis as { __parametros?: object }).__parametros = { id: "d1" };
+    simular(rutas({ "POST /hogares/h1/dispositivos/d1/calibrar": () => respuestaJson({ factor_calibracion: 0.99, referencia_w: 47.5, lectura_antes_w: 48, lectura_despues_w: 47.5 }) }));
+    await renderizar(<EditarEnchufe />);
+    const campo = await screen.findByLabelText("Lo que marca tu medidor (W)");
+    const boton = () => screen.getByRole("button", { name: "Calibrar ahora" });
+    for (const malo of ["", "abc", "0", "-5", "5000"]) {
+      await fireEvent.changeText(campo, malo);
+      expect(boton().props.accessibilityState.disabled).toBe(true);
+    }
+    await fireEvent.changeText(campo, "47,5");
+    await fireEvent.press(boton());
+    await waitFor(() => expect(JSON.parse(llamadas("POST", "/hogares/h1/dispositivos/d1/calibrar")[0][1].body)).toEqual({ referencia_w: 47.5 }));
+  });
+
+  it("si el servidor la rechaza (lectura inestable, muy poca carga…) muestra su explicación", async () => {
+    await iniciarSesionDePrueba();
+    (globalThis as { __parametros?: object }).__parametros = { id: "d1" };
+    simular(rutas({ "POST /hogares/h1/dispositivos/d1/calibrar": () => respuestaJson({ detail: "La lectura está variando mucho. Espera a que el dispositivo se estabilice (que no cambie de potencia) y vuelve a intentar." }, 409) }));
+    await renderizar(<EditarEnchufe />);
+    await fireEvent.changeText(await screen.findByLabelText("Lo que marca tu medidor (W)"), "44");
+    await fireEvent.press(screen.getByRole("button", { name: "Calibrar ahora" }));
+    expect(await screen.findByText(/La lectura está variando mucho/)).toBeTruthy();
+    expect(screen.queryByText(/^Listo: antes leía/)).toBeNull();
+  });
+
+  it("un enchufe ya calibrado dice con qué medidor y cuánto ajustó, y permite quitarlo", async () => {
+    await iniciarSesionDePrueba();
+    (globalThis as { __parametros?: object }).__parametros = { id: "d1" };
+    simular(rutas({
+      "GET /hogares/h1/dispositivos": [{ ...ENCHUFE_CAL, factor_calibracion: 0.9167, calibracion_referencia_w: 44 }],
+      "DELETE /hogares/h1/dispositivos/d1/calibracion": () => ({ ok: true, status: 204, json: async () => undefined }) as Response,
+    }));
+    await renderizar(<EditarEnchufe />);
+    expect(await screen.findByText(/Calibrado con un medidor de 44 W \(ajuste de -8,3 %\)/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: "Quitar la calibración" }));
+    await waitFor(() => expect(llamadas("DELETE", "/hogares/h1/dispositivos/d1/calibracion")).toHaveLength(1));
+  });
+
+  it("sin calibrar no ofrece quitarla", async () => {
+    await iniciarSesionDePrueba();
+    (globalThis as { __parametros?: object }).__parametros = { id: "d1" };
+    simular(rutas());
+    await renderizar(<EditarEnchufe />);
+    await screen.findByText("Calibrar los vatios");
+    expect(screen.queryByRole("button", { name: "Quitar la calibración" })).toBeNull();
+  });
+
+  it("con el dispositivo apagado avisa que no hay lectura", async () => {
+    await iniciarSesionDePrueba();
+    (globalThis as { __parametros?: object }).__parametros = { id: "d1" };
+    simular(rutas({ "GET /hogares/h1/resumen": { ...RESUMEN, dispositivos: [{ ...RESUMEN.dispositivos[0], id: "d1", encendido: false, potencia_w: 0 }] } }));
+    await renderizar(<EditarEnchufe />);
+    expect(await screen.findByText("El enchufe no está enviando lecturas ahora mismo.")).toBeTruthy();
+  });
+});

@@ -30,7 +30,7 @@ export const TEMAS = {
     paraQueSirve: "Para saber cuánto cuesta en pesos tener prendido el televisor, la nevera o el ventilador, y poder apagarlo desde el celular.",
     pasos: [
       "Conecta el enchufe a la pared y el dispositivo al enchufe.",
-      "Tócalo para cambiarle el nombre, elegir qué agente lo lee o quitarlo.",
+      "Tócalo para cambiarle el nombre, elegir qué agente lo lee, calibrar sus vatios con un medidor de referencia o quitarlo.",
       "En Inicio, toca el dispositivo para ver su consumo y apagarlo o prenderlo.",
       "Para agregar uno nuevo, necesitas su código (ID de Tuya). Lo ves en la app Smart Life, en los datos del dispositivo.",
     ],
