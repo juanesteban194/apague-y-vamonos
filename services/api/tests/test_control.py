@@ -141,7 +141,7 @@ def test_sin_agente_ni_nube_responde_503_claro(client, auth, enchufe, monkeypatc
 
 
 def test_si_todo_falla_el_mensaje_dice_por_que(client, auth, enchufe, monkeypatch):
-    fijar(monkeypatch, agente=ResultadoComando(False, "El agente de tu casa no respondió a tiempo"), nube="tope de llamadas")
+    fijar(monkeypatch, agente=ResultadoComando(False, "no respondió a tiempo"), nube="tope de llamadas")
     detalle = client.post(f"/dispositivos/{enchufe['id']}/apagar", headers=auth).json()["detail"]
     assert "no respondió a tiempo" in detalle and "tope de llamadas" in detalle
 

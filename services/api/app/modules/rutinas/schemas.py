@@ -22,7 +22,7 @@ class RutinaIn(BaseModel):
     @model_validator(mode="after")
     def horas_distintas(self):
         if self.hora_encendido is not None and self.hora_encendido == self.hora_apagado:
-            raise ValueError("La hora de encendido debe ser distinta de la de apagado")
+            raise ValueError("La hora de prender debe ser distinta de la de apagar.")
         return self
 
 

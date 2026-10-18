@@ -74,7 +74,7 @@ class GestorAgentes:
                 return None
             return await asyncio.wait_for(futuro, espera_s)
         except TimeoutError:
-            return ResultadoComando(False, "El agente de tu casa no respondió a tiempo")
+            return ResultadoComando(False, "no respondió a tiempo")
         finally:
             self._pendientes.pop(id_comando, None)
 
@@ -89,7 +89,7 @@ class GestorAgentes:
         if ok:
             futuro.set_result(ResultadoComando(True))
         elif faltan[0] <= 0:  # todos respondieron que no
-            futuro.set_result(ResultadoComando(False, detalle or "El agente no pudo ejecutar el comando"))
+            futuro.set_result(ResultadoComando(False, detalle or "sin más detalles"))
 
 
 gestor_agentes = GestorAgentes()

@@ -56,8 +56,8 @@ def test_avisa_cuando_pasa_el_umbral_con_lo_que_cuesta_cada_hora(client, auth, h
     lecturas(d, AHORA - timedelta(minutes=40), AHORA - timedelta(seconds=10), vatios=1000)
     (tipo, nivel, titulo, mensaje), = evaluar(reglas.evaluar_alto_riesgo)
     assert (tipo, nivel) == ("alto_riesgo", "rojo")
-    assert titulo == "Ventilador lleva 40 minutos prendido"
-    assert "Superó el tiempo que usted definió (30 minutos)" in mensaje
+    assert titulo == "Ventilador lleva 40 minutos sin apagarse"
+    assert "Ya superó el tiempo que elegiste (30 minutos)" in mensaje
     assert "unos $815 por hora" in mensaje  # 1 kW × $814,63
 
 
@@ -132,12 +132,12 @@ def test_subsistencia_por_enchufes_avisa_al_80_y_al_100(client, auth, hogar, enc
     inicio = datetime(2026, 10, 12, 12, 0, tzinfo=UTC)
     lecturas(d, inicio, inicio + timedelta(minutes=48), vatios=1000, cada=60)  # 0,8 kWh
     (tipo, nivel, titulo, mensaje), = evaluar(reglas.evaluar_subsistencia)
-    assert (tipo, nivel, titulo) == ("subsistencia", "amarillo", "Se acerca a la línea de subsistencia")
-    assert "80 %" in mensaje and "solo lo que miden sus enchufes" in mensaje
+    assert (tipo, nivel, titulo) == ("subsistencia", "amarillo", "Te acercas a la línea de subsistencia")
+    assert "80 %" in mensaje and "solo lo que miden tus enchufes" in mensaje
     assert evaluar(reglas.evaluar_subsistencia) == []  # una vez por mes y nivel
     lecturas(d, inicio + timedelta(minutes=49), inicio + timedelta(minutes=70), vatios=1000, cada=60)  # pasa de 1 kWh
     (_, nivel2, titulo2, _), = evaluar(reglas.evaluar_subsistencia)
-    assert (nivel2, titulo2) == ("rojo", "Ya pasó la línea de subsistencia")
+    assert (nivel2, titulo2) == ("rojo", "Pasaste la línea de subsistencia")
 
 
 def test_subsistencia_bajo_el_80_no_avisa(client, auth, hogar, enchufe):

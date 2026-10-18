@@ -1,4 +1,4 @@
-"""Aviso de consumo anómalo por dispositivo: "la nevera gastó 18 % más ayer de lo normal".
+"""Aviso de consumo anómalo por dispositivo: "la nevera gastó ayer 18 % más de lo normal".
 
 Lo normal de un dispositivo es la mediana de lo que gastó en los 7 días anteriores a ayer (la mediana no se deja torcer por un día raro).
 Se compara con ayer, un día completo, así que el aviso sale una vez al día como máximo. Solo avisa de subidas: gastar menos no es un problema.
@@ -64,11 +64,11 @@ def evaluar_consumo_anomalo(db: Session, ahora: datetime | None = None) -> list[
         ids = list(db.scalars(select(Dispositivo.id).where(Dispositivo.hogar_id == hogar.id)))
         precio = precio_del_mes(db, hogar, ids, inicio_mes_bogota(ahora))[0]
         porcentaje = round(extra / normal * 100)
-        cuerpo = f"Ayer gastó {porcentaje} % más que en un día normal suyo (lo normal sale de los últimos {DIAS_BASE} días)."
+        cuerpo = f"Ayer gastó {porcentaje} % más que en un día normal. Lo normal sale de sus últimos {DIAS_BASE} días."
         if precio:
-            cuerpo += f" Si sigue así, le cuesta unos {_pesos(extra * DIAS_DEL_MES * float(precio))} más al mes."
+            cuerpo += f" Si sigue así, te cuesta unos {_pesos(extra * DIAS_DEL_MES * float(precio))} más al mes."
         alerta = service.crear(
-            db, hogar.id, "consumo_anomalo", nivel, f"{d.nombre} gastó {porcentaje} % más ayer de lo normal", cuerpo,
+            db, hogar.id, "consumo_anomalo", nivel, f"{d.nombre} gastó ayer {porcentaje} % más de lo normal", cuerpo,
             dispositivo_id=d.id, sin_repetir_desde=hoy_ini, ahora=ahora,
         )
         if alerta:

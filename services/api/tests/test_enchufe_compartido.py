@@ -176,4 +176,4 @@ def test_sin_compartir_beto_no_puede_mandar_ordenes_por_el_agente_de_ana(client,
 def test_con_compartir_si_el_agente_de_ana_esta_caido_dice_por_que(client, compartir, monkeypatch):
     auth_b, casa_a, agente_a, b = preparar_ordenes(client, monkeypatch)
     r = client.post(f"/dispositivos/{b['id']}/apagar", headers=auth_b)
-    assert r.status_code == 503 and "No se pudo apagar" in r.json()["detail"]
+    assert r.status_code == 503 and "No pudimos apagar" in r.json()["detail"]

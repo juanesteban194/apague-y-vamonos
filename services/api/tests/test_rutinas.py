@@ -134,7 +134,7 @@ def test_si_no_se_pudo_queda_registrado_y_avisa(client, auth, hogar, enchufe):
     assert eventos()[0][1] == "error: no hay un agente conectado en tu casa"
     with get_sessionmaker()() as db:
         (a,) = list(db.scalars(select(Alerta)))
-    assert (a.tipo, a.nivel, a.titulo) == ("rutina", "amarillo", "No se pudo apagar Ventilador") and "22:00" in a.mensaje
+    assert (a.tipo, a.nivel, a.titulo) == ("rutina", "amarillo", "No pudimos apagar Ventilador") and "22:00" in a.mensaje
 
 
 def test_rutinas_inactivas_no_se_ejecutan(client, auth, hogar, enchufe):

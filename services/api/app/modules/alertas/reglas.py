@@ -48,11 +48,11 @@ def evaluar_alto_riesgo(db: Session, ahora: datetime) -> list[Alerta]:
         hogar = db.get(Hogar, d.hogar_id)
         ids = list(db.scalars(select(Dispositivo.id).where(Dispositivo.hogar_id == hogar.id)))
         precio = precio_del_mes(db, hogar, ids, inicio_mes_bogota(ahora))[0]
-        cuerpo = f"Superó el tiempo que usted definió ({duracion_en_texto(d.umbral_minutos_encendido)})."
+        cuerpo = f"Ya superó el tiempo que elegiste ({duracion_en_texto(d.umbral_minutos_encendido)})."
         if precio:
-            cuerpo += f" Si no hay nadie, apagarlo le ahorra unos {_pesos(ultima.potencia_w / 1000 * float(precio))} por hora."
+            cuerpo += f" Si no hace falta, apagarlo ahora te ahorra unos {_pesos(ultima.potencia_w / 1000 * float(precio))} por hora."
         alerta = service.crear(
-            db, hogar.id, "alto_riesgo", "rojo", f"{d.nombre} lleva {duracion_en_texto(minutos)} prendido", cuerpo,
+            db, hogar.id, "alto_riesgo", "rojo", f"{d.nombre} lleva {duracion_en_texto(minutos)} sin apagarse", cuerpo,
             dispositivo_id=d.id, sin_repetir_desde=encendido_desde, ahora=ahora,
         )
         if alerta:
@@ -68,13 +68,13 @@ def evaluar_subsistencia(db: Session, ahora: datetime) -> list[Alerta]:
         s = subsistencia.calcular(db, hogar, ahora)
         if s.nivel == "verde":
             continue
-        nota = "" if s.fuente == "medidor" else " Cuenta solo lo que miden sus enchufes."
+        nota = "" if s.fuente == "medidor" else " Cuenta solo lo que miden tus enchufes."
         if s.nivel == "amarillo":
-            titulo = "Se acerca a la línea de subsistencia"
-            cuerpo = f"Ya va en el {round(s.porcentaje * 100)} % de la energía que EPM le subsidia este mes. Pasada esa línea, la energía le sale más cara.{nota}"
+            titulo = "Te acercas a la línea de subsistencia"
+            cuerpo = f"Vas en el {round(s.porcentaje * 100)} % de la energía que EPM te subsidia este mes. Pasada esa línea, la energía te sale más cara.{nota}"
         else:
-            titulo = "Ya pasó la línea de subsistencia"
-            cuerpo = f"Desde aquí la energía que gaste este mes le cuesta más porque ya no tiene subsidio.{nota}"
+            titulo = "Pasaste la línea de subsistencia"
+            cuerpo = f"Lo que gastes de aquí a fin de mes ya no tiene subsidio, así que te sale más caro.{nota}"
         alerta = service.crear(db, hogar.id, "subsistencia", s.nivel, titulo, cuerpo, sin_repetir_desde=mes_ini, ahora=ahora)
         if alerta:
             creadas.append(alerta)
@@ -103,11 +103,11 @@ def evaluar_prepago(db: Session, ahora: datetime) -> list[Alerta]:
         if p.nivel != "rojo":
             continue
         horas = max(0, int(p.dias_restantes * 24))
-        titulo = "Su saldo prepago se está acabando"
+        titulo = "Tu saldo prepago se está acabando"
         cuerpo = (
-            f"Al ritmo de los últimos 3 días le alcanza para unas {horas} horas. Recargue para no quedarse sin energía."
+            f"Al ritmo de los últimos 3 días te alcanza para {'una hora' if horas == 1 else f'unas {horas} horas'}. Recarga para no quedarte sin energía."
             if horas > 0
-            else "Al ritmo de los últimos 3 días el saldo ya debería haberse acabado. Revise su medidor y recargue."
+            else "Al ritmo de los últimos 3 días, tu saldo ya debería haberse acabado. Revisa el medidor y recarga."
         )
         alerta = service.crear(db, hogar_id, "prepago", "rojo", titulo, cuerpo, sin_repetir_desde=p.registrado_en, ahora=ahora)
         if alerta:

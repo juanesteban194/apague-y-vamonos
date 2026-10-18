@@ -35,7 +35,7 @@ def marcar_todas(hogar_id: uuid.UUID, db: Session = Depends(get_db), usuario_id:
 def marcar_leida(hogar_id: uuid.UUID, alerta_id: uuid.UUID, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)):
     exigir_miembro(db, usuario_id, hogar_id)
     if not service.marcar_leida(db, hogar_id, alerta_id):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Aviso no encontrado")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese aviso.")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -60,7 +60,7 @@ tokens = APIRouter(prefix="/usuarios/yo/tokens-push", tags=["notificaciones"])
 def registrar_token(datos: TokenPushIn, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)):
     """El celular registra su token de Expo Push para recibir avisos aunque la app esté cerrada."""
     if not token_valido(datos.token):
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Token de notificaciones inválido")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "No pudimos activar los avisos en este celular. Intenta de nuevo.")
     service.guardar_token_push(db, usuario_id, datos.token, datos.plataforma)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

@@ -32,7 +32,7 @@ def enviar_por_la_api(hogar_id, dispositivo_id, tuya_id: str, accion: str) -> tu
     """Manda el comando por el mismo camino que el botón de la app (agente primero, Tuya Cloud de respaldo)."""
     bucle = gestor._bucle
     if bucle is None:
-        return False, "la API aún no está lista para enviar comandos"
+        return False, "El servidor todavía está arrancando."
     try:
         asyncio.run_coroutine_threadsafe(ejecutar_comando(hogar_id, dispositivo_id, tuya_id, accion), bucle).result(timeout=20)
         return True, None
@@ -87,8 +87,8 @@ def ejecutar_vencidas(db: Session, ahora: datetime, enviar: Enviar = enviar_por_
         log.info("rutina %s %s (%s): %s", dispositivo.nombre, accion, programada.isoformat(), "ok" if ok else detalle)
         if not ok:
             alerta = alertas.crear(
-                db, dispositivo.hogar_id, "rutina", "amarillo", f"No se pudo {accion} {dispositivo.nombre}",
-                f"La rutina programada para las {programada.astimezone(BOGOTA):%H:%M} no se ejecutó: {detalle}", dispositivo.id,
+                db, dispositivo.hogar_id, "rutina", "amarillo", f"No pudimos {accion} {dispositivo.nombre}",
+                f"La rutina de las {programada.astimezone(BOGOTA):%H:%M} no se cumplió. {detalle}", dispositivo.id,
                 sin_repetir_desde=programada, ahora=ahora,
             )
             if alerta:

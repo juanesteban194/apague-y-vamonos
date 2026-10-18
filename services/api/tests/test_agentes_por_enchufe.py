@@ -171,7 +171,7 @@ def test_otro_agente_conectado_no_puede_controlarlo_y_el_mensaje_lo_explica(clie
     ws_patio = conectar(hogar, patio)  # solo el del patio está conectado
     r = client.post(f"/dispositivos/{enchufe['id']}/apagar", headers=auth)
     assert r.status_code == 503
-    assert "«Sala»" in r.json()["detail"] and "los otros agentes conectados no leen este enchufe" in r.json()["detail"]
+    assert "«Sala»" in r.json()["detail"] and "Los otros agentes conectados no leen este enchufe" in r.json()["detail"]
     assert ws_patio.recibidos == []  # la orden nunca le llegó al agente equivocado
 
 
@@ -191,4 +191,4 @@ def test_si_el_agente_asignado_responde_que_no_pudo_lo_dice(client, auth, hogar,
     asignar(client, auth, hogar, enchufe, sala["id"])
     conectar(hogar, sala, respuesta=(False, "enchufe sin respuesta"))
     detalle = client.post(f"/dispositivos/{enchufe['id']}/apagar", headers=auth).json()["detail"]
-    assert "«Sala» no pudo ejecutarlo: enchufe sin respuesta" in detalle
+    assert "«Sala» no pudo hacerlo (enchufe sin respuesta)" in detalle

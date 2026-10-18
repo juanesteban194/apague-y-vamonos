@@ -33,8 +33,8 @@ def test_avisa_cuando_ayer_gasto_20_por_ciento_o_mas_que_lo_normal(client, auth,
     semana(enchufe, base=1.0, ayer=1.3)
     (tipo, nivel, titulo, mensaje), = evaluar()
     assert (tipo, nivel) == ("consumo_anomalo", "amarillo")
-    assert titulo == f"{enchufe['nombre']} gastó 30 % más ayer de lo normal"
-    assert "Ayer gastó 30 % más que en un día normal suyo" in mensaje
+    assert titulo == f"{enchufe['nombre']} gastó ayer 30 % más de lo normal"
+    assert "Ayer gastó 30 % más que en un día normal." in mensaje
     assert "unos $7.332 más al mes" in mensaje  # 0,3 kWh × 30 días × $814,63
 
 

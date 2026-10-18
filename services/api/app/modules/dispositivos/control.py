@@ -55,7 +55,7 @@ def _autorizar(dispositivo_id: uuid.UUID, usuario_id: uuid.UUID) -> tuple[uuid.U
     with get_sessionmaker()() as db:
         d = db.get(Dispositivo, dispositivo_id)
         if d is None:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Dispositivo no encontrado")
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese dispositivo.")
         exigir_miembro(db, usuario_id, d.hogar_id)  # cualquier miembro del hogar puede prender o apagar
         return d.id, d.hogar_id, d.tuya_id
 
@@ -83,17 +83,17 @@ async def ejecutar_comando(hogar_id: uuid.UUID, dispositivo_id: uuid.UUID, tuya_
     agente_id, nombre = await run_in_threadpool(_agente_del_enchufe, dispositivo_id)
     if agente_id is None:
         # Aún no lo lee ningún agente: se le pregunta a los conectados (el que lo tenga en su configuración lo ejecuta).
-        motivo = "este enchufe no tiene un agente asignado (asígnale uno en Enchufes)"
+        motivo = "Este enchufe no tiene un agente asignado. Asígnale uno en Enchufes."
     else:
-        motivo = f"el agente «{nombre}», que lee este enchufe, no está conectado"
+        motivo = f"El agente «{nombre}», que lee este enchufe, no está conectado."
         if gestor_agentes.hay_agente(hogar_id) and not gestor_agentes.conectado(hogar_id, agente_id):
-            motivo += " (los otros agentes conectados no leen este enchufe y no pueden controlarlo)"
+            motivo += " Los otros agentes conectados no leen este enchufe, así que no pueden controlarlo."
     resultado = await gestor_agentes.enviar(hogar_id, tuya_id, accion, agente_id=agente_id)
     if resultado is not None and resultado.ok:
         return ComandoOut(dispositivo_id=dispositivo_id, encendido=encender, via="agente")
     if resultado is not None:
-        quien = f"el agente «{nombre}»" if nombre else "el agente"
-        motivo = f"{quien} no pudo ejecutarlo: {resultado.detalle or 'sin detalle'}"
+        quien = f"El agente «{nombre}»" if nombre else "El agente"
+        motivo = f"{quien} no pudo hacerlo ({resultado.detalle or 'sin más detalles'})."
     if get_settings().compartir_enchufes:
         # Modo de pruebas: el mismo enchufe físico está registrado en varias cuentas y lo lee el agente de una de ellas.
         for otro_hogar, otro_agente in await run_in_threadpool(_gemelos, dispositivo_id, tuya_id):
@@ -105,14 +105,14 @@ async def ejecutar_comando(hogar_id: uuid.UUID, dispositivo_id: uuid.UUID, tuya_
             await cliente_tuya.enviar_comando(tuya_id, encender)
             return ComandoOut(dispositivo_id=dispositivo_id, encendido=encender, via="nube")
         except ErrorTuyaCloud as e:
-            motivo = f"{motivo}; el respaldo por la nube también falló ({e})"
-    raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"No se pudo {accion} el dispositivo: {motivo}.")
+            motivo = f"{motivo} Probamos también por internet y tampoco funcionó ({e})."
+    raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"No pudimos {accion} el dispositivo. {motivo}")
 
 
 async def _comandar(dispositivo_id: uuid.UUID, accion: Accion, usuario_id: uuid.UUID) -> ComandoOut:
     d_id, hogar_id, tuya_id = await run_in_threadpool(_autorizar, dispositivo_id, usuario_id)
     if not limitador.permitir(d_id, get_settings().comandos_max_por_minuto):
-        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Demasiados cambios seguidos. Espera un momento e intenta de nuevo.")
+        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Hiciste muchos cambios seguidos. Espera un minuto e intenta de nuevo.")
     return await ejecutar_comando(hogar_id, d_id, tuya_id, accion)
 
 

@@ -62,14 +62,14 @@ def _salida(db: Session, rutina: Rutina, dispositivo: Dispositivo, ahora: dateti
 def _dispositivo_del_hogar(db: Session, hogar_id: uuid.UUID, dispositivo_id: uuid.UUID) -> Dispositivo:
     d = db.get(Dispositivo, dispositivo_id)
     if d is None or d.hogar_id != hogar_id:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Ese dispositivo no es de tu casa")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Ese dispositivo no es de tu casa. Elige uno de la lista.")
     return d
 
 
 def _rutina_del_hogar(db: Session, hogar_id: uuid.UUID, rutina_id: uuid.UUID) -> tuple[Rutina, Dispositivo]:
     fila = db.execute(select(Rutina, Dispositivo).join(Dispositivo, Dispositivo.id == Rutina.dispositivo_id).where(Rutina.id == rutina_id, Dispositivo.hogar_id == hogar_id)).first()
     if fila is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Rutina no encontrada")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos esa rutina.")
     return fila
 
 

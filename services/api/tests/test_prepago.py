@@ -97,7 +97,7 @@ def test_el_aviso_rojo_sale_una_vez_por_registro(client, auth, hogar):
         for saldo, hace in ((15000, 3 * D), (12000, 2 * D), (8000, D), (5000, timedelta(0))):
             service.registrar_saldo(db, h, saldo, AHORA - hace)
         (_, nivel, titulo, mensaje), = [(a.tipo, a.nivel, a.titulo, a.mensaje) for a in reglas.evaluar_prepago(db, AHORA)]
-        assert (nivel, titulo) == ("rojo", "Su saldo prepago se está acabando") and "horas" in mensaje
+        assert (nivel, titulo) == ("rojo", "Tu saldo prepago se está acabando") and "horas" in mensaje
         assert reglas.evaluar_prepago(db, AHORA + timedelta(minutes=1)) == []  # no repite
         service.registrar_saldo(db, h, 1500, AHORA + timedelta(hours=2))  # nuevo registro, sigue bajo: nuevo aviso
         assert len(reglas.evaluar_prepago(db, AHORA + timedelta(hours=2, minutes=1))) == 1
