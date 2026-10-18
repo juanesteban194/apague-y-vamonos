@@ -1,24 +1,26 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { View } from "react-native";
+import { Fragment } from "react";
+import { Pressable, View } from "react-native";
 
 import { guardarPreferencias, marcarAlertaLeida, marcarAlertasLeidas } from "@/api/cliente";
 import { useHogarActual } from "@/api/hogar";
 import type { Sensibilidad } from "@/api/tipos";
-import { Boton } from "@/components/Boton";
+import { BotonAyuda } from "@/components/BotonAyuda";
 import { OpcionRadio } from "@/components/OpcionRadio";
 import { Pantalla } from "@/components/Pantalla";
+import { EncabezadoSeccion, IconoEnCaja, Separador } from "@/components/Primitivos";
 import { SugerenciaAyuda } from "@/components/SugerenciaAyuda";
 import { Tarjeta } from "@/components/Tarjeta";
 import { TarjetaAviso } from "@/components/TarjetaAviso";
 import { Texto } from "@/components/Texto";
 import { useAlertas, usePreferenciasAlertas } from "@/features/alertas/hooks";
-import { colores, espacio } from "@/theme";
+import { AREA_TOQUE_MIN, colores, espacio } from "@/theme";
 
-// Textos del mockup para "¿Cada cuánto le avisamos?"
+// «¿Cada cuánto te avisamos?» del mockup
 const OPCIONES: { valor: Sensibilidad; titulo: string; detalle: string }[] = [
-  { valor: "pocos", titulo: "Pocas", detalle: "Solo cuando algo se sale mucho de lo normal" },
-  { valor: "normal", titulo: "Normales", detalle: "Lo recomendado para su casa" },
-  { valor: "todos", titulo: "Muchas", detalle: "Cuénteme todo, hasta los cambios pequeños" },
+  { valor: "pocos", titulo: "Pocas", detalle: "Solo cuando algo se sale mucho de lo normal." },
+  { valor: "normal", titulo: "Normales", detalle: "Lo recomendado para tu casa." },
+  { valor: "todos", titulo: "Muchas", detalle: "Te contamos todo, hasta los cambios pequeños." },
 ];
 
 export default function Avisos() {
@@ -26,7 +28,9 @@ export default function Avisos() {
   const { hogar } = useHogarActual();
   const { data: avisos, error, isLoading, isFetching, refetch } = useAlertas(hogar?.id);
   const { data: preferencias } = usePreferenciasAlertas(hogar?.id);
-  const sinLeer = avisos?.filter((a) => !a.leida).length ?? 0;
+  const nuevos = avisos?.filter((a) => !a.leida) ?? [];
+  const anteriores = avisos?.filter((a) => a.leida) ?? [];
+  const sinLeer = nuevos.length;
 
   async function leer(id: string) {
     if (!hogar) return;
@@ -47,40 +51,108 @@ export default function Avisos() {
   }
 
   return (
-    <Pantalla refrescando={isFetching && !isLoading} alRefrescar={() => void refetch()}>
+    <Pantalla
+      titulo="Avisos"
+      subtitulo="Te contamos cuando algo se sale de lo normal."
+      accion={<BotonAyuda tema="avisos" />}
+      refrescando={isFetching && !isLoading}
+      alRefrescar={() => void refetch()}
+    >
       <SugerenciaAyuda tema="avisos" />
-      <View>
-        <Texto variante="titulo">Avisos</Texto>
-        <Texto color={colores.textoSecundario}>Le contamos cuando algo se sale de lo normal.</Texto>
-      </View>
 
-      {sinLeer > 0 && <Boton titulo={`Marcar ${sinLeer === 1 ? "el aviso" : "todos los avisos"} como leído${sinLeer === 1 ? "" : "s"}`} variante="secundario" onPress={leerTodos} />}
-
-      {isLoading && <Texto color={colores.textoSecundario}>Cargando…</Texto>}
-      {error && <Texto color={colores.rojo} style={{ fontWeight: "600" }}>{error.message}</Texto>}
-      {avisos?.length === 0 && (
-        <Tarjeta>
-          <Texto variante="subtitulo">Todo tranquilo</Texto>
-          <Texto color={colores.textoSecundario}>Todavía no hay avisos. Cuando algo se salga de lo normal, aparecerá aquí.</Texto>
+      {isLoading && <Texto color={colores.textoSecundario}>Cargando tus avisos…</Texto>}
+      {error && (
+        <Tarjeta variante="rojo">
+          <Texto color={colores.rojo} style={{ fontWeight: "500" }}>
+            {error.message}
+          </Texto>
         </Tarjeta>
       )}
-      <View style={{ gap: 10 }}>
-        {avisos?.map((a) => (
-          <TarjetaAviso key={a.id} aviso={a} alLeer={() => void leer(a.id)} alApagado={() => void leer(a.id)} />
-        ))}
-      </View>
 
-      <Tarjeta style={{ gap: espacio.m }}>
-        <View>
-          <Texto variante="subtitulo" style={{ fontWeight: "800" }}>¿Cada cuánto le avisamos?</Texto>
-          <Texto color={colores.textoSecundario}>Puede pedir pocos avisos o que le contemos todo.</Texto>
+      {avisos?.length === 0 && (
+        <Tarjeta style={{ alignItems: "center", paddingVertical: espacio.xxl, paddingHorizontal: espacio.xl, gap: espacio.s }}>
+          <IconoEnCaja nombre="okLinea" tono="verde" tamano={56} />
+          <Texto variante="subtitulo" style={{ marginTop: espacio.s }}>
+            Todo tranquilo
+          </Texto>
+          <Texto color={colores.textoSecundario} style={{ textAlign: "center" }}>
+            No tienes avisos. Si algo se sale de lo normal, aparece aquí.
+          </Texto>
+        </Tarjeta>
+      )}
+
+      {sinLeer > 0 && (
+        <View style={{ gap: espacio.m }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: espacio.m, marginTop: espacio.xs }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: espacio.s, flexShrink: 1 }}>
+              <Texto variante="subtitulo" accessibilityRole="header">
+                Sin leer
+              </Texto>
+              <View style={{ minWidth: 26, height: 26, paddingHorizontal: 8, borderRadius: 13, backgroundColor: colores.primario, alignItems: "center", justifyContent: "center" }}>
+                <Texto variante="secundario" color={colores.sobrePrimario} style={{ fontWeight: "600", lineHeight: 18 }} accessibilityLabel={`${sinLeer} sin leer`}>
+                  {sinLeer}
+                </Texto>
+              </View>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Marcar ${sinLeer === 1 ? "el aviso" : "todos los avisos"} como leído${sinLeer === 1 ? "" : "s"}`}
+              onPress={leerTodos}
+              hitSlop={8}
+              style={({ pressed }) => ({ minHeight: AREA_TOQUE_MIN, justifyContent: "center", opacity: pressed ? 0.5 : 1 })}
+            >
+              <Texto variante="secundario" style={{ fontWeight: "600" }}>
+                {sinLeer === 1 ? "Marcar como leído" : "Marcar todos como leídos"}
+              </Texto>
+            </Pressable>
+          </View>
+          <View style={{ gap: espacio.m }}>
+            {nuevos.map((a) => (
+              <TarjetaAviso key={a.id} aviso={a} alLeer={() => void leer(a.id)} alApagado={() => void leer(a.id)} />
+            ))}
+          </View>
         </View>
-        <View accessibilityRole="radiogroup" style={{ gap: 8 }}>
-          {OPCIONES.map((o) => (
-            <OpcionRadio key={o.valor} titulo={o.titulo} detalle={o.detalle} seleccionada={preferencias?.sensibilidad === o.valor} alElegir={() => void elegir(o.valor)} />
+      )}
+
+      {sinLeer === 0 && anteriores.length > 0 && (
+        <Tarjeta variante="verde" style={{ flexDirection: "row", alignItems: "center", gap: espacio.m }}>
+          <IconoEnCaja nombre="okLinea" tono="verde" tamano={36} />
+          <View style={{ flex: 1 }}>
+            <Texto style={{ fontWeight: "600" }} color={colores.verde}>
+              Estás al día
+            </Texto>
+            <Texto variante="secundario" color={colores.textoSecundario}>
+              Ya leíste todos tus avisos.
+            </Texto>
+          </View>
+        </Tarjeta>
+      )}
+
+      {anteriores.length > 0 && (
+        <View style={{ gap: espacio.m }}>
+          <EncabezadoSeccion titulo="Anteriores" />
+          <Tarjeta style={{ padding: 0, gap: 0 }}>
+            {anteriores.map((a, i) => (
+              <Fragment key={a.id}>
+                {i > 0 && <Separador sangria={66} />}
+                <TarjetaAviso variante="fila" aviso={a} alLeer={() => void leer(a.id)} />
+              </Fragment>
+            ))}
+          </Tarjeta>
+        </View>
+      )}
+
+      <View style={{ gap: espacio.m }}>
+        <EncabezadoSeccion titulo="¿Cada cuánto te avisamos?" detalle="Elige cuántos avisos quieres recibir. Los importantes te llegan siempre." />
+        <Tarjeta accessibilityRole="radiogroup" style={{ padding: 0, gap: 0 }}>
+          {OPCIONES.map((o, i) => (
+            <Fragment key={o.valor}>
+              {i > 0 && <Separador sangria={54} />}
+              <OpcionRadio titulo={o.titulo} detalle={o.detalle} seleccionada={preferencias?.sensibilidad === o.valor} alElegir={() => void elegir(o.valor)} />
+            </Fragment>
           ))}
-        </View>
-      </Tarjeta>
+        </Tarjeta>
+      </View>
     </Pantalla>
   );
 }

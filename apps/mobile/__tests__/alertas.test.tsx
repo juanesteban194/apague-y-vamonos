@@ -58,8 +58,9 @@ describe("Avisos", () => {
     expect(screen.getByText("Se acerca a la línea de subsistencia")).toBeTruthy();
     expect(screen.getByText("hace 20 min")).toBeTruthy();
     expect(screen.getByText("hace 26 h")).toBeTruthy();
-    expect(screen.getAllByText("Nuevo")).toHaveLength(1); // solo el no leído
-    expect(screen.getByText("Le contamos cuando algo se sale de lo normal.")).toBeTruthy();
+    expect(screen.getByText("Sin leer")).toBeTruthy(); // el no leído va arriba y los leídos en «Anteriores»
+    expect(screen.getByText("Anteriores")).toBeTruthy();
+    expect(screen.getByText("Te contamos cuando algo se sale de lo normal.")).toBeTruthy();
   });
 
   it("sin avisos dice que todo está tranquilo", async () => {
