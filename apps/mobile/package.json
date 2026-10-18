@@ -22,6 +22,7 @@
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
     "expo-web-browser": "~57.0.3",
+    "phosphor-react-native": "^3.0.6",
     "react": "19.2.3",
     "react-dom": "^19.2.3",
     "react-native": "0.86.3",
@@ -64,7 +65,7 @@
       "<rootDir>/jest.setup.ts"
     ],
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|victory-.*|d3-.*|delaunay-.*|internmap|robust-predicates|lodash-es)"
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|phosphor-react-native|victory-.*|d3-.*|delaunay-.*|internmap|robust-predicates|lodash-es)"
     ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"

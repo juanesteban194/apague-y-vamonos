@@ -4,7 +4,7 @@ import { Pressable, View } from "react-native";
 
 import { AREA_TOQUE_MIN, BORDE_FINO, colores, espacio, radios } from "@/theme";
 
-import { Icono, type NombreIcono } from "./Icono";
+import { Icono, type NombreIcono, type PesoIcono } from "./Icono";
 import { Texto } from "./Texto";
 
 export type Tono = "verde" | "ambar" | "rojo" | "neutro" | "tinta";
@@ -41,11 +41,12 @@ export function EncabezadoSeccion({ titulo, detalle, accion }: { titulo: string;
 }
 
 /** Ícono dentro de un cuadrado redondeado con fondo de color suave (como los de Ajustes de iOS). */
-export function IconoEnCaja({ nombre, tono = "neutro", tamano = 40 }: { nombre: NombreIcono; tono?: Tono; tamano?: number }) {
+/** Ícono con fondo suave. Por omisión en duotono (trazo fino con un relleno tenue): el acabado de las apps financieras. */
+export function IconoEnCaja({ nombre, tono = "neutro", tamano = 40, peso = "duotone" }: { nombre: NombreIcono; tono?: Tono; tamano?: number; peso?: PesoIcono }) {
   const t = TONOS[tono];
   return (
     <View style={{ width: tamano, height: tamano, borderRadius: Math.round(tamano * 0.3), backgroundColor: t.fondo, alignItems: "center", justifyContent: "center" }}>
-      <Icono nombre={nombre} tamano={Math.round(tamano * 0.5)} color={t.tinta} />
+      <Icono nombre={nombre} tamano={Math.round(tamano * 0.52)} color={t.tinta} peso={peso} />
     </View>
   );
 }

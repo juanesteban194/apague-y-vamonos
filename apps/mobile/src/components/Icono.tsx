@@ -1,119 +1,200 @@
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import type { ComponentProps } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import type { Icon as IconoPhosphor, IconWeight } from "phosphor-react-native";
+import { AlarmIcon } from "phosphor-react-native/src/icons/Alarm";
+import { ArrowClockwiseIcon } from "phosphor-react-native/src/icons/ArrowClockwise";
+import { ArrowDownIcon } from "phosphor-react-native/src/icons/ArrowDown";
+import { ArrowRightIcon } from "phosphor-react-native/src/icons/ArrowRight";
+import { ArrowUpIcon } from "phosphor-react-native/src/icons/ArrowUp";
+import { ArrowsLeftRightIcon } from "phosphor-react-native/src/icons/ArrowsLeftRight";
+import { BatteryChargingIcon } from "phosphor-react-native/src/icons/BatteryCharging";
+import { BellIcon } from "phosphor-react-native/src/icons/Bell";
+import { BookOpenIcon } from "phosphor-react-native/src/icons/BookOpen";
+import { BuildingsIcon } from "phosphor-react-native/src/icons/Buildings";
+import { CalendarBlankIcon } from "phosphor-react-native/src/icons/CalendarBlank";
+import { CaretDownIcon } from "phosphor-react-native/src/icons/CaretDown";
+import { CaretLeftIcon } from "phosphor-react-native/src/icons/CaretLeft";
+import { CaretRightIcon } from "phosphor-react-native/src/icons/CaretRight";
+import { ChartBarIcon } from "phosphor-react-native/src/icons/ChartBar";
+import { CheckIcon } from "phosphor-react-native/src/icons/Check";
+import { CheckCircleIcon } from "phosphor-react-native/src/icons/CheckCircle";
+import { ClockIcon } from "phosphor-react-native/src/icons/Clock";
+import { CloudIcon } from "phosphor-react-native/src/icons/Cloud";
+import { CopyIcon } from "phosphor-react-native/src/icons/Copy";
+import { DeviceMobileIcon } from "phosphor-react-native/src/icons/DeviceMobile";
+import { DropIcon } from "phosphor-react-native/src/icons/Drop";
+import { EnvelopeIcon } from "phosphor-react-native/src/icons/Envelope";
+import { ExportIcon } from "phosphor-react-native/src/icons/Export";
+import { EyeIcon } from "phosphor-react-native/src/icons/Eye";
+import { EyeSlashIcon } from "phosphor-react-native/src/icons/EyeSlash";
+import { FanIcon } from "phosphor-react-native/src/icons/Fan";
+import { GaugeIcon } from "phosphor-react-native/src/icons/Gauge";
+import { GearSixIcon } from "phosphor-react-native/src/icons/GearSix";
+import { HamburgerIcon } from "phosphor-react-native/src/icons/Hamburger";
+import { HouseIcon } from "phosphor-react-native/src/icons/House";
+import { InfoIcon } from "phosphor-react-native/src/icons/Info";
+import { KeyIcon } from "phosphor-react-native/src/icons/Key";
+import { LaptopIcon } from "phosphor-react-native/src/icons/Laptop";
+import { LeafIcon } from "phosphor-react-native/src/icons/Leaf";
+import { LightbulbIcon } from "phosphor-react-native/src/icons/Lightbulb";
+import { LightbulbFilamentIcon } from "phosphor-react-native/src/icons/LightbulbFilament";
+import { LightningIcon } from "phosphor-react-native/src/icons/Lightning";
+import { LockIcon } from "phosphor-react-native/src/icons/Lock";
+import { MagnifyingGlassIcon } from "phosphor-react-native/src/icons/MagnifyingGlass";
+import { MapPinIcon } from "phosphor-react-native/src/icons/MapPin";
+import { MinusCircleIcon } from "phosphor-react-native/src/icons/MinusCircle";
+import { MoneyIcon } from "phosphor-react-native/src/icons/Money";
+import { MoonIcon } from "phosphor-react-native/src/icons/Moon";
+import { OvenIcon } from "phosphor-react-native/src/icons/Oven";
+import { PencilSimpleIcon } from "phosphor-react-native/src/icons/PencilSimple";
+import { PlugIcon } from "phosphor-react-native/src/icons/Plug";
+import { PlugChargingIcon } from "phosphor-react-native/src/icons/PlugCharging";
+import { PlusCircleIcon } from "phosphor-react-native/src/icons/PlusCircle";
+import { PowerIcon } from "phosphor-react-native/src/icons/Power";
+import { QuestionIcon } from "phosphor-react-native/src/icons/Question";
+import { ReceiptIcon } from "phosphor-react-native/src/icons/Receipt";
+import { ShieldCheckIcon } from "phosphor-react-native/src/icons/ShieldCheck";
+import { SignOutIcon } from "phosphor-react-native/src/icons/SignOut";
+import { SlidersHorizontalIcon } from "phosphor-react-native/src/icons/SlidersHorizontal";
+import { SparkleIcon } from "phosphor-react-native/src/icons/Sparkle";
+import { SquaresFourIcon } from "phosphor-react-native/src/icons/SquaresFour";
+import { StarIcon } from "phosphor-react-native/src/icons/Star";
+import { SunIcon } from "phosphor-react-native/src/icons/Sun";
+import { TShirtIcon } from "phosphor-react-native/src/icons/TShirt";
+import { TagIcon } from "phosphor-react-native/src/icons/Tag";
+import { TelevisionSimpleIcon } from "phosphor-react-native/src/icons/TelevisionSimple";
+import { ThermometerIcon } from "phosphor-react-native/src/icons/Thermometer";
+import { TrafficSignalIcon } from "phosphor-react-native/src/icons/TrafficSignal";
+import { TrashIcon } from "phosphor-react-native/src/icons/Trash";
+import { TrendDownIcon } from "phosphor-react-native/src/icons/TrendDown";
+import { TrendUpIcon } from "phosphor-react-native/src/icons/TrendUp";
+import { UserCircleIcon } from "phosphor-react-native/src/icons/UserCircle";
+import { WalletIcon } from "phosphor-react-native/src/icons/Wallet";
+import { WarningCircleIcon } from "phosphor-react-native/src/icons/WarningCircle";
+import { WashingMachineIcon } from "phosphor-react-native/src/icons/WashingMachine";
+import { WifiHighIcon } from "phosphor-react-native/src/icons/WifiHigh";
+import { XIcon } from "phosphor-react-native/src/icons/X";
 import { View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
 import { colores } from "@/theme";
 
-type Ion = ComponentProps<typeof Ionicons>["name"];
-type Mci = ComponentProps<typeof MaterialCommunityIcons>["name"];
+/** Peso del ícono (Phosphor): `regular` trazo fino · `fill` lleno · `duotone` trazo con relleno suave (accesos y cajas) · `bold`. */
+export type PesoIcono = IconWeight;
 
-/** Íconos de la app: un nombre por significado, sacados de dos librerías reales (Ionicons y Material Design Icons).
- *  Las pantallas piden el significado ("enchufe"), no el glifo, para poder cambiar uno sin tocar cada pantalla. */
+/** Íconos de la app: un nombre por significado, de Phosphor Icons (una sola familia, la de muchas apps financieras).
+ *  Las pantallas piden el significado ("enchufe"), no el glifo, para poder cambiar uno sin tocar cada pantalla.
+ *  Cada uno trae su peso por omisión: lleno para la pestaña elegida, trazo fino para las variantes «Linea». */
 const ICONOS = {
-  inicio: ["ion", "home"],
-  explorar: ["ion", "grid"],
-  avisos: ["ion", "notifications"],
-  ajustes: ["ion", "settings"],
-  // Variantes de línea: las pestañas sin elegir se dibujan solo con el contorno, como en iOS.
-  inicioLinea: ["ion", "home-outline"],
-  explorarLinea: ["ion", "grid-outline"],
-  avisosLinea: ["ion", "notifications-outline"],
-  ajustesLinea: ["ion", "settings-outline"],
-  casa: ["ion", "home"],
-  casas: ["mci", "home-city"],
-  enchufe: ["mci", "power-plug"],
-  agente: ["mci", "laptop"],
-  rutina: ["ion", "alarm"],
-  factura: ["mci", "receipt-text"],
-  medidor: ["mci", "gauge"],
-  prepago: ["ion", "wallet"],
-  consejo: ["ion", "bulb"],
-  simulador: ["mci", "swap-horizontal-bold"],
-  ayuda: ["ion", "help-circle"],
-  instrucciones: ["ion", "book"],
-  cuenta: ["ion", "person-circle"],
-  salir: ["ion", "log-out-outline"],
-  correo: ["ion", "mail"],
-  ubicacion: ["ion", "location"],
-  tarifa: ["ion", "flash"],
-  mas: ["ion", "add-circle"],
-  ok: ["ion", "checkmark-circle"],
-  info: ["ion", "information-circle"],
-  cerrar: ["ion", "close"],
-  adelante: ["ion", "chevron-forward"],
-  abajo: ["ion", "chevron-down"],
-  editar: ["ion", "create-outline"],
-  borrar: ["ion", "trash-outline"],
-  atras: ["ion", "chevron-back"],
-  rayo: ["ion", "flash"],
-  reloj: ["ion", "time-outline"],
-  grafica: ["ion", "bar-chart-outline"],
-  tendenciaArriba: ["ion", "trending-up"],
-  tendenciaAbajo: ["ion", "trending-down"],
-  candado: ["ion", "lock-closed-outline"],
-  escudo: ["ion", "shield-checkmark-outline"],
-  calendario: ["ion", "calendar-outline"],
-  dinero: ["ion", "cash-outline"],
-  hoja: ["ion", "leaf-outline"],
-  alerta: ["ion", "alert-circle"],
-  alertaLinea: ["ion", "alert-circle-outline"],
-  infoLinea: ["ion", "information-circle-outline"],
-  okLinea: ["ion", "checkmark-circle-outline"],
-  marca: ["ion", "checkmark"],
-  luna: ["ion", "moon-outline"],
-  sol: ["ion", "sunny-outline"],
-  chispa: ["ion", "sparkles-outline"],
-  estrella: ["ion", "star-outline"],
-  copiar: ["ion", "copy-outline"],
-  compartir: ["ion", "share-outline"],
-  llave: ["ion", "key-outline"],
-  nube: ["ion", "cloud-outline"],
-  telefono: ["ion", "phone-portrait-outline"],
-  menos: ["ion", "remove-circle-outline"],
-  flechaArriba: ["ion", "arrow-up"],
-  flechaAbajo: ["ion", "arrow-down"],
-  flechaDerecha: ["ion", "arrow-forward"],
-  apagar: ["ion", "power"],
-  ojo: ["ion", "eye-outline"],
-  ojoCerrado: ["ion", "eye-off-outline"],
-  buscar: ["ion", "search-outline"],
-  filtro: ["ion", "options-outline"],
-  refrescar: ["ion", "refresh-outline"],
-  enchufeLinea: ["mci", "power-plug-outline"],
-  agenteLinea: ["mci", "laptop"],
-  rutinaLinea: ["ion", "alarm-outline"],
-  facturaLinea: ["mci", "receipt-text-outline"],
-  prepagoLinea: ["ion", "wallet-outline"],
-  consejoLinea: ["ion", "bulb-outline"],
-  casaLinea: ["ion", "home-outline"],
-  medidorLinea: ["mci", "gauge"],
-  nevera: ["mci", "fridge-outline"],
-  lavadora: ["mci", "washing-machine"],
-  ventilador: ["mci", "fan"],
-  plancha: ["mci", "iron-outline"],
-  microondas: ["mci", "microwave"],
-  bombillo: ["mci", "lightbulb-outline"],
-  cargador: ["mci", "power-plug-battery-outline"],
-  termometro: ["mci", "thermometer"],
-  etiqueta: ["mci", "tag-outline"],
-  semaforo: ["mci", "traffic-light-outline"],
-  conectado: ["ion", "wifi"],
-  tv: ["ion", "tv"],
-  celular: ["ion", "battery-charging"],
-  hamburguesa: ["ion", "fast-food"],
-  leche: ["mci", "cup-water"],
-} as const satisfies Record<string, readonly ["ion", Ion] | readonly ["mci", Mci]>;
+  inicio: [HouseIcon, "fill"],
+  explorar: [SquaresFourIcon, "fill"],
+  avisos: [BellIcon, "fill"],
+  ajustes: [GearSixIcon, "fill"],
+  inicioLinea: [HouseIcon, "regular"],
+  explorarLinea: [SquaresFourIcon, "regular"],
+  avisosLinea: [BellIcon, "regular"],
+  ajustesLinea: [GearSixIcon, "regular"],
+  casa: [HouseIcon, "fill"],
+  casas: [BuildingsIcon, "fill"],
+  enchufe: [PlugIcon, "fill"],
+  agente: [LaptopIcon, "fill"],
+  rutina: [AlarmIcon, "fill"],
+  factura: [ReceiptIcon, "fill"],
+  medidor: [GaugeIcon, "fill"],
+  prepago: [WalletIcon, "fill"],
+  consejo: [LightbulbIcon, "fill"],
+  simulador: [ArrowsLeftRightIcon, "bold"],
+  ayuda: [QuestionIcon, "fill"],
+  instrucciones: [BookOpenIcon, "fill"],
+  cuenta: [UserCircleIcon, "fill"],
+  salir: [SignOutIcon, "regular"],
+  correo: [EnvelopeIcon, "fill"],
+  ubicacion: [MapPinIcon, "fill"],
+  tarifa: [LightningIcon, "fill"],
+  mas: [PlusCircleIcon, "fill"],
+  ok: [CheckCircleIcon, "fill"],
+  info: [InfoIcon, "fill"],
+  cerrar: [XIcon, "regular"],
+  adelante: [CaretRightIcon, "regular"],
+  abajo: [CaretDownIcon, "regular"],
+  editar: [PencilSimpleIcon, "regular"],
+  borrar: [TrashIcon, "regular"],
+  atras: [CaretLeftIcon, "regular"],
+  rayo: [LightningIcon, "fill"],
+  reloj: [ClockIcon, "regular"],
+  grafica: [ChartBarIcon, "regular"],
+  tendenciaArriba: [TrendUpIcon, "regular"],
+  tendenciaAbajo: [TrendDownIcon, "regular"],
+  candado: [LockIcon, "regular"],
+  escudo: [ShieldCheckIcon, "regular"],
+  calendario: [CalendarBlankIcon, "regular"],
+  dinero: [MoneyIcon, "regular"],
+  hoja: [LeafIcon, "regular"],
+  alerta: [WarningCircleIcon, "fill"],
+  alertaLinea: [WarningCircleIcon, "regular"],
+  infoLinea: [InfoIcon, "regular"],
+  okLinea: [CheckCircleIcon, "regular"],
+  marca: [CheckIcon, "bold"],
+  luna: [MoonIcon, "regular"],
+  sol: [SunIcon, "regular"],
+  chispa: [SparkleIcon, "regular"],
+  estrella: [StarIcon, "regular"],
+  copiar: [CopyIcon, "regular"],
+  compartir: [ExportIcon, "regular"],
+  llave: [KeyIcon, "regular"],
+  nube: [CloudIcon, "regular"],
+  telefono: [DeviceMobileIcon, "regular"],
+  menos: [MinusCircleIcon, "regular"],
+  flechaArriba: [ArrowUpIcon, "regular"],
+  flechaAbajo: [ArrowDownIcon, "regular"],
+  flechaDerecha: [ArrowRightIcon, "regular"],
+  apagar: [PowerIcon, "bold"],
+  ojo: [EyeIcon, "regular"],
+  ojoCerrado: [EyeSlashIcon, "regular"],
+  buscar: [MagnifyingGlassIcon, "regular"],
+  filtro: [SlidersHorizontalIcon, "regular"],
+  refrescar: [ArrowClockwiseIcon, "regular"],
+  enchufeLinea: [PlugIcon, "regular"],
+  agenteLinea: [LaptopIcon, "regular"],
+  rutinaLinea: [AlarmIcon, "regular"],
+  facturaLinea: [ReceiptIcon, "regular"],
+  prepagoLinea: [WalletIcon, "regular"],
+  consejoLinea: [LightbulbIcon, "regular"],
+  casaLinea: [HouseIcon, "regular"],
+  medidorLinea: [GaugeIcon, "regular"],
+  lavadora: [WashingMachineIcon, "regular"],
+  ventilador: [FanIcon, "regular"],
+  plancha: [TShirtIcon, "regular"],
+  microondas: [OvenIcon, "regular"],
+  bombillo: [LightbulbFilamentIcon, "regular"],
+  cargador: [PlugChargingIcon, "regular"],
+  termometro: [ThermometerIcon, "regular"],
+  etiqueta: [TagIcon, "regular"],
+  semaforo: [TrafficSignalIcon, "regular"],
+  conectado: [WifiHighIcon, "fill"],
+  tv: [TelevisionSimpleIcon, "fill"],
+  celular: [BatteryChargingIcon, "fill"],
+  hamburguesa: [HamburgerIcon, "fill"],
+  leche: [DropIcon, "fill"],
+  // Phosphor no tiene nevera: esta viene de Material Design Icons, de trazo parecido.
+  nevera: ["mci", "regular"],
+} as const satisfies Record<string, readonly [IconoPhosphor | "mci", PesoIcono]>;
 
 export type NombreIcono = keyof typeof ICONOS;
 
-type Props = { nombre: NombreIcono; tamano?: number; color?: string };
+/** Glifos de solo líneas, sin zona que rellenar: en duotono se verían raros (el WiFi queda como un abanico), así que van en trazo fino. */
+const SIN_DUOTONO: ReadonlySet<NombreIcono> = new Set<NombreIcono>(["conectado", "marca", "cerrar", "adelante", "abajo", "atras", "flechaArriba", "flechaAbajo", "flechaDerecha", "simulador", "tendenciaArriba", "tendenciaAbajo", "refrescar"]);
 
-export function Icono({ nombre, tamano = 24, color = colores.texto }: Props) {
-  const [familia, glifo] = ICONOS[nombre];
+type Props = { nombre: NombreIcono; tamano?: number; color?: string; peso?: PesoIcono };
+
+export function Icono({ nombre, tamano = 24, color = colores.texto, peso }: Props) {
+  const [Componente, pesoPorOmision] = ICONOS[nombre];
   // Decorativo: el texto de al lado dice lo mismo, así que el lector de pantalla lo salta.
-  const comun = { size: tamano, color, "aria-hidden": true } as const;
-  return familia === "ion" ? <Ionicons name={glifo as Ion} {...comun} /> : <MaterialCommunityIcons name={glifo as Mci} {...comun} />;
+  if (Componente === "mci") return <MaterialCommunityIcons name="fridge-outline" size={tamano} color={color} aria-hidden />;
+  return (
+    <View aria-hidden pointerEvents="none">
+      <Componente size={tamano} color={color} weight={peso === "duotone" && SIN_DUOTONO.has(nombre) ? "regular" : (peso ?? pesoPorOmision)} duotoneOpacity={0.22} />
+    </View>
+  );
 }
 
 /** La "G" de Google con sus cuatro colores oficiales (las marcas se usan tal cual, no se recolorean). */
