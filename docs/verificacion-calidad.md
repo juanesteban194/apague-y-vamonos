@@ -42,6 +42,7 @@ Android e iPhone con la misma cuenta, el programa de Mac vinculado y un enchufe 
 | --- | --- | --- |
 | — | Potencia con bombillo de ___ W | pendiente |
 | — | Costo en vivo vs cálculo manual | pendiente |
+| 2026-10-18 | Enchufe real → agente (vinculado con código, clave subida desde `devices.json`) → API → app | ✅ «ya lo lee bien» (sin medir tiempos) |
 | — | Prender/apagar con enchufe real y programa de Mac | pendiente |
 | — | Ensayo de 30 min (Android) | pendiente |
 | — | Ensayo de 30 min (iPhone) | pendiente |
