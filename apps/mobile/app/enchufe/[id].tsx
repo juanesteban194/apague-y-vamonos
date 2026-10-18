@@ -1,17 +1,20 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
-import { Alert } from "react-native";
+import { Alert, View } from "react-native";
 
 import { useHogarActual } from "@/api/hogar";
 import { useAgentes, useDispositivos } from "@/api/cuenta";
 import { useResumen } from "@/features/consumo/hooks";
 import { actualizarDispositivo, borrarDispositivo } from "@/api/cliente";
 import { Boton } from "@/components/Boton";
+import { iconoDelDispositivo, Introduccion } from "@/components/GestionPiezas";
+import { Icono } from "@/components/Icono";
 import { TarjetaCalibracion } from "@/components/TarjetaCalibracion";
 import { FormularioEnchufe } from "@/components/FormularioEnchufe";
 import { PantallaFormulario } from "@/components/PantallaCompleta";
 import { Texto } from "@/components/Texto";
-import { colores } from "@/theme";
+import { aviso } from "@/lib/haptica";
+import { colores, espacio } from "@/theme";
 
 export default function EditarEnchufe() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -26,6 +29,7 @@ export default function EditarEnchufe() {
   const lecturaActualW = enVivo?.encendido ? (enVivo.potencia_w ?? null) : null; // solo cuenta si está prendido
 
   function confirmarBorrado() {
+    aviso();
     Alert.alert(
       `¿Quitar "${dispositivo!.nombre}"?`,
       "Se borra también su historial de consumo. Esto no se puede deshacer.",
@@ -45,8 +49,8 @@ export default function EditarEnchufe() {
   }
 
   return (
-    <PantallaFormulario>
-      <Texto variante="titulo">Editar enchufe</Texto>
+    <PantallaFormulario centrado={false}>
+      <Introduccion icono={iconoDelDispositivo(dispositivo.tipo_aparato, dispositivo.nombre)} titulo={dispositivo.nombre} texto="Cámbiale el nombre, elige qué agente lo lee y decide cuándo avisarte." />
       <FormularioEnchufe
         inicial={dispositivo}
         agentes={agentes}
@@ -57,9 +61,15 @@ export default function EditarEnchufe() {
           router.back();
         }}
       />
-      <TarjetaCalibracion hogarId={hogar.id} dispositivo={dispositivo} lecturaActualW={lecturaActualW} />
-      <Boton titulo="Quitar enchufe" variante="secundario" onPress={confirmarBorrado} />
-      <Texto variante="secundario" color={colores.textoSecundario}>Quitarlo no lo desempareja de Smart Life.</Texto>
+      <View style={{ marginTop: espacio.l }}>
+        <TarjetaCalibracion hogarId={hogar.id} dispositivo={dispositivo} lecturaActualW={lecturaActualW} />
+      </View>
+      <View style={{ gap: espacio.s, marginTop: espacio.l }}>
+        <Boton titulo="Quitar enchufe" variante="peligro" icono={<Icono nombre="borrar" tamano={20} color={colores.rojo} />} onPress={confirmarBorrado} />
+        <Texto variante="secundario" color={colores.textoSecundario} style={{ textAlign: "center" }}>
+          Quitarlo de la app no lo desempareja de Smart Life.
+        </Texto>
+      </View>
     </PantallaFormulario>
   );
 }

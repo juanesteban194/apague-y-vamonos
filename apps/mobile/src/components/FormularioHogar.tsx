@@ -2,11 +2,13 @@ import { useState } from "react";
 
 import type { Hogar } from "@/api/tipos";
 import { ErrorApi } from "@/api/cliente";
+import { exito } from "@/lib/haptica";
 import { OPCIONES_ESTRATO, OPCIONES_MEDIDOR } from "@/lib/textos";
 import { colores } from "@/theme";
 
 import { Boton } from "./Boton";
 import { Campo } from "./Campo";
+import { SeccionFormulario } from "./GestionPiezas";
 import { Selector } from "./Selector";
 import { Texto } from "./Texto";
 
@@ -14,7 +16,7 @@ export type DatosHogar = { nombre: string; barrio: string | null; estrato: numbe
 
 type Props = { inicial?: Hogar; etiquetaBoton: string; alEnviar: (datos: DatosHogar) => Promise<void> };
 
-/** Nombre, barrio, estrato y medidor: lo usan la creación del hogar y su edición. */
+/** Nombre, barrio, estrato y medidor: lo usan la creación del hogar y su edición. Dos grupos: cómo la reconoces y lo que dice tu factura. */
 export function FormularioHogar({ inicial, etiquetaBoton, alEnviar }: Props) {
   const [nombre, setNombre] = useState(inicial?.nombre ?? "");
   const [barrio, setBarrio] = useState(inicial?.barrio ?? "");
@@ -28,8 +30,9 @@ export function FormularioHogar({ inicial, etiquetaBoton, alEnviar }: Props) {
     setCargando(true);
     try {
       await alEnviar({ nombre: nombre.trim(), barrio: barrio.trim() || null, estrato: estrato!, tipo_medidor: medidor });
+      exito();
     } catch (e) {
-      setError(e instanceof ErrorApi ? e.message : "No se pudo guardar. Intenta de nuevo.");
+      setError(e instanceof ErrorApi ? e.message : "No pudimos guardar. Revisa tu conexión e intenta de nuevo.");
     } finally {
       setCargando(false);
     }
@@ -37,12 +40,16 @@ export function FormularioHogar({ inicial, etiquetaBoton, alEnviar }: Props) {
 
   return (
     <>
-      <Campo etiqueta="Nombre de la casa" placeholder="Mi casa" value={nombre} onChangeText={setNombre} />
-      <Campo etiqueta="Barrio (opcional)" value={barrio} onChangeText={setBarrio} />
-      <Selector etiqueta="Estrato" opciones={OPCIONES_ESTRATO.map((e) => ({ valor: e, titulo: String(e) }))} valor={estrato} alCambiar={setEstrato} />
-      <Selector etiqueta="Tipo de medidor (opcional)" opciones={OPCIONES_MEDIDOR} valor={medidor} alCambiar={setMedidor} />
+      <SeccionFormulario titulo="La casa">
+        <Campo etiqueta="Nombre de la casa" placeholder="Mi casa" value={nombre} onChangeText={setNombre} />
+        <Campo etiqueta="Barrio (opcional)" placeholder="Manrique, Belén…" value={barrio} onChangeText={setBarrio} />
+      </SeccionFormulario>
+      <SeccionFormulario titulo="Lo que dice tu factura" nota="Con el estrato sabemos qué tarifa de EPM te cobran. Lo encuentras en tu factura.">
+        <Selector etiqueta="Estrato" opciones={OPCIONES_ESTRATO.map((e) => ({ valor: e, titulo: String(e) }))} valor={estrato} alCambiar={setEstrato} />
+        <Selector etiqueta="Tipo de medidor (opcional)" opciones={OPCIONES_MEDIDOR} valor={medidor} alCambiar={setMedidor} />
+      </SeccionFormulario>
       {error && (
-        <Texto accessibilityRole="alert" color={colores.rojo} style={{ fontWeight: "600" }}>
+        <Texto accessibilityRole="alert" color={colores.rojo} style={{ fontWeight: "500" }}>
           {error}
         </Texto>
       )}

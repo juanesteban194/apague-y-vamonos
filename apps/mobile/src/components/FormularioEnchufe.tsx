@@ -2,11 +2,13 @@ import { useState } from "react";
 
 import { ErrorApi } from "@/api/cliente";
 import type { Agente, Dispositivo } from "@/api/tipos";
+import { exito } from "@/lib/haptica";
 import { colores } from "@/theme";
 
 import { Boton } from "./Boton";
 import { Campo } from "./Campo";
 import { Casilla } from "./Casilla";
+import { SeccionFormulario } from "./GestionPiezas";
 import { Selector } from "./Selector";
 import { Texto } from "./Texto";
 
@@ -23,7 +25,8 @@ type Props = { inicial?: Dispositivo; agentes?: Agente[]; etiquetaBoton: string;
 
 const SIN_AGENTE = "ninguno";
 
-/** Alta y edición de un enchufe. El ID de Tuya es el vínculo con el enchufe físico: solo se escribe al crearlo. */
+/** Alta y edición de un enchufe, en tres grupos: el enchufe, quién lo lee y los avisos.
+ *  El ID de Tuya es el vínculo con el enchufe físico: solo se escribe al crearlo. */
 export function FormularioEnchufe({ inicial, agentes = [], etiquetaBoton, alEnviar }: Props) {
   const [nombre, setNombre] = useState(inicial?.nombre ?? "");
   const [tuyaId, setTuyaId] = useState(inicial?.tuya_id ?? "");
@@ -50,8 +53,9 @@ export function FormularioEnchufe({ inicial, agentes = [], etiquetaBoton, alEnvi
         umbral_minutos_encendido: altoRiesgo ? minutosNumero : null,
         agente_id: agenteId === SIN_AGENTE ? null : agenteId,
       });
+      exito();
     } catch (e) {
-      setError(e instanceof ErrorApi ? e.message : "No se pudo guardar. Intenta de nuevo.");
+      setError(e instanceof ErrorApi ? e.message : "No pudimos guardar. Revisa tu conexión e intenta de nuevo.");
     } finally {
       setCargando(false);
     }
@@ -59,42 +63,52 @@ export function FormularioEnchufe({ inicial, agentes = [], etiquetaBoton, alEnvi
 
   return (
     <>
-      <Campo etiqueta="Nombre" placeholder="Nevera, ventilador…" value={nombre} onChangeText={setNombre} />
-      <Campo
-        etiqueta="ID del dispositivo en Tuya"
-        ayuda={inicial ? "El ID no se puede cambiar." : "En Smart Life: toca el enchufe, el lápiz o los tres puntos, Información del dispositivo, ID del dispositivo."}
-        autoCapitalize="none"
-        autoCorrect={false}
-        editable={!inicial}
-        value={tuyaId}
-        onChangeText={setTuyaId}
-      />
+      <SeccionFormulario titulo="El enchufe">
+        <Campo etiqueta="Nombre" placeholder="Nevera, ventilador…" value={nombre} onChangeText={setNombre} />
+        <Campo etiqueta="Qué tienes conectado (opcional)" placeholder="Nevera, televisor…" value={tipo} onChangeText={setTipo} />
+        <Campo
+          etiqueta="ID del dispositivo en Tuya"
+          ayuda={inicial ? "El ID no se puede cambiar." : "En Smart Life: toca el enchufe, luego el lápiz o los tres puntos, «Información del dispositivo» e «ID del dispositivo»."}
+          autoCapitalize="none"
+          autoCorrect={false}
+          editable={!inicial}
+          value={tuyaId}
+          onChangeText={setTuyaId}
+          style={inicial ? { color: colores.textoSecundario } : undefined}
+        />
+      </SeccionFormulario>
+
       {agentes.length > 0 && (
-        <>
+        <SeccionFormulario
+          titulo="Quién lo lee"
+          nota="Solo ese agente manda sus lecturas y puede prenderlo o apagarlo; debe estar en la misma WiFi del enchufe. Con «Ninguno», lo toma el primer agente que lo lea."
+        >
           <Selector
             etiqueta="¿Qué agente lo lee?"
             opciones={[{ valor: SIN_AGENTE, titulo: "Ninguno" }, ...agentes.map((a) => ({ valor: a.id, titulo: a.nombre }))]}
             valor={agenteId}
             alCambiar={setAgenteId}
           />
-          <Texto variante="secundario" color={colores.textoSecundario}>
-            Solo ese agente manda sus lecturas y lo puede prender o apagar. Debe estar en la misma WiFi del enchufe. «Ninguno»: lo toma el primer agente que lo lea.
-          </Texto>
-        </>
+        </SeccionFormulario>
       )}
-      <Campo etiqueta="Qué tienes conectado (opcional)" placeholder="Nevera, televisor…" value={tipo} onChangeText={setTipo} />
-      <Casilla marcada={altoRiesgo} alCambiar={setAltoRiesgo} texto="Avisarme si se queda encendido demasiado tiempo (dispositivo de alto riesgo)" />
-      {altoRiesgo && (
-        <Campo
-          etiqueta="Minutos encendido antes de avisar"
-          keyboardType="number-pad"
-          value={minutos}
-          onChangeText={setMinutos}
-          ayuda={minutosInvalidos ? "Escribe un número entero mayor que 0." : undefined}
-        />
-      )}
+
+      <SeccionFormulario titulo="Avisos">
+        <Casilla marcada={altoRiesgo} alCambiar={setAltoRiesgo} texto="Avisarme si se queda encendido demasiado tiempo (dispositivo de alto riesgo)" />
+        {altoRiesgo && (
+          <Campo
+            etiqueta="Minutos encendido antes de avisar"
+            keyboardType="number-pad"
+            placeholder="45"
+            value={minutos}
+            onChangeText={setMinutos}
+            error={minutosInvalidos}
+            ayuda={minutosInvalidos ? "Escribe un número entero mayor que 0." : undefined}
+          />
+        )}
+      </SeccionFormulario>
+
       {error && (
-        <Texto accessibilityRole="alert" color={colores.rojo} style={{ fontWeight: "600" }}>
+        <Texto accessibilityRole="alert" color={colores.rojo} style={{ fontWeight: "500" }}>
           {error}
         </Texto>
       )}
