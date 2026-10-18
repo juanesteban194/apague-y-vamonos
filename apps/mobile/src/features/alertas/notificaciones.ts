@@ -1,8 +1,8 @@
 import Constants from "expo-constants";
-import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
 import { registrarTokenPush } from "@/api/cliente";
+import { notificaciones } from "@/lib/notificacionesSeguras";
 import type { EventoAlerta } from "@/realtime/eventos";
 import { useTiempoReal } from "@/realtime/estado";
 
@@ -13,6 +13,8 @@ export const ACCION_APAGAR = "apagar";
 
 /** Configura cómo se muestran las notificaciones y crea el canal y el botón "Apagar". Seguro de llamar varias veces. */
 export async function prepararNotificaciones(): Promise<void> {
+  const Notifications = notificaciones();
+  if (!Notifications) return; // Expo Go en Android: sin notificaciones del sistema, los avisos se ven dentro de la app
   Notifications.setNotificationHandler({
     handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: false }),
   });
@@ -25,6 +27,8 @@ export async function prepararNotificaciones(): Promise<void> {
 }
 
 export async function tienePermiso(pedir = false): Promise<boolean> {
+  const Notifications = notificaciones();
+  if (!Notifications) return false;
   const actual = await Notifications.getPermissionsAsync();
   if (actual.granted) return true;
   if (!pedir || !actual.canAskAgain) return false;
@@ -38,6 +42,8 @@ export async function tienePermiso(pedir = false): Promise<boolean> {
  */
 export async function registrarPush(): Promise<boolean> {
   try {
+    const Notifications = notificaciones();
+    if (!Notifications) return false;
     const proyecto = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
     if (!proyecto || !(await tienePermiso(true))) return false;
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId: proyecto });
@@ -51,7 +57,8 @@ export async function registrarPush(): Promise<boolean> {
 
 /** Notificación local por un aviso que llegó con la app abierta (si hay push remoto activo, ya la mostró el sistema). */
 export async function mostrarAvisoLocal(evento: EventoAlerta): Promise<void> {
-  if (useTiempoReal.getState().pushActivo || !(await tienePermiso(false))) return;
+  const Notifications = notificaciones();
+  if (!Notifications || useTiempoReal.getState().pushActivo || !(await tienePermiso(false))) return;
   await Notifications.scheduleNotificationAsync({
     identifier: evento.id,
     content: {

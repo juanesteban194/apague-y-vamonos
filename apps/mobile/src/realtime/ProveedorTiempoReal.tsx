@@ -1,9 +1,9 @@
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
-import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import { useEffect } from "react";
 
 import { apagarDispositivo } from "@/api/cliente";
+import { notificaciones } from "@/lib/notificacionesSeguras";
 import { aplicarEvento } from "@/features/consumo/tiempoReal";
 import { ACCION_APAGAR, mostrarAvisoLocal, prepararNotificaciones, registrarPush } from "@/features/alertas/notificaciones";
 
@@ -29,6 +29,8 @@ export function ProveedorTiempoReal({ hogarId }: { hogarId: string }) {
 
   useEffect(() => {
     void prepararNotificaciones().then(registrarPush).catch(() => {});
+    const Notifications = notificaciones();
+    if (!Notifications) return; // sin notificaciones del sistema (Expo Go en Android): nada que escuchar
     const suscripcion = Notifications.addNotificationResponseReceivedListener((respuesta) => {
       const datos = respuesta.notification.request.content.data as { dispositivo_id?: string | null };
       if (respuesta.actionIdentifier === ACCION_APAGAR && datos.dispositivo_id) {

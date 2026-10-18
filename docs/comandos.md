@@ -167,6 +167,7 @@ git log --oneline -10
 | `npm install` falla con "no package.json" | Estás en la raíz: `cd $P/apps/mobile` |
 | `node`/`docker` no se reconocen | Terminal nueva o el `export PATH=…` de arriba |
 | «Cannot connect to the Docker daemon» | `open -a Docker` y espera ~10 s antes de `docker compose up -d` |
+| En Android con Expo Go sale «Render Error: Cannot read property 'ErrorBoundary' of undefined» o «expo-notifications: Android Push notifications … removed from Expo Go» | Arreglado el 18-oct (la app ya no carga esa librería en Expo Go de Android). Recarga: sacude el teléfono → *Reload*, o `npx expo start -c`. En Expo Go de Android no hay notificaciones del sistema: los avisos se ven dentro de la app; el push con la app cerrada necesita el development build (Fase 7) |
 | Expo Go no abre el proyecto | Misma WiFi, sin datos móviles, permiso *Red local* en iPhone; si no, `npm run start:tunnel` |
 | El agente dice «no responde» | Estás en otra WiFi que el enchufe: conéctate a la del enchufe o usa `--simular` |
 | Smart Life ve el enchufe «En línea» pero el agente no lo lee (el ping a su IP falla y `tools/01_escanear_red.py` no lo encuentra) | Pasó el 18-oct: el enchufe seguía conectado a la nube pero había dejado de contestar en la red local. **Desenchúfalo 10 s, vuélvelo a enchufar, espera 1 min** y repite el escaneo; si no, reinicia el router. La IP que muestra Smart Life en «Información del dispositivo» es la **pública** (igual a la de tu Mac): no sirve para esto. **No lo reempares sin necesidad**: cambia su clave local |
