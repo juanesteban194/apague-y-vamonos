@@ -1,18 +1,21 @@
 import { Tabs } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useHogarActual } from "@/api/hogar";
 import { Icono, type NombreIcono } from "@/components/Icono";
 import { useAlertas } from "@/features/alertas/hooks";
-import { colores } from "@/theme";
+import { BORDE_FINO, colores, fuentes } from "@/theme";
 
-const pestanas: { nombre: string; titulo: string; icono: NombreIcono }[] = [
-  { nombre: "index", titulo: "Inicio", icono: "inicio" },
-  { nombre: "explorar", titulo: "Explorar", icono: "explorar" },
-  { nombre: "avisos", titulo: "Avisos", icono: "avisos" },
-  { nombre: "ajustes", titulo: "Ajustes", icono: "ajustes" },
+// Elegida: ícono lleno; sin elegir: solo el contorno (como en iOS).
+const pestanas: { nombre: string; titulo: string; icono: NombreIcono; linea: NombreIcono }[] = [
+  { nombre: "index", titulo: "Inicio", icono: "inicio", linea: "inicioLinea" },
+  { nombre: "explorar", titulo: "Explorar", icono: "explorar", linea: "explorarLinea" },
+  { nombre: "avisos", titulo: "Avisos", icono: "avisos", linea: "avisosLinea" },
+  { nombre: "ajustes", titulo: "Ajustes", icono: "ajustes", linea: "ajustesLinea" },
 ];
 
 export default function TabsLayout() {
+  const margen = useSafeAreaInsets();
   const { hogar } = useHogarActual();
   const { data: avisos } = useAlertas(hogar?.id);
   const sinLeer = avisos?.filter((a) => !a.leida).length ?? 0;
@@ -22,8 +25,9 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colores.primario,
         tabBarInactiveTintColor: colores.textoSecundario,
-        tabBarLabelStyle: { fontSize: 15, fontWeight: "600" }, // texto ≥ 15 px
-        tabBarStyle: { height: 68, paddingTop: 6 },
+        tabBarLabelStyle: { fontSize: 15, fontFamily: fuentes.media }, // texto ≥ 15 px
+        // Alto pensado para etiquetas de 15 px (el valor por omisión las corta), más la zona segura de abajo del teléfono.
+        tabBarStyle: { backgroundColor: colores.fondoElevado, borderTopWidth: BORDE_FINO, borderTopColor: colores.borde, paddingTop: 8, height: 72 + margen.bottom, paddingBottom: margen.bottom + 10 },
         tabBarItemStyle: { minHeight: 44 },
       }}
     >
@@ -33,9 +37,9 @@ export default function TabsLayout() {
           name={p.nombre}
           options={{
             title: p.titulo,
-            tabBarIcon: ({ color }) => <Icono nombre={p.icono} tamano={26} color={String(color)} />,
+            tabBarIcon: ({ color, focused }) => <Icono nombre={focused ? p.icono : p.linea} tamano={24} color={String(color)} />,
             tabBarBadge: p.nombre === "avisos" && sinLeer > 0 ? sinLeer : undefined,
-            tabBarBadgeStyle: { backgroundColor: colores.semaforoRojo, fontSize: 15 },
+            tabBarBadgeStyle: { backgroundColor: colores.semaforoRojo, fontSize: 15, fontFamily: fuentes.seminegrita },
           }}
         />
       ))}

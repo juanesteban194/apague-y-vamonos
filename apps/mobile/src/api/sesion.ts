@@ -1,4 +1,4 @@
-import * as SecureStore from "expo-secure-store";
+import * as almacen from "@/lib/almacen";
 import { create } from "zustand";
 
 import { API_URL } from "@/lib/config";
@@ -20,8 +20,8 @@ export const useSesion = create<Estado>(() => ({ cargada: false, accessToken: nu
 export async function cargarSesion(): Promise<void> {
   try {
     const [accessToken, refreshToken] = await Promise.all([
-      SecureStore.getItemAsync(CLAVE_ACCESO),
-      SecureStore.getItemAsync(CLAVE_RENOVACION),
+      almacen.leer(CLAVE_ACCESO),
+      almacen.leer(CLAVE_RENOVACION),
     ]);
     useSesion.setState({ accessToken, refreshToken, cargada: true });
   } catch {
@@ -32,14 +32,14 @@ export async function cargarSesion(): Promise<void> {
 export async function guardarTokens(t: Pick<Tokens, "access_token" | "refresh_token">): Promise<void> {
   useSesion.setState({ accessToken: t.access_token, refreshToken: t.refresh_token });
   await Promise.all([
-    SecureStore.setItemAsync(CLAVE_ACCESO, t.access_token),
-    SecureStore.setItemAsync(CLAVE_RENOVACION, t.refresh_token),
+    almacen.guardar(CLAVE_ACCESO, t.access_token),
+    almacen.guardar(CLAVE_RENOVACION, t.refresh_token),
   ]);
 }
 
 export async function cerrarSesion(): Promise<void> {
   useSesion.setState({ accessToken: null, refreshToken: null });
-  await Promise.all([SecureStore.deleteItemAsync(CLAVE_ACCESO), SecureStore.deleteItemAsync(CLAVE_RENOVACION)]);
+  await Promise.all([almacen.borrar(CLAVE_ACCESO), almacen.borrar(CLAVE_RENOVACION)]);
 }
 
 function venceEn(token: string): number {

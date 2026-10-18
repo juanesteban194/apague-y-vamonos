@@ -1,4 +1,4 @@
-import * as SecureStore from "expo-secure-store";
+import * as almacen from "@/lib/almacen";
 import { create } from "zustand";
 
 import type { NombreTema } from "./temas";
@@ -10,7 +10,7 @@ export const useAyudaVista = create<{ cargada: boolean; vistas: string[] }>(() =
 
 export async function cargarAyudaVista(): Promise<void> {
   try {
-    const crudo = await SecureStore.getItemAsync(CLAVE);
+    const crudo = await almacen.leer(CLAVE);
     useAyudaVista.setState({ cargada: true, vistas: crudo ? (JSON.parse(crudo) as string[]) : [] });
   } catch {
     useAyudaVista.setState({ cargada: true, vistas: [] });
@@ -20,7 +20,7 @@ export async function cargarAyudaVista(): Promise<void> {
 async function guardar(vistas: string[]) {
   useAyudaVista.setState({ vistas });
   try {
-    await SecureStore.setItemAsync(CLAVE, JSON.stringify(vistas));
+    await almacen.guardar(CLAVE, JSON.stringify(vistas));
   } catch {
     // sin almacenamiento la sugerencia vuelve a salir la próxima vez: molesta poco, no rompe nada
   }

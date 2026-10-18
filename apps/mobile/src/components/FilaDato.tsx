@@ -1,6 +1,6 @@
 import { View } from "react-native";
 
-import { colores } from "@/theme";
+import { BORDE_FINO, colores } from "@/theme";
 
 import { Texto } from "./Texto";
 
@@ -10,17 +10,17 @@ export function FilaDato({ etiqueta, detalle, valor, ultima }: { etiqueta: strin
     <View
       accessible
       accessibilityLabel={`${etiqueta}: ${valor}. ${detalle}`}
-      style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, paddingVertical: 14, borderBottomWidth: ultima ? 0 : 1, borderBottomColor: colores.borde }}
+      style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, paddingVertical: 14, borderBottomWidth: ultima ? 0 : BORDE_FINO, borderBottomColor: colores.separador }}
     >
       <View style={{ flex: 1 }}>
-        <Texto variante="cuerpo" style={{ fontWeight: "700" }}>
+        <Texto variante="cuerpo" style={{ fontWeight: "500" }}>
           {etiqueta}
         </Texto>
         <Texto variante="secundario" color={colores.textoSecundario}>
           {detalle}
         </Texto>
       </View>
-      <Texto variante="cuerpo" style={{ fontWeight: "800", textAlign: "right", maxWidth: "45%" }}>
+      <Texto variante="cuerpo" style={{ fontWeight: "600", textAlign: "right", maxWidth: "45%" }}>
         {valor}
       </Texto>
     </View>

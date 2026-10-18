@@ -10,6 +10,7 @@ type Entorno = { plataforma: string; ejecucion: string | undefined };
  *  (o si falla al cargar) devuelve null y la app sigue con los avisos dentro de ella, sin notificaciones del sistema. */
 export function cargarNotificaciones(entorno: Entorno, requerir: () => ModuloNotificaciones): ModuloNotificaciones | null {
   if (entorno.plataforma === "android" && entorno.ejecucion === ExecutionEnvironment.StoreClient) return null; // Expo Go en Android
+  if (entorno.plataforma === "web") return null; // la vitrina de diseño en el navegador: sin notificaciones del sistema
   try {
     return requerir();
   } catch {

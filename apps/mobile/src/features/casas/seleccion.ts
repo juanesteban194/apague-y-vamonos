@@ -1,4 +1,4 @@
-import * as SecureStore from "expo-secure-store";
+import * as almacen from "@/lib/almacen";
 import { create } from "zustand";
 
 import type { Hogar } from "@/api/tipos";
@@ -10,7 +10,7 @@ export const useCasaSeleccionada = create<{ id: string | null }>(() => ({ id: nu
 
 export async function cargarCasaSeleccionada(): Promise<void> {
   try {
-    useCasaSeleccionada.setState({ id: await SecureStore.getItemAsync(CLAVE) });
+    useCasaSeleccionada.setState({ id: await almacen.leer(CLAVE) });
   } catch {
     useCasaSeleccionada.setState({ id: null });
   }
@@ -19,8 +19,8 @@ export async function cargarCasaSeleccionada(): Promise<void> {
 export async function elegirCasa(id: string | null): Promise<void> {
   useCasaSeleccionada.setState({ id });
   try {
-    if (id) await SecureStore.setItemAsync(CLAVE, id);
-    else await SecureStore.deleteItemAsync(CLAVE);
+    if (id) await almacen.guardar(CLAVE, id);
+    else await almacen.borrar(CLAVE);
   } catch {
     // sin almacenamiento solo se pierde el recuerdo: la casa elegida sigue valiendo en esta sesión
   }

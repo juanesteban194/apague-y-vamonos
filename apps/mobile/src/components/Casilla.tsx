@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Pressable, View } from "react-native";
 
 import { AREA_TOQUE_MIN, colores, espacio } from "@/theme";
@@ -7,7 +6,7 @@ import { Texto } from "./Texto";
 
 type Props = { marcada: boolean; alCambiar: (marcada: boolean) => void; texto: string };
 
-/** Casilla con texto: toda la fila es tocable (≥ 44 px). */
+/** Casilla con texto: toda la fila es tocable (≥ 44 px). Cuadro redondeado de borde fino; marcada, se llena de tinta. */
 export function Casilla({ marcada, alCambiar, texto }: Props) {
   return (
     <Pressable
@@ -19,18 +18,18 @@ export function Casilla({ marcada, alCambiar, texto }: Props) {
     >
       <View
         style={{
-          width: 28,
-          height: 28,
-          borderRadius: 6,
-          borderWidth: 2,
-          borderColor: marcada ? colores.primario : colores.textoSecundario,
+          width: 24,
+          height: 24,
+          borderRadius: 7,
+          borderWidth: marcada ? 0 : 1.5,
+          borderColor: colores.bordeFuerte,
           backgroundColor: marcada ? colores.primario : colores.tarjeta,
           alignItems: "center",
           justifyContent: "center",
-          marginTop: 2,
+          marginTop: 1,
         }}
       >
-        {marcada && <Ionicons name="checkmark" size={20} color={colores.sobrePrimario} />}
+        {marcada && <Texto variante="secundario" color={colores.sobrePrimario} style={{ fontWeight: "700", lineHeight: 18 }}>✓</Texto>}
       </View>
       <Texto variante="secundario" style={{ flex: 1 }}>
         {texto}

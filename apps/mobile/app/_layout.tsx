@@ -3,7 +3,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, LogBox, Platform, View } from "react-native";
 
 import { cerrarSesion } from "@/api/cliente";
 import { pasoDeNavegacion, useHogares, usePerfil } from "@/api/cuenta";
@@ -15,15 +15,29 @@ import { cargarCasaSeleccionada, casaVigente, elegirCasa, useCasaSeleccionada } 
 import { ProveedorTiempoReal } from "@/realtime/ProveedorTiempoReal";
 import { Boton } from "@/components/Boton";
 import { Texto } from "@/components/Texto";
-import { colores, espacio } from "@/theme";
+import { API_URL } from "@/lib/config";
+import { colores, espacio, fuentes } from "@/theme";
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, useFonts } from "@expo-google-fonts/inter";
 
 SplashScreen.preventAutoHideAsync();
+
+// En la vitrina de diseño (scripts/vitrina) los avisos de desarrollo taparían las capturas.
+if (Platform.OS === "web" && API_URL.includes("api.vitrina")) LogBox.ignoreAllLogs();
 
 export const clienteConsultas = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 10_000 } },
 });
 
-const opcionesCabecera = { headerShown: true, headerBackTitle: "Atrás", headerTitleStyle: { fontSize: 18 } } as const;
+/** Cabecera de las pantallas internas: sin línea ni sombra, del color del fondo, título en Inter seminegrita y flecha de volver en tinta. */
+const opcionesCabecera = {
+  headerShown: true,
+  headerBackTitle: "Atrás",
+  headerTintColor: colores.texto,
+  headerShadowVisible: false,
+  headerStyle: { backgroundColor: colores.fondo },
+  headerTitleStyle: { fontFamily: fuentes.seminegrita, fontSize: 17, color: colores.texto },
+  headerBackTitleStyle: { fontFamily: fuentes.media, fontSize: 17 },
+} as const;
 /** Cabecera de una sección con su botón «?». */
 const conAyuda = (title: string, tema: NombreTema) => ({ ...opcionesCabecera, title, headerRight: () => <BotonAyuda tema={tema} /> });
 
@@ -60,9 +74,12 @@ function Navegacion() {
     void cargarCasaSeleccionada();
     void cargarAyudaVista();
   }, []);
+  // La fuente se carga con la sesión; si fallara, la app sigue con la del sistema (no se queda en la pantalla de inicio).
+  const [fuentesListas, errorFuentes] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold });
+  const listo = cargada && (fuentesListas || !!errorFuentes);
   useEffect(() => {
-    if (cargada) void SplashScreen.hideAsync();
-  }, [cargada]);
+    if (listo) void SplashScreen.hideAsync();
+  }, [listo]);
   useEffect(() => {
     if (cargada && !autenticado) {
       clienteConsultas.clear(); // al salir no queda nada del hogar anterior
@@ -70,7 +87,7 @@ function Navegacion() {
     }
   }, [cargada, autenticado]);
 
-  if (!cargada) return null;
+  if (!listo) return null;
   if (paso === "cargando") {
     const error = perfil.error ?? hogares.error;
     return <Cargando error={error} alReintentar={() => void (perfil.data ? hogares.refetch() : perfil.refetch())} />;

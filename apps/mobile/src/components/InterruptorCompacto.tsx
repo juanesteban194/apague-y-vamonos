@@ -25,16 +25,16 @@ export function InterruptorCompacto({ nombre, encendido, cargando, alCambiar }: 
     >
       <View
         style={{
-          width: 64,
-          height: 36,
-          borderRadius: 18,
+          width: 52,
+          height: 32,
+          borderRadius: 16,
           padding: 3,
           justifyContent: "center",
           alignItems: prendido ? "flex-end" : "flex-start",
           backgroundColor: prendido ? colores.semaforoVerde : colores.interruptorApagado,
         }}
       >
-        <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center" }}>
+        <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", boxShadow: "0px 2px 4px rgba(0,0,0,0.12)" }}>
           {cargando && <ActivityIndicator size="small" color={colores.textoSecundario} />}
         </View>
       </View>

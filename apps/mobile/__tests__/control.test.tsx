@@ -39,7 +39,7 @@ describe("Interruptor del dispositivo", () => {
     await renderizar(<Dispositivo />);
     expect((await interruptor()).props.accessibilityState.checked).toBe(true);
     expect(screen.getByText("Está prendido")).toBeTruthy();
-    expect(screen.getByText("Toque para apagarlo desde aquí")).toBeTruthy();
+    expect(screen.getByText("Toca para apagarlo desde aquí")).toBeTruthy();
   });
 
   it("apagar: llama a la API y la pantalla pasa a 'Está apagado'", async () => {
@@ -48,7 +48,7 @@ describe("Interruptor del dispositivo", () => {
     await fireEvent.press(await interruptor());
     await waitFor(() => expect(ordenes()).toEqual(["/dispositivos/d1/apagar"]));
     expect(await screen.findByText("Está apagado")).toBeTruthy();
-    expect(screen.getByText("Toque para prenderlo desde aquí")).toBeTruthy();
+    expect(screen.getByText("Toca para prenderlo desde aquí")).toBeTruthy();
   });
 
   it("prender cuando está apagado usa /encender", async () => {

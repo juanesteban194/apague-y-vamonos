@@ -14,15 +14,15 @@ type Props = {
   ayudaApagado?: string;
 };
 
-/** Interruptor grande (mockup: "Está prendido · Toque para apagarlo desde aquí"). Toda la fila es el área de toque. */
+/** Interruptor grande (mockup: «Está prendido · Toca para apagarlo desde aquí»). Toda la fila es el área de toque. */
 export function Interruptor({
   encendido,
   cargando,
   alCambiar,
   etiquetaEncendido = "Está prendido",
   etiquetaApagado = "Está apagado",
-  ayudaEncendido = "Toque para apagarlo desde aquí",
-  ayudaApagado = "Toque para prenderlo desde aquí",
+  ayudaEncendido = "Toca para apagarlo desde aquí",
+  ayudaApagado = "Toca para prenderlo desde aquí",
 }: Props) {
   const sinDatos = encendido == null;
   const prendido = encendido === true;
@@ -50,16 +50,16 @@ export function Interruptor({
       </View>
       <View
         style={{
-          width: 64,
-          height: 38,
-          borderRadius: 19,
-          padding: 4,
+          width: 56,
+          height: 34,
+          borderRadius: 17,
+          padding: 3,
           justifyContent: "center",
           alignItems: prendido ? "flex-end" : "flex-start",
           backgroundColor: prendido ? colores.semaforoVerde : colores.interruptorApagado,
         }}
       >
-        <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center" }}>
+        <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", boxShadow: "0px 2px 4px rgba(0,0,0,0.12)" }}>
           {cargando && <ActivityIndicator size="small" color={colores.textoSecundario} />}
         </View>
       </View>
