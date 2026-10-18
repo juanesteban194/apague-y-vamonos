@@ -24,7 +24,7 @@ export const POLITICA: SeccionPolitica[] = [
     puntos: [
       "Tu cuenta: nombre, correo y, si entras con Google, el identificador de tu cuenta de Google. Tu contraseña se guarda cifrada (nunca en texto legible).",
       "Tu casa: nombre, barrio, estrato y tipo de medidor (prepago o pospago).",
-      "El consumo de tus aparatos: potencia, voltaje, corriente y si el enchufe está prendido o apagado, con fecha y hora, medidos por tus enchufes inteligentes.",
+      "El consumo de tus dispositivos: potencia, voltaje, corriente y si el enchufe está prendido o apagado, con fecha y hora, medidos por tus enchufes inteligentes.",
       "Lo que tú anotas: lecturas del medidor, el histórico de tus facturas de EPM, el saldo de tu medidor prepago, tus rutinas de apagado y tus preferencias de avisos.",
       "El código de tu celular para enviarte notificaciones (si las activas).",
       "No pedimos datos sensibles (salud, origen, ideología, biométricos) ni datos de menores de edad.",
@@ -33,9 +33,9 @@ export const POLITICA: SeccionPolitica[] = [
   {
     titulo: "Para qué los usamos",
     puntos: [
-      "Calcular cuánta energía gastan tus aparatos y cuánto cuesta en pesos con la tarifa de EPM de tu estrato.",
-      "Avisarte de consumos altos, de aparatos que llevan mucho tiempo prendidos, de que te acercas a la línea de subsistencia o de que se acaba tu saldo prepago.",
-      "Darte recomendaciones de ahorro y simular si te conviene cambiar un aparato.",
+      "Calcular cuánta energía gastan tus dispositivos y cuánto cuesta en pesos con la tarifa de EPM de tu estrato.",
+      "Avisarte de consumos altos, de dispositivos que llevan mucho tiempo prendidos, de que te acercas a la línea de subsistencia o de que se acaba tu saldo prepago.",
+      "Darte recomendaciones de ahorro y simular si te conviene cambiar un dispositivo.",
       "Prender y apagar tus enchufes cuando tú lo pides o cuando programas una rutina.",
       "Mantener tu cuenta y la seguridad de la aplicación.",
       "No vendemos tus datos ni los usamos para publicidad.",

@@ -25,7 +25,7 @@ def horas_apagado(apagado: time, encendido: time) -> float:
 
 
 def potencia_media_encendido(db: Session, dispositivo_id: uuid.UUID, ahora: datetime) -> float | None:
-    """Vatios promedio del aparato mientras estuvo consumiendo en los últimos 7 días (para estimar lo que ahorra apagarlo)."""
+    """Vatios promedio del dispositivo mientras estuvo consumiendo en los últimos 7 días (para estimar lo que ahorra apagarlo)."""
     return db.scalar(
         select(func.avg(Lectura.potencia_w)).where(
             Lectura.dispositivo_id == dispositivo_id, Lectura.fecha_hora >= ahora - timedelta(days=DIAS_PARA_POTENCIA), Lectura.encendido.is_(True), Lectura.potencia_w > 0
@@ -62,7 +62,7 @@ def _salida(db: Session, rutina: Rutina, dispositivo: Dispositivo, ahora: dateti
 def _dispositivo_del_hogar(db: Session, hogar_id: uuid.UUID, dispositivo_id: uuid.UUID) -> Dispositivo:
     d = db.get(Dispositivo, dispositivo_id)
     if d is None or d.hogar_id != hogar_id:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Ese aparato no es de tu hogar")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Ese dispositivo no es de tu casa")
     return d
 
 

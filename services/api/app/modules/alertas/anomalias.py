@@ -1,6 +1,6 @@
-"""Aviso de consumo anómalo por aparato: "la nevera gastó 18 % más ayer de lo normal".
+"""Aviso de consumo anómalo por dispositivo: "la nevera gastó 18 % más ayer de lo normal".
 
-Lo normal de un aparato es la mediana de lo que gastó en los 7 días anteriores a ayer (la mediana no se deja torcer por un día raro).
+Lo normal de un dispositivo es la mediana de lo que gastó en los 7 días anteriores a ayer (la mediana no se deja torcer por un día raro).
 Se compara con ayer, un día completo, así que el aviso sale una vez al día como máximo. Solo avisa de subidas: gastar menos no es un problema.
 
 Los umbrales son decisiones de producto, no datos del dominio: están aquí, juntos, para poder ajustarlos (docs/decisiones/0007)."""
@@ -20,7 +20,7 @@ from app.modules.hogares.models import Hogar
 
 DIAS_BASE = 7
 DIAS_BASE_MINIMOS = 3  # con menos días de historia no se sabe qué es "lo normal"
-KWH_DIA_MINIMO = 0.05  # 50 Wh: por debajo el aparato estuvo casi apagado ese día y no cuenta como día de datos
+KWH_DIA_MINIMO = 0.05  # 50 Wh: por debajo el dispositivo estuvo casi apagado ese día y no cuenta como día de datos
 KWH_EXTRA_MINIMO = 0.05  # una subida de menos de esto es ruido, aunque en porcentaje parezca grande
 # (subida mínima, nivel). El nivel decide a quién le llega según la sensibilidad del hogar (pocos: rojo; normal: rojo y amarillo; todos: también verde).
 ESCALONES = ((0.50, "rojo"), (0.20, "amarillo"), (0.10, "verde"))

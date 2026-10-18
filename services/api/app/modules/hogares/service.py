@@ -16,7 +16,7 @@ def exigir_miembro(db: Session, usuario_id: uuid.UUID, hogar_id: uuid.UUID, rol:
     """Verifica que el usuario pertenece al hogar (y, opcionalmente, con ese rol)."""
     miembro = db.get(MiembroHogar, (usuario_id, hogar_id))
     if miembro is None or (rol is not None and miembro.rol != rol):
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "No tienes acceso a este hogar")
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "No tienes acceso a esta casa")
     return miembro
 
 

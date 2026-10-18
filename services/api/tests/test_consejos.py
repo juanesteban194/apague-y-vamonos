@@ -15,7 +15,7 @@ from .conftest import registrar_y_entrar
 AHORA = datetime(2026, 10, 13, 15, 0, 0, tzinfo=UTC)  # 10:00 en Bogotá
 
 
-def aparato(client, auth, hogar, nombre, tuya):
+def dispositivo(client, auth, hogar, nombre, tuya):
     r = client.post(f"/hogares/{hogar['id']}/dispositivos", json={"tuya_id": tuya, "nombre": nombre}, headers=auth)
     assert r.status_code == 201
     return uuid.UUID(r.json()["id"])
@@ -74,8 +74,8 @@ def test_va_por_encima_del_promedio_lo_dice(client, auth, hogar, enchufe):
 
 def montar_casa(client, auth, hogar):
     tarifa()
-    nevera = aparato(client, auth, hogar, "Nevera", "tuya-nevera")
-    tele = aparato(client, auth, hogar, "Televisor", "tuya-tele")
+    nevera = dispositivo(client, auth, hogar, "Nevera", "tuya-nevera")
+    tele = dispositivo(client, auth, hogar, "Televisor", "tuya-tele")
     sembrar(nevera, 100)
     sembrar(tele, 200)
     return nevera, tele
@@ -99,7 +99,7 @@ def test_sugiere_apagar_de_noche_el_televisor_con_su_ahorro_medido(client, auth,
 def test_nunca_sugiere_apagar_la_nevera_de_noche(client, auth, hogar):
     montar_casa(client, auth, hogar)
     assert all(c.dispositivo_id is None or "Nevera" not in c.titulo for c in generar(hogar).values() if c.tipo == "rutina")
-    # y tampoco con otro nombre o acentos: un "Refrigerador" o "Nevecón" en el tipo de aparato
+    # y tampoco con otro nombre o acentos: un "Refrigerador" o "Nevecón" en el tipo de dispositivo
     with get_sessionmaker()() as db:
         from app.modules.dispositivos.models import Dispositivo
         d = Dispositivo(hogar_id=uuid.UUID(hogar["id"]), tuya_id="x", nombre="Cocina", tipo_aparato="Nevecón")
@@ -115,14 +115,14 @@ def test_ofrece_el_simulador_para_la_nevera_con_lo_que_mide(client, auth, hogar)
 
 def test_con_menos_de_dos_dias_de_datos_no_extrapola(client, auth, hogar):
     tarifa()
-    aparato_ = aparato(client, auth, hogar, "Televisor", "t1")
+    aparato_ = dispositivo(client, auth, hogar, "Televisor", "t1")
     sembrar(aparato_, 200, dias=1)
     assert "rutina" not in tipos(hogar) and "retiq" not in tipos(hogar) and "mayor_gasto" not in tipos(hogar)
 
 
 def test_sin_tarifa_no_inventa_pesos(client, auth, hogar):
-    nevera = aparato(client, auth, hogar, "Nevera", "tuya-n")
-    tele = aparato(client, auth, hogar, "Televisor", "tuya-t")
+    nevera = dispositivo(client, auth, hogar, "Nevera", "tuya-n")
+    tele = dispositivo(client, auth, hogar, "Televisor", "tuya-t")
     sembrar(nevera, 100)
     sembrar(tele, 200)
     assert {"mayor_gasto", "rutina", "retiq"}.isdisjoint(tipos(hogar))

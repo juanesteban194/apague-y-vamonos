@@ -107,7 +107,7 @@ describe("Avisos", () => {
   });
 
   it("si no se pudo apagar muestra el motivo", async () => {
-    api({ "POST /dispositivos/d1/apagar": () => respuestaJson({ detail: "No se pudo apagar el aparato: no hay un agente conectado en tu casa." }, 503) });
+    api({ "POST /dispositivos/d1/apagar": () => respuestaJson({ detail: "No se pudo apagar el dispositivo: no hay un agente conectado en tu casa." }, 503) });
     await renderizar(<Avisos />);
     await fireEvent.press(await screen.findByRole("button", { name: "Apagar ahora" }));
     expect(await screen.findByText(/no hay un agente conectado/)).toBeTruthy();

@@ -48,7 +48,7 @@ def tarifa_de_octubre():
         db.commit()
 
 
-# --- HU-02: aparato de alto riesgo -----------------------------------------------------------------------------------
+# --- HU-02: dispositivo de alto riesgo -----------------------------------------------------------------------------------
 def test_avisa_cuando_pasa_el_umbral_con_lo_que_cuesta_cada_hora(client, auth, hogar, enchufe):
     marcar_alto_riesgo(client, auth, hogar, enchufe, minutos=30)
     tarifa_de_octubre()

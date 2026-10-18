@@ -30,7 +30,7 @@ def _pesos(valor: float) -> str:
 
 
 def evaluar_alto_riesgo(db: Session, ahora: datetime) -> list[Alerta]:
-    """HU-02: un aparato marcado de alto riesgo lleva encendido (y consumiendo) más minutos que el umbral que definió la persona.
+    """HU-02: un dispositivo marcado de alto riesgo lleva encendido (y consumiendo) más minutos que el umbral que definió la persona.
     Se avisa una vez por episodio de encendido; si se apaga y vuelve a prenderse es otro episodio."""
     creadas: list[Alerta] = []
     for d in db.scalars(select(Dispositivo).where(Dispositivo.alto_riesgo.is_(True), Dispositivo.umbral_minutos_encendido.is_not(None))):

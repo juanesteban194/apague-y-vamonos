@@ -16,7 +16,7 @@ export default function Rutinas() {
     <Pantalla>
       <SugerenciaAyuda tema="rutinas" />
       {rutinas?.length === 0 && (
-        <Texto color={colores.textoSecundario}>Programa que un aparato se apague solo a cierta hora, por ejemplo la plancha o el calentador.</Texto>
+        <Texto color={colores.textoSecundario}>Programa que un dispositivo se apague solo a cierta hora, por ejemplo la plancha o el calentador.</Texto>
       )}
       {rutinas?.map((r) => <TarjetaRutina key={r.id} rutina={r} alPulsar={() => router.push(`/rutina/${r.id}`)} />)}
       <Boton titulo="Nueva rutina" variante={rutinas?.length ? "secundario" : "primario"} onPress={() => router.push("/rutina/nueva")} />

@@ -4,14 +4,14 @@ from pydantic import BaseModel, Field
 
 
 class SimuladorIn(BaseModel):
-    """Reemplazo de un aparato. Los consumos salen de lo que MIDE el enchufe (actual) y de la etiqueta RETIQ del aparato nuevo (kWh/mes)."""
+    """Reemplazo de un dispositivo. Los consumos salen de lo que MIDE el enchufe (actual) y de la etiqueta RETIQ del dispositivo nuevo (kWh/mes)."""
 
     hogar_id: uuid.UUID
     consumo_actual_kwh_mes: float = Field(ge=0, le=100_000)
     consumo_nuevo_kwh_mes: float = Field(ge=0, le=100_000)
     precio_nuevo_cop: float = Field(gt=0, le=1_000_000_000)
     tasa_anual: float = Field(ge=0, le=1, description="Tasa de descuento efectiva anual: 0,12 = 12 %")
-    anios: int = Field(ge=1, le=30, description="Años en los que se cuentan los ahorros (vida útil del aparato nuevo)")
+    anios: int = Field(ge=1, le=30, description="Años en los que se cuentan los ahorros (vida útil del dispositivo nuevo)")
 
 
 class SimuladorOut(BaseModel):

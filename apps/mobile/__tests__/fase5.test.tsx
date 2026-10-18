@@ -184,7 +184,7 @@ describe("Simulador de reemplazo", () => {
 
   async function llenar() {
     await fireEvent.changeText(screen.getByLabelText("Lo que gastaría el nuevo (kWh al mes)"), "30");
-    await fireEvent.changeText(screen.getByLabelText("Precio del aparato nuevo"), "$1.200.000");
+    await fireEvent.changeText(screen.getByLabelText("Precio del dispositivo nuevo"), "$1.200.000");
   }
 
   it("precarga lo que midió el enchufe y calcula con los supuestos visibles", async () => {
@@ -247,7 +247,7 @@ describe("Simulador de reemplazo", () => {
     api();
     await renderizar(<Simulador />);
     const calcular = async () => screen.getByRole("button", { name: "Calcular" });
-    await screen.findByLabelText("Precio del aparato nuevo");
+    await screen.findByLabelText("Precio del dispositivo nuevo");
     expect((await calcular()).props.accessibilityState.disabled).toBe(true);
     await fireEvent.changeText(screen.getByLabelText("Lo que gasta hoy (kWh al mes)"), "70");
     await llenar();
@@ -258,7 +258,7 @@ describe("Simulador de reemplazo", () => {
 });
 
 describe("Rutina que viene de un consejo", () => {
-  it("llega con el aparato elegido y de 23:00 a 05:00", async () => {
+  it("llega con el dispositivo elegido y de 23:00 a 05:00", async () => {
     (globalThis as { __parametros?: object }).__parametros = { dispositivo: "d1" };
     api({ "GET /hogares/h1/dispositivos": [ENCHUFE, { ...ENCHUFE, id: "d9", nombre: "Otro" }] });
     await renderizar(<NuevaRutina />);

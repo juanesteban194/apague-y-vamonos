@@ -14,7 +14,7 @@ export default function EditarHogar() {
   if (!hogar) return null;
   return (
     <PantallaFormulario>
-      <Texto variante="titulo">Editar hogar</Texto>
+      <Texto variante="titulo">Editar casa</Texto>
       <Texto variante="secundario" color={colores.textoSecundario}>Si cambias el estrato, los costos se recalculan con la tarifa del nuevo estrato.</Texto>
       <FormularioHogar
         inicial={hogar}

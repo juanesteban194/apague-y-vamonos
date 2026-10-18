@@ -9,7 +9,7 @@ const MENSAJES: Record<Estado, string | null> = {
   conectado: null,
   conectando: "Conectando en vivo…",
   reconectando: "Sin conexión en vivo. Reintentando…",
-  sin_acceso: "No tienes acceso en vivo a este hogar.",
+  sin_acceso: "No tienes acceso en vivo a esta casa.",
 };
 
 /** Aviso solo cuando NO hay datos en vivo; con conexión no ocupa espacio. */

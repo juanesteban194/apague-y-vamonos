@@ -12,10 +12,10 @@ export default function CrearHogar() {
   const cliente = useQueryClient();
   return (
     <PantallaFormulario>
-      <Texto variante="titulo">Tu hogar</Texto>
+      <Texto variante="titulo">Tu casa</Texto>
       <Texto color={colores.textoSecundario}>Con el estrato calculamos cuánto pagas por la energía.</Texto>
       <FormularioHogar
-        etiquetaBoton="Crear hogar"
+        etiquetaBoton="Crear casa"
         alEnviar={async (datos) => {
           await crearHogar(datos);
           await cliente.invalidateQueries({ queryKey: ["hogares"] }); // la navegación pasa sola a Inicio

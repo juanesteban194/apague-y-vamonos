@@ -21,9 +21,9 @@ DIAS_DE_MEDICION = 7
 DIAS_MINIMOS = 2  # con menos datos no se extrapola a un mes
 HORAS_DE_NOCHE = {23, 0, 1, 2, 3, 4}  # de las 11 p. m. a las 5 a. m.
 AHORRO_MINIMO_COP_MES = 1000  # por debajo de esto no vale la pena molestar con un consejo
-# Aparatos que NO se deben apagar de noche (alimentos): nunca se les sugiere una rutina de apagado.
+# Dispositivos que NO se deben apagar de noche (alimentos): nunca se les sugiere una rutina de apagado.
 SIEMPRE_PRENDIDOS = ("nevera", "refrigerador", "congelador", "nevecon", "frigobar")
-# Aparatos que cubre RETIQ y vale la pena comparar contra uno nuevo.
+# Dispositivos que cubre RETIQ y vale la pena comparar contra uno nuevo.
 CUBIERTOS_POR_RETIQ = ("nevera", "refrigerador", "congelador", "nevecon", "lavadora", "aire", "calentador")
 
 Accion = Literal["historial", "medidor", "enchufe", "rutina", "simulador"]
@@ -83,7 +83,7 @@ def generar(db: Session, hogar: Hogar, ahora: datetime) -> list[Consejo]:
         consejos.append(Consejo("completar-medidor", "completar", "gauge", "Anote la lectura de su medidor",
                                 "Anótela hoy y otra en unos días: así proyectamos cómo cierra el mes frente a su promedio.", accion="medidor"))
     if not dispositivos:
-        consejos.append(Consejo("completar-enchufe", "completar", "plug", "Conecte su primer enchufe", "Así vemos qué aparato gasta más y le contamos cómo bajar la cuenta.", accion="enchufe"))
+        consejos.append(Consejo("completar-enchufe", "completar", "plug", "Conecte su primer enchufe", "Así vemos qué dispositivo gasta más y le contamos cómo bajar la cuenta.", accion="enchufe"))
 
     # 2. Va por encima de su promedio
     if estado.estado == "ok" and estado.nivel in ("amarillo", "rojo"):

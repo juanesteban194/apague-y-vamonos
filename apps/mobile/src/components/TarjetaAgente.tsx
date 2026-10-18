@@ -51,7 +51,7 @@ export function TarjetaAgente({ agente, alRenombrar, alEliminar, alUsarEnOtroCom
     Alert.alert(
       `¿Eliminar "${agente.nombre}"?`,
       lee > 0
-        ? `Sus ${lee === 1 ? "enchufe quedará" : `${lee} enchufes quedarán`} sin agente y no llegarán datos hasta que le asignes otro. El programa de ese agente deja de funcionar.`
+        ? `${lee === 1 ? "Su enchufe quedará" : `Sus ${lee} enchufes quedarán`} sin agente y no llegarán datos hasta que le asignes otro. El programa de ese agente deja de funcionar.`
         : "El programa de ese agente deja de funcionar. Esto no se puede deshacer.",
       [
         { text: "Cancelar", style: "cancel" },

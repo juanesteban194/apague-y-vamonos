@@ -39,7 +39,7 @@ export default function Login() {
     <PantallaFormulario>
       <View style={{ gap: espacio.s }}>
         <Texto variante="titulo">Apague y vámonos</Texto>
-        <Texto color={colores.textoSecundario}>Mira cuánto gasta cada aparato de tu casa, en pesos.</Texto>
+        <Texto color={colores.textoSecundario}>Mira cuánto gasta cada dispositivo de tu casa, en pesos.</Texto>
       </View>
 
       <BotonGoogle />

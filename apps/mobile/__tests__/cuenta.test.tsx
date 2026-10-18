@@ -230,9 +230,9 @@ describe("Consentimiento y hogar", () => {
     await iniciarSesionDePrueba();
     simular({ "POST /hogares": () => respuestaJson(HOGAR, 201) });
     await renderizar(<CrearHogar />);
-    const crear = () => screen.getByRole("button", { name: "Crear hogar" });
+    const crear = () => screen.getByRole("button", { name: "Crear casa" });
     expect(crear().props.accessibilityState.disabled).toBe(true);
-    await fireEvent.changeText(screen.getByLabelText("Nombre del hogar"), "Casa de Ana");
+    await fireEvent.changeText(screen.getByLabelText("Nombre de la casa"), "Casa de Ana");
     await fireEvent.press(screen.getByRole("button", { name: "3" }));
     await fireEvent.press(screen.getByRole("button", { name: "Prepago" }));
     expect(crear().props.accessibilityState.disabled).toBe(false);
@@ -291,7 +291,7 @@ describe("Categorías de la casa", () => {
     await iniciarSesionDePrueba();
     simular({ ...base, "POST /hogares": () => respuestaJson({ ...HOGAR, id: "h9", nombre: "Finca" }, 201) });
     await renderizar(<NuevaCasa />);
-    await fireEvent.changeText(screen.getByLabelText("Nombre del hogar"), "Finca");
+    await fireEvent.changeText(screen.getByLabelText("Nombre de la casa"), "Finca");
     await fireEvent.press(screen.getByRole("button", { name: "2" }));
     await fireEvent.press(screen.getByRole("button", { name: "Agregar casa" }));
     await waitFor(() => expect(useCasaSeleccionada.getState().id).toBe("h9"));
@@ -358,7 +358,7 @@ describe("Categorías de la casa", () => {
     await iniciarSesionDePrueba();
     simular({ ...base, "GET /hogares": [{ ...HOGAR, tipo_medidor: "pospago" }] });
     await renderizar(<Inicio />);
-    await screen.findByText("Tus aparatos");
+    await screen.findByText("Tus dispositivos");
     expect(screen.queryByText(/Medidor prepago/)).toBeNull();
   });
 
@@ -467,7 +467,7 @@ describe("Categorías de la casa", () => {
     await renderizar(<Explorar />);
     const destinos: [string, string][] = [
       ["Enchufes", "/enchufes"], ["Agentes", "/agentes"], ["Rutinas", "/rutinas"], ["Facturas y medidor", "/facturas"], ["Saldo prepago", "/prepago"],
-      ["Consejos", "/consejos"], ["¿Cambiar un aparato?", "/simulador"], ["Mis casas", "/casas"], ["Instrucciones", "/instrucciones"],
+      ["Consejos", "/consejos"], ["Cambiar un dispositivo", "/simulador"], ["Mis casas", "/casas"], ["Instrucciones", "/instrucciones"],
     ];
     for (const [nombre] of destinos) await fireEvent.press(screen.getByRole("button", { name: nombre }));
     expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(destinos.map(([, ruta]) => ruta));

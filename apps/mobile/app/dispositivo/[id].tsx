@@ -45,7 +45,7 @@ export default function Dispositivo() {
       // El agente confirmará con una lectura nueva en segundos; mientras, se refleja lo que la API acaba de lograr.
       if (hogar) aplicarEvento(cliente, hogar.id, { tipo: "estado_enchufe", dispositivo_id: id, encendido: r.encendido, fecha_hora: new Date().toISOString() });
     } catch (e) {
-      setErrorControl(e instanceof ErrorApi ? e.message : `No se pudo ${encender ? "prender" : "apagar"} el aparato.`);
+      setErrorControl(e instanceof ErrorApi ? e.message : `No se pudo ${encender ? "prender" : "apagar"} el dispositivo.`);
     } finally {
       setEnviando(false);
     }
@@ -56,7 +56,7 @@ export default function Dispositivo() {
 
   return (
     <Pantalla refrescando={isFetching && !isLoading} alRefrescar={() => void refetch()}>
-      <Texto variante="titulo">{d?.nombre ?? "Aparato"}</Texto>
+      <Texto variante="titulo">{d?.nombre ?? "Dispositivo"}</Texto>
       <EstadoConexion estado={conexion} />
 
       {d && (

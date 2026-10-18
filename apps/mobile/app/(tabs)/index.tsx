@@ -115,7 +115,7 @@ export default function Inicio() {
 
           {mostrarPrepago && <TarjetaPrepago prepago={prepago} alActualizar={() => router.push("/prepago")} />}
 
-          <Texto variante="subtitulo">Tus aparatos</Texto>
+          <Texto variante="subtitulo">Tus dispositivos</Texto>
           {resumen.dispositivos.length === 0 && <Texto color={colores.textoSecundario}>Todavía no hay enchufes registrados.</Texto>}
           {resumen.dispositivos.map((d) => (
             <TarjetaDispositivo key={d.id} dispositivo={d} alPulsar={() => router.push(`/dispositivo/${d.id}`)} />

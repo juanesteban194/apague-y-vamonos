@@ -106,7 +106,7 @@ async def ejecutar_comando(hogar_id: uuid.UUID, dispositivo_id: uuid.UUID, tuya_
             return ComandoOut(dispositivo_id=dispositivo_id, encendido=encender, via="nube")
         except ErrorTuyaCloud as e:
             motivo = f"{motivo}; el respaldo por la nube también falló ({e})"
-    raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"No se pudo {accion} el aparato: {motivo}.")
+    raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"No se pudo {accion} el dispositivo: {motivo}.")
 
 
 async def _comandar(dispositivo_id: uuid.UUID, accion: Accion, usuario_id: uuid.UUID) -> ComandoOut:

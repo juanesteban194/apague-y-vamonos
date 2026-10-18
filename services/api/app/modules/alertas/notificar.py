@@ -38,7 +38,7 @@ def mensaje_push(alerta: Alerta, token: str) -> dict:
         "sound": "default",
         "priority": "high" if alerta.nivel == "rojo" else "default",
         "channelId": expo_push.CANAL_ANDROID,
-        # Con un aparato de por medio, la notificación trae el botón "Apagar" (alto riesgo, rutinas).
+        # Con un dispositivo de por medio, la notificación trae el botón "Apagar" (alto riesgo, rutinas).
         **({"categoryId": expo_push.CATEGORIA_APAGAR} if alerta.dispositivo_id and alerta.tipo == "alto_riesgo" else {}),
         "data": datos,
     }
@@ -76,7 +76,7 @@ def evaluar_y_notificar(db: Session, ahora: datetime) -> int:
 
 
 def evaluar_anomalias_y_notificar(db: Session, ahora: datetime) -> int:
-    """Tarea de cada hora: compara ayer con lo normal de cada aparato. Cuesta una consulta por aparato, por eso no va con las reglas de cada 20 s;
+    """Tarea de cada hora: compara ayer con lo normal de cada dispositivo. Cuesta una consulta por dispositivo, por eso no va con las reglas de cada 20 s;
     el aviso sale una sola vez al día (cada alerta se deduplica por día)."""
     nuevas = anomalias.evaluar_consumo_anomalo(db, ahora)
     notificar(db, nuevas)

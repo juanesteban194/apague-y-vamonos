@@ -12,7 +12,7 @@ type Categoria = { titulo: string; fondo: string; tinta: string; entradas: Entra
 /** Las categorías de la app, como en una app de banco: cada ícono lleva a todo lo relacionado con eso. */
 const CATEGORIAS: Categoria[] = [
   {
-    titulo: "Mis aparatos",
+    titulo: "Mis dispositivos",
     fondo: colores.verdeFondo,
     tinta: colores.verde,
     entradas: [
@@ -36,7 +36,7 @@ const CATEGORIAS: Categoria[] = [
     tinta: "#34406B",
     entradas: [
       { titulo: "Consejos", icono: "consejo", ruta: "/consejos" },
-      { titulo: "¿Cambiar un aparato?", icono: "simulador", ruta: "/simulador" },
+      { titulo: "Cambiar un dispositivo", icono: "simulador", ruta: "/simulador" },
     ],
   },
   {

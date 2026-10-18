@@ -21,7 +21,7 @@ export default function EditarRutina() {
   if (!hogar || !dispositivos || !rutina) return null;
 
   function confirmarBorrado() {
-    Alert.alert("¿Borrar esta rutina?", "El aparato dejará de apagarse solo a esa hora.", [
+    Alert.alert("¿Borrar esta rutina?", "El dispositivo dejará de apagarse solo a esa hora.", [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Borrar",

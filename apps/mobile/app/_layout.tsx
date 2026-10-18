@@ -95,14 +95,14 @@ function Navegacion() {
         </Stack.Protected>
         <Stack.Protected guard={paso === "lista"}>
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="dispositivo/[id]" options={{ ...opcionesCabecera, title: "Aparato", headerBackTitle: "Inicio" }} />
+          <Stack.Screen name="dispositivo/[id]" options={{ ...opcionesCabecera, title: "Dispositivo", headerBackTitle: "Inicio" }} />
           <Stack.Screen name="enchufes" options={conAyuda("Enchufes", "enchufes")} />
           <Stack.Screen name="agentes" options={conAyuda("Agentes", "agentes")} />
           <Stack.Screen name="rutinas" options={conAyuda("Rutinas", "rutinas")} />
           <Stack.Screen name="facturas" options={conAyuda("Facturas y medidor", "facturas")} />
           <Stack.Screen name="prepago" options={conAyuda("Saldo prepago", "prepago")} />
           <Stack.Screen name="consejos" options={conAyuda("Consejos", "consejos")} />
-          <Stack.Screen name="simulador" options={conAyuda("¿Cambiar el aparato?", "simulador")} />
+          <Stack.Screen name="simulador" options={conAyuda("Cambiar un dispositivo", "simulador")} />
           <Stack.Screen name="casas" options={conAyuda("Mis casas", "casas")} />
           <Stack.Screen name="casa/nueva" options={{ ...opcionesCabecera, title: "Nueva casa" }} />
           <Stack.Screen name="hogar/editar" options={{ ...opcionesCabecera, title: "Editar casa" }} />

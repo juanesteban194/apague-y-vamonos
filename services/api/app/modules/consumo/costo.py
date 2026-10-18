@@ -12,7 +12,7 @@ def costo_por_bloques(
 ) -> Decimal:
     """Costo del consumo acumulado del mes (kWh), cobrando hasta el límite a una tarifa y el resto a otra.
 
-    `redondear=True` replica la factura (cada concepto a centavos). El precio medio por aparato usa `False`: a consumos
+    `redondear=True` replica la factura (cada concepto a centavos). El precio medio por dispositivo usa `False`: a consumos
     de unos pocos pesos, redondear cada concepto movería el precio por kWh."""
     kwh = Decimal(str(kwh_mes))
     dentro = min(kwh, Decimal(str(limite_subsistencia)))

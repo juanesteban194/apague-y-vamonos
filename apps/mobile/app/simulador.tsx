@@ -23,7 +23,7 @@ const leerNumero = (t: string) => {
   return t.trim() !== "" && Number.isFinite(n) ? n : null;
 };
 
-/** ¿Le conviene cambiar el aparato? (HU-05). Compara lo que gasta hoy (lo mide el enchufe) con lo que dice la etiqueta RETIQ del nuevo. */
+/** ¿Le conviene cambiar el dispositivo? (HU-05). Compara lo que gasta hoy (lo mide el enchufe) con lo que dice la etiqueta RETIQ del nuevo. */
 export default function Simulador() {
   const { kwh: kwhMedido } = useLocalSearchParams<{ dispositivo?: string; kwh?: string }>();
   const { hogar } = useHogarActual();
@@ -76,17 +76,17 @@ export default function Simulador() {
         keyboardType="decimal-pad"
         value={actual}
         onChangeText={setActual}
-        ayuda={kwhMedido ? "Lo midió su enchufe en los últimos días." : "Búsquelo en la etiqueta del aparato actual."}
+        ayuda={kwhMedido ? "Lo midió su enchufe en los últimos días." : "Búsquelo en la etiqueta del dispositivo actual."}
       />
-      <Campo etiqueta="Lo que gastaría el nuevo (kWh al mes)" keyboardType="decimal-pad" value={nuevo} onChangeText={setNuevo} ayuda="Está impreso en la etiqueta de eficiencia del aparato nuevo (si dice por año, divídalo en 12)." />
-      <Campo etiqueta="Precio del aparato nuevo" keyboardType="number-pad" placeholder="$1.200.000" value={precio} onChangeText={setPrecio} />
+      <Campo etiqueta="Lo que gastaría el nuevo (kWh al mes)" keyboardType="decimal-pad" value={nuevo} onChangeText={setNuevo} ayuda="Está impreso en la etiqueta de eficiencia del dispositivo nuevo (si dice por año, divídalo en 12)." />
+      <Campo etiqueta="Precio del dispositivo nuevo" keyboardType="number-pad" placeholder="$1.200.000" value={precio} onChangeText={setPrecio} />
 
       <Tarjeta style={{ gap: espacio.s }}>
         <Texto variante="subtitulo" style={{ fontWeight: "800" }}>
           Supuestos (puede cambiarlos)
         </Texto>
-        <Campo etiqueta="Tasa anual para descontar el dinero (%)" keyboardType="decimal-pad" value={tasa} onChangeText={setTasa} ayuda="Cuánto rendiría el mismo dinero si no lo gastara en el aparato." />
-        <Campo etiqueta="Años que cuenta el ahorro" keyboardType="number-pad" value={anios} onChangeText={setAnios} ayuda="Cuántos años cree que le dura el aparato nuevo." />
+        <Campo etiqueta="Tasa anual para descontar el dinero (%)" keyboardType="decimal-pad" value={tasa} onChangeText={setTasa} ayuda="Cuánto rendiría el mismo dinero si no lo gastara en el dispositivo." />
+        <Campo etiqueta="Años que cuenta el ahorro" keyboardType="number-pad" value={anios} onChangeText={setAnios} ayuda="Cuántos años cree que le dura el dispositivo nuevo." />
       </Tarjeta>
 
       {error && (
@@ -129,7 +129,7 @@ export default function Simulador() {
                   </Texto>
                 </>
               ) : (
-                <Texto color={colores.sobrePrimario}>El aparato nuevo no gastaría menos que el actual: no hay ahorro que pague la compra.</Texto>
+                <Texto color={colores.sobrePrimario}>El dispositivo nuevo no gastaría menos que el actual: no hay ahorro que pague la compra.</Texto>
               )}
               <Texto variante="secundario" color="#B9B3A6">
                 Cada kWh se valora a {formatoCOP(r.precio_kwh_usado)}; si pasó la línea de subsistencia, a la tarifa más alta.

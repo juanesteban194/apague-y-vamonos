@@ -32,7 +32,7 @@ beforeEach(async () => {
   await iniciarSesionDePrueba();
 });
 
-describe("Interruptor del aparato", () => {
+describe("Interruptor del dispositivo", () => {
   it("muestra el estado actual con la ayuda del mockup", async () => {
     api();
     await renderizar(<Dispositivo />);
@@ -63,7 +63,7 @@ describe("Interruptor del aparato", () => {
   });
 
   it("si la API no logra el cambio, avisa por qué y deja el estado como estaba", async () => {
-    api({ "POST /dispositivos/d1/apagar": () => respuestaJson({ detail: "No se pudo apagar el aparato: no hay un agente conectado en tu casa." }, 503) });
+    api({ "POST /dispositivos/d1/apagar": () => respuestaJson({ detail: "No se pudo apagar el dispositivo: no hay un agente conectado en tu casa." }, 503) });
     await renderizar(<Dispositivo />);
     await fireEvent.press(await interruptor());
     expect(await screen.findByText(/no hay un agente conectado en tu casa/)).toBeTruthy();

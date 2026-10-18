@@ -112,7 +112,7 @@ describe("Lectura del medidor", () => {
 });
 
 describe("Rutinas", () => {
-  it("crea una rutina: aparato único elegido, todos los días y la hora de apagado", async () => {
+  it("crea una rutina: dispositivo único elegido, todos los días y la hora de apagado", async () => {
     api({ "POST /hogares/h1/rutinas": () => respuestaJson(RUTINA, 201) });
     await renderizar(<NuevaRutina />);
     await screen.findByLabelText("Apagar a las");
@@ -154,7 +154,7 @@ describe("Rutinas", () => {
   it("sin enchufes explica qué hacer primero", async () => {
     api({ "GET /hogares/h1/dispositivos": [] });
     await renderizar(<NuevaRutina />);
-    expect(await screen.findByText(/Primero agrega un enchufe en Mi casa/)).toBeTruthy();
+    expect(await screen.findByText(/Primero agrega un enchufe \(Explorar › Enchufes\)/)).toBeTruthy();
   });
 
   it("edita una rutina con sus datos cargados y la guarda", async () => {

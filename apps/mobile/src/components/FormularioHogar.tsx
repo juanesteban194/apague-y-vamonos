@@ -37,7 +37,7 @@ export function FormularioHogar({ inicial, etiquetaBoton, alEnviar }: Props) {
 
   return (
     <>
-      <Campo etiqueta="Nombre del hogar" placeholder="Mi casa" value={nombre} onChangeText={setNombre} />
+      <Campo etiqueta="Nombre de la casa" placeholder="Mi casa" value={nombre} onChangeText={setNombre} />
       <Campo etiqueta="Barrio (opcional)" value={barrio} onChangeText={setBarrio} />
       <Selector etiqueta="Estrato" opciones={OPCIONES_ESTRATO.map((e) => ({ valor: e, titulo: String(e) }))} valor={estrato} alCambiar={setEstrato} />
       <Selector etiqueta="Tipo de medidor (opcional)" opciones={OPCIONES_MEDIDOR} valor={medidor} alCambiar={setMedidor} />

@@ -35,13 +35,13 @@ beforeEach(async () => {
 });
 
 describe("Inicio", () => {
-  it("muestra el costo de hoy en pesos y el aparato, sin kWh", async () => {
+  it("muestra el costo de hoy en pesos y el dispositivo, sin kWh", async () => {
     await iniciarSesionDePrueba();
     simularApi();
     await renderizar(<Inicio />);
 
     expect(await screen.findByText("Casa demo")).toBeTruthy();
-    expect((await screen.findAllByText("$8,15")).length).toBeGreaterThanOrEqual(2); // total y tarjeta del aparato
+    expect((await screen.findAllByText("$8,15")).length).toBeGreaterThanOrEqual(2); // total y tarjeta del dispositivo
     expect(screen.getByText("Enchufe BSD04")).toBeTruthy();
     expect(screen.getByText(/27 W ahora/)).toBeTruthy();
     expect(screen.getByText("Con la tarifa de septiembre de 2026.")).toBeTruthy();

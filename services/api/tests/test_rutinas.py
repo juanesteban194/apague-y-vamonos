@@ -172,7 +172,7 @@ def test_no_se_puede_programar_un_aparato_de_otro_hogar(client, auth, hogar, enc
     otro = registrar_y_entrar(client, email="beto@example.com", nombre="Beto")
     h2 = client.post("/hogares", json={"nombre": "Otra", "estrato": 2}, headers=otro).json()
     r = client.post(f"/hogares/{h2['id']}/rutinas", json={"dispositivo_id": enchufe["id"], "dias": [1], "hora_apagado": "22:00:00"}, headers=otro)
-    assert r.status_code == 422 and "no es de tu hogar" in r.json()["detail"]
+    assert r.status_code == 422 and "no es de tu casa" in r.json()["detail"]
     assert client.get(f"/hogares/{hogar['id']}/rutinas", headers=otro).status_code == 403
     assert client.post(f"/hogares/{hogar['id']}/rutinas", json={"dispositivo_id": enchufe["id"], "dias": [1], "hora_apagado": "22:00:00"}, headers=otro).status_code == 403
 

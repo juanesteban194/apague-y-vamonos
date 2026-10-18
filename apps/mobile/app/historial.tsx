@@ -68,7 +68,7 @@ export default function Historial() {
     <PantallaFormulario>
       <Texto variante="titulo">Mis facturas de EPM</Texto>
       <Texto color={colores.textoSecundario}>
-        Copie del cuadro "Histórico de consumos" de su factura cuántos kWh gastó cada mes. Con eso sabemos cuál es su promedio y si este mes va por debajo.
+        Copie del cuadro «Histórico de consumos» de su factura cuántos kWh gastó cada mes. Con eso sabemos cuál es su promedio y si este mes va por debajo.
       </Texto>
       {guardado?.promedio_kwh != null && (
         <Tarjeta style={{ backgroundColor: colores.verdeFondo, gap: 2 }}>

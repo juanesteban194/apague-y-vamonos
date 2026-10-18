@@ -82,8 +82,8 @@ export function FormularioEnchufe({ inicial, agentes = [], etiquetaBoton, alEnvi
           </Texto>
         </>
       )}
-      <Campo etiqueta="Aparato conectado (opcional)" placeholder="Nevera, televisor…" value={tipo} onChangeText={setTipo} />
-      <Casilla marcada={altoRiesgo} alCambiar={setAltoRiesgo} texto="Avisarme si se queda encendido demasiado tiempo (aparato de alto riesgo)" />
+      <Campo etiqueta="Qué tienes conectado (opcional)" placeholder="Nevera, televisor…" value={tipo} onChangeText={setTipo} />
+      <Casilla marcada={altoRiesgo} alCambiar={setAltoRiesgo} texto="Avisarme si se queda encendido demasiado tiempo (dispositivo de alto riesgo)" />
       {altoRiesgo && (
         <Campo
           etiqueta="Minutos encendido antes de avisar"

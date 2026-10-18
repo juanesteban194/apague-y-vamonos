@@ -1,4 +1,4 @@
-"""Ejecución de las rutinas (tarea de cada minuto). Una rutina apaga un aparato a una hora y, si tiene hora de encendido, lo vuelve a prender.
+"""Ejecución de las rutinas (tarea de cada minuto). Una rutina apaga un dispositivo a una hora y, si tiene hora de encendido, lo vuelve a prender.
 
 Cada ejecución se reclama primero insertando su evento (restricción única rutina+acción+horario): así, aunque la tarea corra dos veces
 o haya dos procesos, el comando sale una sola vez. Se tolera hasta 5 minutos de atraso (API dormida que acaba de despertar)."""

@@ -31,7 +31,7 @@ export default function Enchufes() {
       {dispositivos?.length === 0 && (
         <Tarjeta>
           <Texto variante="subtitulo">Aún no tienes enchufes</Texto>
-          <Texto color={colores.textoSecundario}>Conecta tu primer enchufe inteligente para empezar a ver cuánto gasta cada aparato.</Texto>
+          <Texto color={colores.textoSecundario}>Conecta tu primer enchufe inteligente para empezar a ver cuánto gasta cada dispositivo.</Texto>
         </Tarjeta>
       )}
       {dispositivos?.map((d) => {

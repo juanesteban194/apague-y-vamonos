@@ -40,5 +40,5 @@ class RutinaOut(BaseModel):
     hora_apagado: time
     hora_encendido: time | None
     activa: bool
-    ahorro_estimado_cop_mes: float | None  # None si falta la hora de encendido, la tarifa o datos del aparato
+    ahorro_estimado_cop_mes: float | None  # None si falta la hora de encendido, la tarifa o datos del dispositivo
     ultima_ejecucion: UltimaEjecucion | None

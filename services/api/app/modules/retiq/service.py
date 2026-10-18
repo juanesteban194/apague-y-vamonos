@@ -1,4 +1,4 @@
-"""Simulador de reemplazo de un aparato (HU-05): ahorro mensual, meses para recuperar la inversión y valor presente neto (VPN).
+"""Simulador de reemplazo de un dispositivo (HU-05): ahorro mensual, meses para recuperar la inversión y valor presente neto (VPN).
 
 VPN = −precio + Σ_{m=1..N} ahorro_mensual / (1 + i_m)^m, con i_m = (1 + tasa_anual)^(1/12) − 1 y N = 12 × años."""
 from datetime import UTC, datetime

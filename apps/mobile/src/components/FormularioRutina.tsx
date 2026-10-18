@@ -21,7 +21,7 @@ type Props = {
   alEnviar: (datos: RutinaDatos) => Promise<void>;
 };
 
-/** Rutina de apagado: qué aparato, qué días, a qué hora se apaga y (opcional) a qué hora se vuelve a prender. */
+/** Rutina de apagado: qué dispositivo, qué días, a qué hora se apaga y (opcional) a qué hora se vuelve a prender. */
 export function FormularioRutina({ dispositivos, inicial, predeterminado, etiquetaBoton, alEnviar }: Props) {
   const inicialId = inicial?.dispositivo_id ?? (predeterminado?.dispositivoId && dispositivos.some((d) => d.id === predeterminado.dispositivoId) ? predeterminado.dispositivoId : undefined);
   const [dispositivoId, setDispositivoId] = useState<string | null>(inicialId ?? (dispositivos.length === 1 ? dispositivos[0].id : null));
@@ -36,7 +36,7 @@ export function FormularioRutina({ dispositivos, inicial, predeterminado, etique
   const horaApagado = leerHora(apagado);
   const horaEncendido = prenderDespues ? leerHora(encendido) : null;
   const problema =
-    !dispositivoId ? "Elige el aparato."
+    !dispositivoId ? "Elige el dispositivo."
     : dias.length === 0 ? "Elige al menos un día."
     : !horaApagado ? "Escribe la hora de apagado en formato 24 horas, por ejemplo 22:00."
     : prenderDespues && !horaEncendido ? "Escribe la hora de encendido en formato 24 horas, por ejemplo 06:00."
@@ -57,11 +57,11 @@ export function FormularioRutina({ dispositivos, inicial, predeterminado, etique
   }
 
   if (dispositivos.length === 0) {
-    return <Texto color={colores.textoSecundario}>Primero agrega un enchufe en Mi casa para poder programarlo.</Texto>;
+    return <Texto color={colores.textoSecundario}>Primero agrega un enchufe (Explorar › Enchufes) para poder programarlo.</Texto>;
   }
   return (
     <>
-      <Selector etiqueta="Aparato" opciones={dispositivos.map((d) => ({ valor: d.id, titulo: d.nombre }))} valor={dispositivoId} alCambiar={setDispositivoId} />
+      <Selector etiqueta="Dispositivo" opciones={dispositivos.map((d) => ({ valor: d.id, titulo: d.nombre }))} valor={dispositivoId} alCambiar={setDispositivoId} />
       <SelectorDias dias={dias} alCambiar={setDias} />
       <Campo etiqueta="Apagar a las" placeholder="22:00" keyboardType="numbers-and-punctuation" value={apagado} onChangeText={setApagado} ayuda="Hora de 24 horas: 22:00 son las 10 de la noche." />
       <Casilla marcada={prenderDespues} alCambiar={setPrenderDespues} texto="Volver a prenderlo después" />

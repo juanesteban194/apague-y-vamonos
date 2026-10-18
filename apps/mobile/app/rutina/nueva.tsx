@@ -18,7 +18,7 @@ export default function NuevaRutina() {
   return (
     <PantallaFormulario>
       <Texto variante="titulo">Nueva rutina</Texto>
-      <Texto color={colores.textoSecundario}>Apagamos el aparato solos a la hora que usted diga, aunque no esté en casa.</Texto>
+      <Texto color={colores.textoSecundario}>Apagamos el dispositivo solo, a la hora que usted diga, aunque no esté en casa.</Texto>
       <FormularioRutina
         dispositivos={dispositivos}
         predeterminado={dispositivo ? { dispositivoId: dispositivo, apagado: "23:00", encendido: "05:00" } : undefined}
