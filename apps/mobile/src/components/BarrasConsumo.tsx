@@ -1,7 +1,7 @@
 import { View } from "react-native";
 
 import type { Periodo, PuntoConsumo } from "@/api/tipos";
-import { etiquetaPunto } from "@/lib/fechas";
+import { etiquetaPunto, nombreMes } from "@/lib/fechas";
 import { formatoCOP } from "@/lib/formato";
 import { BORDE_FINO, colores, espacio } from "@/theme";
 
@@ -11,7 +11,8 @@ type Props = { serie: PuntoConsumo[]; periodo: Periodo };
 
 const ALTO = 168; // alto del área de las barras
 const ANCHO_EJE = 52; // columna de la derecha con los valores del eje
-const CADA: Record<Periodo, number> = { dia: 6, semana: 1, mes: 7 }; // cada cuántas barras va una etiqueta, para no saturar el eje
+const ANCHO_EJE_MILES = 68; // «$30 mil» no cabe en 52
+const CADA: Record<Periodo, number> = { dia: 6, semana: 1, mes: 2 }; // cada cuántas barras va una etiqueta, para no saturar el eje
 
 /** Un tope «redondo» para el eje (1; 1,5; 2; 3; 4; 5; 6; 8 o 10 por una potencia de 10), justo por encima de la barra más alta. */
 function topeRedondo(maximo: number): number {
@@ -30,19 +31,22 @@ function pesosCortos(v: number): string {
 
 const mayuscula = (t: string) => (t ? t[0].toUpperCase() + t.slice(1) : t);
 
-/** Barras de costo (COP) por hora, día de la semana o día del mes. Dibujadas con vistas (sin librería de gráficas): se ven igual en iOS,
+/** Barras de costo (COP) por hora, por día de la semana o por mes (los últimos 12; el actual va hasta hoy). Dibujadas con vistas (sin librería de gráficas): se ven igual en iOS,
  *  Android y web y no dependen de medir el ancho. La barra más reciente con consumo va en tinta; las demás, en gris cálido. */
 export function BarrasConsumo({ serie, periodo }: Props) {
   const valores = serie.map((p) => p.costo_cop ?? 0);
   const maximo = Math.max(0, ...valores);
   const tope = topeRedondo(maximo);
+  const anchoEje = tope >= 1000 ? ANCHO_EJE_MILES : ANCHO_EJE;
   const ultimo = valores.reduce((acc, v, i) => (v > 0 ? i : acc), -1);
-  const destacado = ultimo >= 0 ? ultimo : serie.length - 1;
+  // En «mes» se resalta siempre el mes actual (el último); en día y semana, la barra más reciente con consumo.
+  const destacado = periodo === "mes" || ultimo < 0 ? serie.length - 1 : ultimo;
   const etiquetas = serie.map((p) => mayuscula(etiquetaPunto(p.inicio, periodo)));
   const cada = CADA[periodo];
-  const unidad = periodo === "dia" ? "hora" : "día";
+  const unidad = periodo === "dia" ? "hora" : periodo === "semana" ? "día" : "mes";
+  const ultimaIso = serie[serie.length - 1]?.inicio ?? "";
 
-  const cuando = (i: number) => (periodo === "dia" ? `a las ${etiquetas[i]}:00` : periodo === "semana" ? `el ${etiquetas[i].toLowerCase()}` : `el día ${etiquetas[i]}`);
+  const cuando = (i: number) => (periodo === "dia" ? `a las ${etiquetas[i]}:00` : periodo === "semana" ? `el ${etiquetas[i].toLowerCase()}` : `en ${nombreMes(serie[i].inicio, ultimaIso)}`);
   const iMax = valores.indexOf(maximo);
   const resumen =
     maximo > 0
@@ -51,12 +55,14 @@ export function BarrasConsumo({ serie, periodo }: Props) {
 
   const separacion = serie.length > 12 ? 2 : 8;
 
-  const nombreDestacado = periodo === "dia" ? "Esta hora" : "Hoy";
+  const nombreDestacado = periodo === "dia" ? "Esta hora" : periodo === "semana" ? "Hoy" : "Este mes";
+  // En «mes» las etiquetas se cuentan desde el final, para que el mes actual siempre tenga la suya.
+  const conEtiqueta = (i: number) => (periodo === "mes" ? (serie.length - 1 - i) % cada === 0 : i % cada === 0);
 
   return (
     <View accessible accessibilityRole="image" accessibilityLabel={resumen} style={{ gap: espacio.m }}>
-      {/* Leyenda de la barra resaltada */}
-      {maximo > 0 && (
+      {/* Leyenda de la barra resaltada (en «mes» sobra: la pantalla ya muestra lo de este mes como cifra) */}
+      {maximo > 0 && periodo !== "mes" && (
         <View style={{ flexDirection: "row", alignItems: "center", gap: espacio.s }}>
           <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colores.primario }} />
           <Texto variante="secundario" color={colores.textoSecundario}>
@@ -98,7 +104,7 @@ export function BarrasConsumo({ serie, periodo }: Props) {
           </View>
         </View>
         {/* Eje de valores a la derecha, como en Salud de Apple */}
-        <View style={{ width: ANCHO_EJE, marginLeft: espacio.s }}>
+        <View style={{ width: anchoEje, marginLeft: espacio.s }}>
           {[1, 0.5, 0].map((f) => (
             <Texto
               key={f}
@@ -113,11 +119,11 @@ export function BarrasConsumo({ serie, periodo }: Props) {
         </View>
       </View>
 
-      {/* Etiquetas de horas o días, centradas bajo su barra */}
-      <View style={{ flexDirection: "row", marginRight: ANCHO_EJE + espacio.s, height: 22 }}>
+      {/* Etiquetas de horas, días o meses, centradas bajo su barra */}
+      <View style={{ flexDirection: "row", marginRight: anchoEje + espacio.s, height: 22 }}>
         {etiquetas.map((e, i) => (
           <View key={i} style={{ flex: 1 }}>
-            {i % cada === 0 && (
+            {conEtiqueta(i) && (
               <View style={{ position: "absolute", width: 48, left: "50%", marginLeft: -24, alignItems: "center" }}>
                 <Texto variante="secundario" color={i === destacado ? colores.texto : colores.textoSecundario} numberOfLines={1} style={{ fontWeight: i === destacado ? "600" : "400" }}>
                   {e}

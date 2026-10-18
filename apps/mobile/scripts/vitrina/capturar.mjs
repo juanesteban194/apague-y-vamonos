@@ -28,6 +28,7 @@ export const PANTALLAS = [
   { nombre: "consejos", ruta: "/consejos" },
   { nombre: "simulador", ruta: "/simulador?dispositivo=d1&kwh=26.3" },
   { nombre: "dispositivo", ruta: "/dispositivo/d1" },
+  { nombre: "dispositivo-mes", ruta: "/dispositivo/d1", accion: async (pagina) => { await pagina.click('[aria-label="Mes"]'); await esperar(900); await pagina.evaluate(() => window.scrollTo(0, 0)); } },
   { nombre: "enchufes", ruta: "/enchufes" },
   { nombre: "enchufe", ruta: "/enchufe/d1" },
   { nombre: "enchufe-nuevo", ruta: "/enchufe/nuevo" },

@@ -5,6 +5,7 @@ import { View } from "react-native";
 import { useHogarActual } from "@/api/hogar";
 import type { Periodo } from "@/api/tipos";
 import { BarrasConsumo } from "@/components/BarrasConsumo";
+import { ConsumoMeses } from "@/components/ConsumoMeses";
 import { ConsumoSegmentado } from "@/components/ConsumoSegmentado";
 import { EstadoConexion } from "@/components/EstadoConexion";
 import { Interruptor } from "@/components/Interruptor";
@@ -21,7 +22,7 @@ import { BORDE_FINO, colores, espacio, radios } from "@/theme";
 const PERIODOS: { valor: Periodo; titulo: string; resumen: string }[] = [
   { valor: "dia", titulo: "Día", resumen: "Hoy" },
   { valor: "semana", titulo: "Semana", resumen: "Últimos 7 días" },
-  { valor: "mes", titulo: "Mes", resumen: "Este mes" },
+  { valor: "mes", titulo: "Mes", resumen: "Este mes, hasta hoy" },
 ];
 
 /** Un costo con su etiqueta encima («Gastado hoy · $1.280»). */
@@ -51,6 +52,8 @@ export default function Dispositivo() {
   const d = resumen?.dispositivos.find((x) => x.id === id);
   const actual = PERIODOS.find((p) => p.valor === periodo)!;
   const conRetraso = d != null && d.ultima_lectura != null && !d.en_linea;
+  // En «mes» la serie trae los últimos 12 meses: la cifra es la del mes actual (el último punto), no la suma del año.
+  const cifra = !consumo ? null : periodo === "mes" ? (consumo.serie[consumo.serie.length - 1]?.costo_cop ?? null) : consumo.costo_total_cop;
 
   return (
     <Pantalla refrescando={isFetching && !isLoading} alRefrescar={() => void refetch()}>
@@ -120,8 +123,8 @@ export default function Dispositivo() {
               <Texto variante="secundario" color={colores.textoSecundario} style={{ fontWeight: "500" }}>
                 {actual.resumen}
               </Texto>
-              <Texto variante="cifraMedia">{formatoCOP(consumo.costo_total_cop)}</Texto>
-              {consumo.costo_total_cop == null && (
+              <Texto variante="cifraMedia">{formatoCOP(cifra)}</Texto>
+              {cifra == null && (
                 <Texto variante="secundario" color={colores.ambar}>
                   Aún no hay tarifa cargada: no podemos calcular el costo.
                 </Texto>
@@ -129,8 +132,9 @@ export default function Dispositivo() {
             </View>
             <BarrasConsumo serie={consumo.serie} periodo={periodo} />
             <Texto variante="secundario" color={colores.textoSecundario}>
-              Costo en pesos por {periodo === "dia" ? "hora" : "día"}.
+              {periodo === "mes" ? "Costo en pesos de cada mes, los últimos 12." : `Costo en pesos por ${periodo === "dia" ? "hora" : "día"}.`}
             </Texto>
+            {periodo === "mes" && <ConsumoMeses serie={consumo.serie} />}
           </>
         )}
       </Tarjeta>

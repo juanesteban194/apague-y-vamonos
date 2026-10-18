@@ -103,7 +103,15 @@ const serieDia = Array.from({ length: 24 }, (_, h) => {
 export const CONSUMO = {
   dia: { dispositivo_id: "d1", periodo: "dia", desde: hace(60 * 12), hasta: hace(0), tarifa_mes: mesIso(0), kwh_total: serieDia.reduce((a, p) => a + p.kwh, 0), costo_total_cop: serieDia.reduce((a, p) => a + p.costo_cop, 0), serie: serieDia },
   semana: { dispositivo_id: "d1", periodo: "semana", desde: hace(60 * 24 * 7), hasta: hace(0), tarifa_mes: mesIso(0), kwh_total: 11.2, costo_total_cop: 9124, serie: [1.5, 1.7, 1.6, 1.8, 1.4, 1.6, 1.6].map((kwh, i) => ({ inicio: hace(60 * 24 * (6 - i)), kwh, costo_cop: Math.round(kwh * 814.63) })) },
-  mes: { dispositivo_id: "d1", periodo: "mes", desde: mesIso(0), hasta: hace(0), tarifa_mes: mesIso(0), kwh_total: 26.3, costo_total_cop: 21400, serie: Array.from({ length: hoy.getDate() }, (_, i) => ({ inicio: new Date(hoy.getFullYear(), hoy.getMonth(), i + 1).toISOString(), kwh: 1.4 + ((i * 7) % 5) / 10, costo_cop: Math.round((1.4 + ((i * 7) % 5) / 10) * 814.63) })) },
+  // «Mes»: un punto por mes, los últimos 12 (como la API). El enchufe se conectó hace 3 meses; el actual va hasta hoy ($21.400, igual que el resumen).
+  mes: (() => {
+    const costos = [0, 0, 0, 0, 0, 0, 0, 0, 12400, 27900, 25300, 21400];
+    const serie = costos.map((costo_cop, i) => {
+      const f = new Date(hoy.getFullYear(), hoy.getMonth() - (11 - i), 1);
+      return { inicio: `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, "0")}-01T00:00:00-05:00`, kwh: costo_cop / 900, costo_cop };
+    });
+    return { dispositivo_id: "d1", periodo: "mes", desde: serie[0].inicio, hasta: hace(0), tarifa_mes: mesIso(0), kwh_total: serie.reduce((a, p) => a + p.kwh, 0), costo_total_cop: costos.reduce((a, c) => a + c, 0), serie };
+  })(),
 };
 
 /** Respuesta para cada ruta GET de la API. Lo que no está aquí responde 404 (y la app debe manejarlo con gracia). */

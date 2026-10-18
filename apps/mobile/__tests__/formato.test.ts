@@ -1,4 +1,4 @@
-import { etiquetaPunto, mesDeTarifa } from "@/lib/fechas";
+import { etiquetaPunto, mesDeTarifa, nombreMes } from "@/lib/fechas";
 import { formatoCOP, formatoPotencia, formatoTarifa } from "@/lib/formato";
 import { TEXTO_MIN, tipografia } from "@/theme";
 
@@ -33,7 +33,12 @@ describe("fechas del backend (offset de Bogotá, sin depender de la zona del tel
     expect(etiquetaPunto("2026-10-12T00:00:00-05:00", "dia")).toBe("0");
     expect(etiquetaPunto("2026-10-12T00:00:00-05:00", "semana")).toBe("lun"); // 12-oct-2026 es lunes
     expect(etiquetaPunto("2026-10-18T00:00:00-05:00", "semana")).toBe("dom");
-    expect(etiquetaPunto("2026-10-03T00:00:00-05:00", "mes")).toBe("3");
+    expect(etiquetaPunto("2026-10-01T00:00:00-05:00", "mes")).toBe("oct"); // periodo «mes»: un punto por mes
+    expect(etiquetaPunto("2026-01-01T00:00:00-05:00", "mes")).toBe("ene");
+  });
+  it("nombre del mes, con el año solo si no es el del mes actual", () => {
+    expect(nombreMes("2026-09-01T00:00:00-05:00", "2026-10-01T00:00:00-05:00")).toBe("septiembre");
+    expect(nombreMes("2025-12-01T00:00:00-05:00", "2026-10-01T00:00:00-05:00")).toBe("diciembre de 2025");
   });
   it("mes de la tarifa", () => expect(mesDeTarifa("2026-09-01")).toBe("septiembre de 2026"));
 });

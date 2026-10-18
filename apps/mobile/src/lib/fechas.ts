@@ -1,6 +1,7 @@
 import type { Periodo } from "@/api/tipos";
 
 const DIAS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+const MESES_CORTOS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 
 /** El backend manda fechas con offset de Bogotá ("2026-10-12T14:00:00-05:00"): se leen del texto, sin depender
@@ -11,7 +12,13 @@ export function etiquetaPunto(iso: string, periodo: Periodo): string {
   const dia = Number(iso.slice(8, 10));
   if (periodo === "dia") return String(Number(iso.slice(11, 13)));
   if (periodo === "semana") return DIAS[new Date(Date.UTC(anio, mes - 1, dia)).getUTCDay()];
-  return String(dia);
+  return MESES_CORTOS[mes - 1]; // periodo «mes»: un punto por mes
+}
+
+/** El mes de un punto de la serie mensual: "octubre", o "diciembre de 2025" si no es del año de `referencia`. */
+export function nombreMes(iso: string, referencia: string): string {
+  const nombre = MESES[Number(iso.slice(5, 7)) - 1];
+  return iso.slice(0, 4) === referencia.slice(0, 4) ? nombre : `${nombre} de ${iso.slice(0, 4)}`;
 }
 
 /** "2026-09-01" → "septiembre de 2026" */
