@@ -13,7 +13,7 @@ import { HOGAR, iniciarSesionDePrueba, renderizar, respuestaJson, RESUMEN } from
 
 const fetchMock = jest.fn();
 const ENCHUFE = { id: "d1", tuya_id: "t1", nombre: "Televisor", tipo_aparato: null, alto_riesgo: false, umbral_minutos_encendido: null };
-const SEMAFORO = (s: object) => ({ ...RESUMEN.semaforo, estado: "ok", nivel: "verde", titulo: "Vas bien", mensaje: "Si sigue así, este mes paga unos $23.160 menos que su promedio.", promedio_kwh: 179.17, proyeccion_kwh: 155, diferencia_cop: -23160, ...s });
+const SEMAFORO = (s: object) => ({ ...RESUMEN.semaforo, estado: "ok", nivel: "verde", titulo: "Vas bien", mensaje: "Si sigues así, este mes pagas unos $23.160 menos que tu promedio.", promedio_kwh: 179.17, proyeccion_kwh: 155, diferencia_cop: -23160, ...s });
 const HISTORIAL_VACIO = { meses: [], meses_usados: 0, promedio_kwh: null, promedio_cop: null };
 
 type Ruta = unknown | ((init: RequestInit) => Response);
@@ -48,13 +48,13 @@ describe("Semáforo en Inicio", () => {
     conSemaforo({});
     await renderizar(<Inicio />);
     expect(await screen.findByText("Vas bien")).toBeTruthy();
-    expect(screen.getByText("Si sigue así, este mes paga unos $23.160 menos que su promedio.")).toBeTruthy();
+    expect(screen.getByText("Si sigues así, este mes pagas unos $23.160 menos que tu promedio.")).toBeTruthy();
     expect(screen.getByLabelText("Semáforo en verde")).toBeTruthy();
-    expect(screen.getByText("Lo compara con el promedio de sus últimas facturas de EPM.")).toBeTruthy();
+    expect(screen.getByText("Comparado con el promedio de tus facturas de EPM.")).toBeTruthy();
   });
 
   it.each([["amarillo", "Vas medio alto"], ["rojo", "Vas alto"]])("%s: %s", async (nivel, titulo) => {
-    conSemaforo({ nivel, titulo, mensaje: "Si sigue así, este mes paga unos $12.000 más que su promedio." });
+    conSemaforo({ nivel, titulo, mensaje: "Si sigues así, este mes pagas unos $12.000 más que tu promedio." });
     await renderizar(<Inicio />);
     expect(await screen.findByText(titulo)).toBeTruthy();
     expect(screen.getByLabelText(`Semáforo en ${nivel}`)).toBeTruthy();
@@ -65,12 +65,13 @@ describe("Semáforo en Inicio", () => {
     await renderizar(<Inicio />);
     expect(await screen.findByText("Falta su histórico")).toBeTruthy();
     expect(screen.queryByLabelText(/Semáforo en/)).toBeNull(); // sin datos no se inventa un color
+    expect(screen.getByLabelText(/^Semáforo apagado/)).toBeTruthy(); // pero el semáforo siempre se ve, en reposo
     await fireEvent.press(screen.getByRole("button", { name: "Anotar mis facturas" }));
     expect(router.push).toHaveBeenCalledWith("/historial");
   });
 
   it("sin lectura del medidor lleva a anotarla", async () => {
-    conSemaforo({ estado: "sin_medidor", nivel: null, titulo: "Falta la lectura del medidor", mensaje: "Anote la lectura de su medidor en dos días distintos y le proyectamos cómo cierra el mes." });
+    conSemaforo({ estado: "sin_medidor", nivel: null, titulo: "Falta la lectura del medidor", mensaje: "Anota la lectura de tu medidor en dos días distintos y te proyectamos cómo cierra el mes." });
     await renderizar(<Inicio />);
     await screen.findByText("Falta la lectura del medidor");
     // el aviso de subsistencia también ofrece anotar la lectura: se elige el botón de la tarjeta del semáforo

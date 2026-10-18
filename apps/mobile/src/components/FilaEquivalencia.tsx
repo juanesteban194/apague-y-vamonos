@@ -1,21 +1,21 @@
-import { Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
 
 import type { Equivalencia } from "@/api/tipos";
 import { colores } from "@/theme";
 
+import type { NombreIcono } from "./Icono";
+import { IconoEnCaja } from "./Primitivos";
 import { Texto } from "./Texto";
 
-const ICONOS: Record<string, keyof typeof Ionicons.glyphMap> = { tv: "tv", plug: "battery-charging", burger: "fast-food", milk: "water" };
+/** El backend nombra el ícono con una palabra corta; aquí se traduce al significado que entiende `Icono`. */
+const ICONOS: Record<string, NombreIcono> = { tv: "tv", plug: "celular", burger: "hamburguesa", milk: "leche" };
 
-/** "Es como dejar el televisor de la sala prendido 21 horas." con su ícono en cajita (mockup). */
+/** «Es como dejar el televisor de la sala prendido 21 horas.» con su ícono en caja. La primera va un poco más marcada. */
 export function FilaEquivalencia({ equivalencia, primera }: { equivalencia: Equivalencia; primera: boolean }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-      <View style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: primera ? colores.verdeFondo : colores.fondo, alignItems: "center", justifyContent: "center" }}>
-        <Ionicons name={ICONOS[equivalencia.icono] ?? "flash"} size={24} color={primera ? colores.verde : colores.textoSecundario} />
-      </View>
-      <Texto variante="cuerpo" style={{ flex: 1, fontWeight: primera ? "700" : "400" }}>
+      <IconoEnCaja nombre={ICONOS[equivalencia.icono] ?? "rayo"} tono="neutro" tamano={38} />
+      <Texto variante="cuerpo" color={primera ? colores.texto : colores.textoSecundario} style={{ flex: 1, fontWeight: primera ? "500" : "400" }}>
         {equivalencia.texto}
       </Texto>
     </View>

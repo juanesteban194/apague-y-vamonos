@@ -57,7 +57,7 @@ describe("Saldo prepago", () => {
   it("muestra la proyección y las anotaciones anteriores", async () => {
     api();
     await renderizar(<Prepago />);
-    expect(await screen.findByText(/le alcanza hasta el .* Son unos 5 días\./)).toBeTruthy(); // 4,5 días → "unos 5 días" como lo diría la persona
+    expect(await screen.findByText(/te alcanza hasta el .* Son unos 5 días\./)).toBeTruthy(); // 4,5 días → "unos 5 días" como lo diría la persona
     expect(screen.getByText("Sus anotaciones")).toBeTruthy();
     expect(screen.getAllByText(/\$22\.000 · hace 24 h|\$22\.000 · hace 1 día|\$22\.000/).length).toBeGreaterThan(0);
   });
@@ -187,8 +187,8 @@ describe("Línea de subsistencia en Inicio", () => {
   it("verde: dice cuánto lleva en porcentaje (sin kWh) y aclara que solo cuenta los enchufes", async () => {
     api({ "GET /hogares/h1/resumen": con({}) });
     await renderizar(<Inicio />);
-    expect(await screen.findByText("Lleva el 62 % de la energía que EPM le subsidia este mes.")).toBeTruthy();
-    expect(screen.getByText("Cuenta solo lo que miden sus enchufes, no toda la casa.")).toBeTruthy();
+    expect(await screen.findByText("Llevas el 62 % de la energía que EPM te subsidia este mes.")).toBeTruthy();
+    expect(screen.getByText("Solo cuenta lo que miden tus enchufes, no toda la casa.")).toBeTruthy();
     expect(screen.getByRole("progressbar").props.accessibilityValue.now).toBe(62);
     expect(screen.queryByText(/kWh/)).toBeNull();
     await fireEvent.press(screen.getByRole("button", { name: "Anotar lectura del medidor" }));
@@ -198,17 +198,17 @@ describe("Línea de subsistencia en Inicio", () => {
   it("amarillo y rojo cambian el mensaje", async () => {
     api({ "GET /hogares/h1/resumen": con({ porcentaje: 0.85, nivel: "amarillo" }) });
     const { unmount } = await renderizar(<Inicio />);
-    expect(await screen.findByText("Ya lleva el 85 %: se acerca a la línea de subsistencia.")).toBeTruthy();
+    expect(await screen.findByText("Ya llevas el 85 %: te acercas a la línea de subsistencia.")).toBeTruthy();
     await unmount();
     api({ "GET /hogares/h1/resumen": con({ porcentaje: 1.12, nivel: "rojo" }) });
     await renderizar(<Inicio />);
-    expect(await screen.findByText("Ya pasó la línea: desde aquí la energía le sale más cara.")).toBeTruthy();
+    expect(await screen.findByText("Ya pasaste la línea: desde aquí la energía te sale más cara.")).toBeTruthy();
   });
 
   it("con lectura del medidor no pide anotarla", async () => {
     api({ "GET /hogares/h1/resumen": con({ fuente: "medidor" }) });
     await renderizar(<Inicio />);
-    await screen.findByText(/Lleva el 62 %/);
+    await screen.findByText(/Llevas el 62 %/);
     expect(screen.queryByRole("button", { name: "Anotar lectura del medidor" })).toBeNull();
   });
 });

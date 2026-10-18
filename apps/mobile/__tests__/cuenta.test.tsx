@@ -349,7 +349,7 @@ describe("Categorías de la casa", () => {
     });
     await renderizar(<Inicio />);
     expect(await screen.findByText("$28.500")).toBeTruthy();
-    expect(screen.getByText(/le alcanza hasta el .* Son unos 8 días\./)).toBeTruthy();
+    expect(screen.getByText(/te alcanza hasta el .* Son unos 8 días\./)).toBeTruthy();
     await fireEvent.press(screen.getByRole("button", { name: "Actualizar saldo" }));
     expect(router.push).toHaveBeenCalledWith("/prepago");
   });
@@ -358,7 +358,7 @@ describe("Categorías de la casa", () => {
     await iniciarSesionDePrueba();
     simular({ ...base, "GET /hogares": [{ ...HOGAR, tipo_medidor: "pospago" }] });
     await renderizar(<Inicio />);
-    await screen.findByText("Tus dispositivos");
+    await screen.findByText("Qué está gastando más");
     expect(screen.queryByText(/Medidor prepago/)).toBeNull();
   });
 

@@ -1,26 +1,32 @@
 import { router } from "expo-router";
+import { Fragment } from "react";
 import { View } from "react-native";
 
-import { BarraProgreso, colorDelNivel } from "@/components/BarraProgreso";
-import { Boton } from "@/components/Boton";
-
 import { useHogarActual } from "@/api/hogar";
+import type { DispositivoResumen } from "@/api/tipos";
+import { Boton } from "@/components/Boton";
 import { EstadoConexion } from "@/components/EstadoConexion";
+import { InicioAhora } from "@/components/InicioAhora";
+import { InicioEsqueleto } from "@/components/InicioEsqueleto";
+import { InicioHoy } from "@/components/InicioHoy";
+import { InicioSubsistencia } from "@/components/InicioSubsistencia";
 import { Pantalla } from "@/components/Pantalla";
+import { EncabezadoSeccion, IconoEnCaja, Pastilla, Separador } from "@/components/Primitivos";
 import { SelectorCasa } from "@/components/SelectorCasa";
 import { SugerenciaAyuda } from "@/components/SugerenciaAyuda";
 import { Tarjeta } from "@/components/Tarjeta";
 import { TarjetaDispositivo } from "@/components/TarjetaDispositivo";
-import { Texto } from "@/components/Texto";
 import { TarjetaPrepago } from "@/components/TarjetaPrepago";
+import { TarjetaSemaforo } from "@/components/TarjetaSemaforo";
+import { Texto } from "@/components/Texto";
 import { useResumen } from "@/features/consumo/hooks";
 import { usePrepago } from "@/features/prepago/hooks";
-import { formatoCOP } from "@/lib/formato";
-import { FilaEquivalencia } from "@/components/FilaEquivalencia";
-import { TarjetaSemaforo } from "@/components/TarjetaSemaforo";
-import { fechaLarga, mesDeTarifa } from "@/lib/fechas";
+import { fechaLarga } from "@/lib/fechas";
 import { useTiempoReal } from "@/realtime/estado";
-import { colores } from "@/theme";
+import { colores, espacio } from "@/theme";
+
+/** De mayor a menor gasto de hoy (el costo ya viene del backend); los que aún no tienen costo, al final. */
+const porGasto = (a: DispositivoResumen, b: DispositivoResumen) => (b.costo_hoy_cop ?? -1) - (a.costo_hoy_cop ?? -1);
 
 export default function Inicio() {
   const { hogar, error: errorHogar, isLoading: cargandoHogar, refetch: recargarHogar } = useHogarActual();
@@ -32,31 +38,41 @@ export default function Inicio() {
   const falla = errorHogar ?? error;
   const alRefrescar = () => (hogar ? void refetch() : void recargarHogar());
 
+  const dispositivos = resumen ? [...resumen.dispositivos].sort(porGasto) : [];
+  const mayorGasto = Math.max(0, ...dispositivos.map((d) => d.costo_hoy_cop ?? 0));
+  const tarjetaPrepago = mostrarPrepago ? <TarjetaPrepago prepago={prepago} alActualizar={() => router.push("/prepago")} /> : null;
+  const prepagoUrgente = prepago?.nivel === "rojo";
+
   return (
     <Pantalla refrescando={isFetching && !isLoading} alRefrescar={alRefrescar}>
-      <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-        <View style={{ flex: 1 }}>
-          <Texto variante="secundario" color={colores.textoSecundario} style={{ fontWeight: "600" }}>
+      <View style={{ gap: 2, marginTop: espacio.xs }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: espacio.m, minHeight: 32 }}>
+          <Texto variante="secundario" color={colores.textoSecundario} style={{ fontWeight: "500" }}>
             {fechaLarga(new Date())}
           </Texto>
-          {hogar ? <SelectorCasa /> : <Texto variante="titulo" style={{ fontSize: 26, fontWeight: "800" }}>Inicio</Texto>}
+          {hogar && <Pastilla texto={`Estrato ${hogar.estrato}`} />}
         </View>
-        {hogar && (
-          <View style={{ backgroundColor: colores.tarjeta, borderWidth: 1, borderColor: colores.borde, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 }}>
-            <Texto variante="secundario" color={colores.textoSecundario} style={{ fontWeight: "700" }}>
-              Estrato {hogar.estrato}
-            </Texto>
-          </View>
+        {hogar ? (
+          <SelectorCasa />
+        ) : (
+          <Texto variante="tituloGrande" accessibilityRole="header">
+            Inicio
+          </Texto>
         )}
       </View>
       <EstadoConexion estado={conexion} />
       <SugerenciaAyuda tema="inicio" />
 
-      {(cargandoHogar || isLoading) && !falla && <Texto color={colores.textoSecundario}>Cargando…</Texto>}
+      {(cargandoHogar || isLoading) && !falla && <InicioEsqueleto />}
       {falla && (
-        <Tarjeta>
-          <Texto color={colores.rojo} style={{ fontWeight: "600" }}>{falla.message}</Texto>
-          <Texto variante="secundario" color={colores.textoSecundario}>Desliza hacia abajo para reintentar.</Texto>
+        <Tarjeta style={{ padding: 20, gap: espacio.m }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: espacio.m }}>
+            <IconoEnCaja nombre="alertaLinea" tono="rojo" tamano={36} />
+            <Texto style={{ flex: 1, fontWeight: "600" }}>{falla.message}</Texto>
+          </View>
+          <Texto variante="secundario" color={colores.textoSecundario}>
+            Desliza hacia abajo para reintentar.
+          </Texto>
         </Tarjeta>
       )}
 
@@ -64,62 +80,43 @@ export default function Inicio() {
         <>
           <TarjetaSemaforo semaforo={resumen.semaforo} alAnotarFacturas={() => router.push("/historial")} alAnotarMedidor={() => router.push("/medidor")} />
 
-          <Tarjeta>
-            <Texto variante="secundario" color={colores.textoSecundario}>Lo que han medido sus enchufes hoy</Texto>
-            <Texto variante="cifra">{formatoCOP(resumen.costo_hoy_cop)}</Texto>
-            {resumen.equivalencias.length > 0 && (
-              <View style={{ gap: 12, marginTop: 10, paddingTop: 14, borderTopWidth: 1, borderTopColor: colores.borde }}>
-                {resumen.equivalencias.map((e, i) => (
-                  <FilaEquivalencia key={e.texto} equivalencia={e} primera={i === 0} />
-                ))}
+          {prepagoUrgente && tarjetaPrepago}
+
+          {dispositivos.length > 0 && (
+            <>
+              <InicioHoy resumen={resumen} />
+              <InicioAhora dispositivos={dispositivos} enVivo={conexion === "conectado"} />
+            </>
+          )}
+
+          <EncabezadoSeccion titulo="Qué está gastando más" detalle={dispositivos.length > 0 ? "Hoy, de mayor a menor" : undefined} />
+          {dispositivos.length === 0 ? (
+            <Tarjeta style={{ padding: 20, gap: espacio.m, alignItems: "flex-start" }}>
+              <IconoEnCaja nombre="enchufeLinea" tamano={44} />
+              <View style={{ gap: 4 }}>
+                <Texto variante="subtitulo">Aún no tienes enchufes</Texto>
+                <Texto color={colores.textoSecundario}>Conecta uno y aquí verás, en pesos, cuánto gasta cada dispositivo.</Texto>
               </View>
-            )}
-            <Texto color={colores.textoSecundario} style={{ marginTop: 8 }}>
-              Este mes: {formatoCOP(resumen.costo_mes_cop)}
-            </Texto>
-            {resumen.tarifa == null ? (
-              <Texto variante="secundario" color={colores.ambar}>Aún no hay tarifa cargada: no se puede calcular el costo.</Texto>
-            ) : (
-              !resumen.tarifa.es_del_mes_actual && (
-                <Texto variante="secundario" color={colores.ambar}>Con la tarifa de {mesDeTarifa(resumen.tarifa.mes)}.</Texto>
-              )
-            )}
-            <Texto variante="secundario" color={colores.textoSecundario}>Solo cuenta lo que miden tus enchufes.</Texto>
-          </Tarjeta>
+              <Boton titulo="Conectar un enchufe" variante="secundario" compacto onPress={() => router.push("/enchufe/nuevo")} />
+            </Tarjeta>
+          ) : (
+            <Tarjeta style={{ padding: 0, gap: 0 }}>
+              {dispositivos.map((d, i) => (
+                <Fragment key={d.id}>
+                  {i > 0 && <Separador sangria={16} />}
+                  <TarjetaDispositivo
+                    dispositivo={d}
+                    proporcion={mayorGasto > 0 && d.costo_hoy_cop != null ? d.costo_hoy_cop / mayorGasto : undefined}
+                    alPulsar={() => router.push(`/dispositivo/${d.id}`)}
+                  />
+                </Fragment>
+              ))}
+            </Tarjeta>
+          )}
 
-          <Tarjeta style={{ gap: 10 }}>
-            <Texto variante="secundario" color={colores.textoSecundario} style={{ fontWeight: "700" }}>
-              Línea de subsistencia
-            </Texto>
-            <BarraProgreso
-              proporcion={resumen.subsistencia.porcentaje}
-              color={colorDelNivel(resumen.subsistencia.nivel)}
-              descripcion={`Lleva el ${Math.round(resumen.subsistencia.porcentaje * 100)} % de la línea de subsistencia`}
-            />
-            <Texto>
-              {resumen.subsistencia.nivel === "rojo"
-                ? "Ya pasó la línea: desde aquí la energía le sale más cara."
-                : resumen.subsistencia.nivel === "amarillo"
-                  ? `Ya lleva el ${Math.round(resumen.subsistencia.porcentaje * 100)} %: se acerca a la línea de subsistencia.`
-                  : `Lleva el ${Math.round(resumen.subsistencia.porcentaje * 100)} % de la energía que EPM le subsidia este mes.`}
-            </Texto>
-            {resumen.subsistencia.fuente === "enchufes" && (
-              <>
-                <Texto variante="secundario" color={colores.textoSecundario}>
-                  Cuenta solo lo que miden sus enchufes, no toda la casa.
-                </Texto>
-                <Boton titulo="Anotar lectura del medidor" variante="secundario" onPress={() => router.push("/medidor")} />
-              </>
-            )}
-          </Tarjeta>
-
-          {mostrarPrepago && <TarjetaPrepago prepago={prepago} alActualizar={() => router.push("/prepago")} />}
-
-          <Texto variante="subtitulo">Tus dispositivos</Texto>
-          {resumen.dispositivos.length === 0 && <Texto color={colores.textoSecundario}>Todavía no hay enchufes registrados.</Texto>}
-          {resumen.dispositivos.map((d) => (
-            <TarjetaDispositivo key={d.id} dispositivo={d} alPulsar={() => router.push(`/dispositivo/${d.id}`)} />
-          ))}
+          <EncabezadoSeccion titulo="Tu mes" />
+          {!prepagoUrgente && tarjetaPrepago}
+          <InicioSubsistencia subsistencia={resumen.subsistencia} alAnotarMedidor={() => router.push("/medidor")} />
         </>
       )}
     </Pantalla>
