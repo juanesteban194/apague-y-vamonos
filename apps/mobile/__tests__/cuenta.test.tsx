@@ -458,7 +458,7 @@ describe("Categorías de la casa", () => {
     simular(base);
     await renderizar(<Ajustes />);
     expect(await screen.findByText(/ana@example.com/)).toBeTruthy();
-    await fireEvent.press(screen.getByRole("button", { name: "Ver y cambiar de casa" }));
+    await fireEvent.press(screen.getByRole("button", { name: /Ver y cambiar de casa/ }));
     await fireEvent.press(screen.getByRole("button", { name: "Instrucciones" }));
     expect((router.push as jest.Mock).mock.calls.map((c) => c[0])).toEqual(["/casas", "/instrucciones"]);
   });

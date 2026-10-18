@@ -1,83 +1,111 @@
 import { router, type Href } from "expo-router";
 import { Pressable, View } from "react-native";
 
-import { Icono, type NombreIcono } from "@/components/Icono";
+import type { NombreIcono } from "@/components/Icono";
 import { Pantalla } from "@/components/Pantalla";
+import { IconoEnCaja, type Tono } from "@/components/Primitivos";
 import { Texto } from "@/components/Texto";
-import { colores, espacio } from "@/theme";
+import { BORDE_FINO, colores, espacio, radios, sombras } from "@/theme";
 
-type Entrada = { titulo: string; icono: NombreIcono; ruta: Href };
-type Categoria = { titulo: string; fondo: string; tinta: string; entradas: Entrada[] };
+type Entrada = { titulo: string; detalle: string; icono: NombreIcono; ruta: Href };
+type Categoria = { titulo: string; tono: Tono; entradas: Entrada[] };
 
-/** Las categorías de la app, como en una app de banco: cada ícono lleva a todo lo relacionado con eso. */
+/** Las categorías de la app, como en una app de banco: cada mosaico lleva a todo lo relacionado con eso.
+ *  Íconos en tonos suaves: el verde se reserva para el ahorro (igual que en el semáforo) y el ámbar para la plata. */
 const CATEGORIAS: Categoria[] = [
   {
     titulo: "Mis dispositivos",
-    fondo: colores.verdeFondo,
-    tinta: colores.verde,
+    tono: "neutro",
     entradas: [
-      { titulo: "Enchufes", icono: "enchufe", ruta: "/enchufes" },
-      { titulo: "Agentes", icono: "agente", ruta: "/agentes" },
-      { titulo: "Rutinas", icono: "rutina", ruta: "/rutinas" },
+      { titulo: "Enchufes", detalle: "Estado y ajustes", icono: "enchufeLinea", ruta: "/enchufes" },
+      { titulo: "Agentes", detalle: "Quién los lee", icono: "agenteLinea", ruta: "/agentes" },
+      { titulo: "Rutinas", detalle: "Apagado automático por horario", icono: "rutinaLinea", ruta: "/rutinas" },
     ],
   },
   {
     titulo: "Mi plata",
-    fondo: colores.ambarFondo,
-    tinta: colores.ambar,
+    tono: "ambar",
     entradas: [
-      { titulo: "Facturas y medidor", icono: "factura", ruta: "/facturas" },
-      { titulo: "Saldo prepago", icono: "prepago", ruta: "/prepago" },
+      { titulo: "Facturas y medidor", detalle: "Tu promedio", icono: "facturaLinea", ruta: "/facturas" },
+      { titulo: "Saldo prepago", detalle: "Cuánto te alcanza", icono: "prepagoLinea", ruta: "/prepago" },
     ],
   },
   {
     titulo: "Ahorra",
-    fondo: "#E6E9F2",
-    tinta: "#34406B",
+    tono: "verde",
     entradas: [
-      { titulo: "Consejos", icono: "consejo", ruta: "/consejos" },
-      { titulo: "Cambiar un dispositivo", icono: "simulador", ruta: "/simulador" },
+      { titulo: "Consejos", detalle: "Para pagar menos", icono: "consejoLinea", ruta: "/consejos" },
+      { titulo: "Cambiar un dispositivo", detalle: "¿Te conviene?", icono: "simulador", ruta: "/simulador" },
     ],
   },
   {
     titulo: "Mi cuenta",
-    fondo: "#ECE8DF",
-    tinta: colores.texto,
+    tono: "neutro",
     entradas: [
-      { titulo: "Mis casas", icono: "casas", ruta: "/casas" },
-      { titulo: "Instrucciones", icono: "instrucciones", ruta: "/instrucciones" },
+      { titulo: "Mis casas", detalle: "Datos y tarifa", icono: "casaLinea", ruta: "/casas" },
+      { titulo: "Instrucciones", detalle: "Cómo funciona", icono: "instrucciones", ruta: "/instrucciones" },
     ],
   },
 ];
 
-function Atajo({ entrada, fondo, tinta }: { entrada: Entrada; fondo: string; tinta: string }) {
+const superficie = { backgroundColor: colores.tarjeta, borderRadius: radios.l, borderWidth: BORDE_FINO, borderColor: colores.borde, ...sombras.suave };
+
+/** Un mosaico: ícono, nombre y una línea que dice qué hay adentro. `ancho` ocupa toda la fila (la última de una categoría impar). */
+function Mosaico({ entrada, tono, ancho }: { entrada: Entrada; tono: Tono; ancho?: boolean }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={entrada.titulo}
+      accessibilityHint={entrada.detalle}
       onPress={() => router.push(entrada.ruta)}
-      style={{ width: 104, alignItems: "center", gap: 8 }}
+      style={({ pressed }) => [
+        superficie,
+        ancho ? { minHeight: 68, flexDirection: "row", alignItems: "center", gap: 14 } : { flex: 1, minHeight: 112, gap: espacio.m },
+        { padding: 14 },
+        pressed && { transform: [{ scale: 0.98 }], backgroundColor: colores.fondoElevado },
+      ]}
     >
-      <View style={{ width: 68, height: 68, borderRadius: 34, backgroundColor: fondo, alignItems: "center", justifyContent: "center" }}>
-        <Icono nombre={entrada.icono} tamano={30} color={tinta} />
+      <IconoEnCaja nombre={entrada.icono} tono={tono} tamano={36} />
+      <View style={{ flex: ancho ? 1 : undefined, gap: 1 }}>
+        <Texto style={{ fontWeight: "600" }}>{entrada.titulo}</Texto>
+        <Texto variante="secundario" color={colores.textoSecundario}>
+          {entrada.detalle}
+        </Texto>
       </View>
-      <Texto variante="secundario" style={{ textAlign: "center" }}>{entrada.titulo}</Texto>
     </Pressable>
+  );
+}
+
+function Seccion({ categoria }: { categoria: Categoria }) {
+  const { entradas } = categoria;
+  const filas: Entrada[][] = [];
+  for (let i = 0; i + 1 < entradas.length; i += 2) filas.push(entradas.slice(i, i + 2));
+  const suelta = entradas.length % 2 === 1 ? entradas[entradas.length - 1] : null;
+  return (
+    <View style={{ gap: espacio.m }}>
+      <Texto variante="subtitulo" accessibilityRole="header" style={{ marginLeft: 2 }}>
+        {categoria.titulo}
+      </Texto>
+      {filas.map((fila) => (
+        <View key={fila[0].titulo} style={{ flexDirection: "row", gap: espacio.m }}>
+          {fila.map((e) => (
+            <Mosaico key={e.titulo} entrada={e} tono={categoria.tono} />
+          ))}
+        </View>
+      ))}
+      {suelta && <Mosaico entrada={suelta} tono={categoria.tono} ancho />}
+    </View>
   );
 }
 
 export default function Explorar() {
   return (
-    <Pantalla>
-      <Texto variante="titulo" style={{ fontSize: 26, fontWeight: "800" }}>Explorar</Texto>
-      {CATEGORIAS.map((c) => (
-        <View key={c.titulo} style={{ gap: espacio.m, paddingBottom: espacio.l, borderBottomWidth: 1, borderBottomColor: colores.borde }}>
-          <Texto variante="subtitulo">{c.titulo}</Texto>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: espacio.s }}>
-            {c.entradas.map((e) => <Atajo key={e.titulo} entrada={e} fondo={c.fondo} tinta={c.tinta} />)}
-          </View>
-        </View>
-      ))}
+    <Pantalla titulo="Explorar" subtitulo="Todo lo de tu casa, ordenado por tema.">
+      <View style={{ gap: espacio.xxl - 4 }}>
+        {CATEGORIAS.map((c) => (
+          <Seccion key={c.titulo} categoria={c} />
+        ))}
+      </View>
     </Pantalla>
   );
 }
