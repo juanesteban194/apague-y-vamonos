@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { Icon as IconoPhosphor, IconWeight } from "phosphor-react-native";
 import { AlarmIcon } from "phosphor-react-native/src/icons/Alarm";
 import { ArrowClockwiseIcon } from "phosphor-react-native/src/icons/ArrowClockwise";
@@ -78,121 +77,140 @@ import Svg, { Path } from "react-native-svg";
 
 import { colores } from "@/theme";
 
-/** Peso del ícono (Phosphor): `regular` trazo fino · `fill` lleno · `duotone` trazo con relleno suave (accesos y cajas) · `bold`. */
+/** Peso del ícono (Phosphor): `light` trazo fino (el de la app: minimalista) · `fill` lleno (pestaña elegida) · `regular` un poco más marcado. */
 export type PesoIcono = IconWeight;
 
 /** Íconos de la app: un nombre por significado, de Phosphor Icons (una sola familia, la de muchas apps financieras).
  *  Las pantallas piden el significado ("enchufe"), no el glifo, para poder cambiar uno sin tocar cada pantalla.
- *  Cada uno trae su peso por omisión: lleno para la pestaña elegida, trazo fino para las variantes «Linea». */
+ *  Cada uno trae su peso por omisión: lleno solo para la pestaña elegida y trazo fino (light) para todo lo demás. */
 const ICONOS = {
   inicio: [HouseIcon, "fill"],
   explorar: [SquaresFourIcon, "fill"],
   avisos: [BellIcon, "fill"],
   ajustes: [GearSixIcon, "fill"],
-  inicioLinea: [HouseIcon, "regular"],
-  explorarLinea: [SquaresFourIcon, "regular"],
-  avisosLinea: [BellIcon, "regular"],
-  ajustesLinea: [GearSixIcon, "regular"],
-  casa: [HouseIcon, "fill"],
-  casas: [BuildingsIcon, "fill"],
-  enchufe: [PlugIcon, "fill"],
-  agente: [LaptopIcon, "fill"],
-  rutina: [AlarmIcon, "fill"],
-  factura: [ReceiptIcon, "fill"],
-  medidor: [GaugeIcon, "fill"],
-  prepago: [WalletIcon, "fill"],
-  consejo: [LightbulbIcon, "fill"],
-  simulador: [ArrowsLeftRightIcon, "bold"],
-  ayuda: [QuestionIcon, "fill"],
-  instrucciones: [BookOpenIcon, "fill"],
-  cuenta: [UserCircleIcon, "fill"],
-  salir: [SignOutIcon, "regular"],
-  correo: [EnvelopeIcon, "fill"],
-  ubicacion: [MapPinIcon, "fill"],
-  tarifa: [LightningIcon, "fill"],
-  mas: [PlusCircleIcon, "fill"],
-  ok: [CheckCircleIcon, "fill"],
-  info: [InfoIcon, "fill"],
-  cerrar: [XIcon, "regular"],
-  adelante: [CaretRightIcon, "regular"],
-  abajo: [CaretDownIcon, "regular"],
-  editar: [PencilSimpleIcon, "regular"],
-  borrar: [TrashIcon, "regular"],
-  atras: [CaretLeftIcon, "regular"],
-  rayo: [LightningIcon, "fill"],
-  reloj: [ClockIcon, "regular"],
-  grafica: [ChartBarIcon, "regular"],
-  tendenciaArriba: [TrendUpIcon, "regular"],
-  tendenciaAbajo: [TrendDownIcon, "regular"],
-  candado: [LockIcon, "regular"],
-  escudo: [ShieldCheckIcon, "regular"],
-  calendario: [CalendarBlankIcon, "regular"],
-  dinero: [MoneyIcon, "regular"],
-  hoja: [LeafIcon, "regular"],
-  alerta: [WarningCircleIcon, "fill"],
-  alertaLinea: [WarningCircleIcon, "regular"],
-  infoLinea: [InfoIcon, "regular"],
-  okLinea: [CheckCircleIcon, "regular"],
-  marca: [CheckIcon, "bold"],
-  luna: [MoonIcon, "regular"],
-  sol: [SunIcon, "regular"],
-  chispa: [SparkleIcon, "regular"],
-  estrella: [StarIcon, "regular"],
-  copiar: [CopyIcon, "regular"],
-  compartir: [ExportIcon, "regular"],
-  llave: [KeyIcon, "regular"],
-  nube: [CloudIcon, "regular"],
-  telefono: [DeviceMobileIcon, "regular"],
-  menos: [MinusCircleIcon, "regular"],
-  flechaArriba: [ArrowUpIcon, "regular"],
-  flechaAbajo: [ArrowDownIcon, "regular"],
-  flechaDerecha: [ArrowRightIcon, "regular"],
-  apagar: [PowerIcon, "bold"],
-  ojo: [EyeIcon, "regular"],
-  ojoCerrado: [EyeSlashIcon, "regular"],
-  buscar: [MagnifyingGlassIcon, "regular"],
-  filtro: [SlidersHorizontalIcon, "regular"],
-  refrescar: [ArrowClockwiseIcon, "regular"],
-  enchufeLinea: [PlugIcon, "regular"],
-  agenteLinea: [LaptopIcon, "regular"],
-  rutinaLinea: [AlarmIcon, "regular"],
-  facturaLinea: [ReceiptIcon, "regular"],
-  prepagoLinea: [WalletIcon, "regular"],
-  consejoLinea: [LightbulbIcon, "regular"],
-  casaLinea: [HouseIcon, "regular"],
-  medidorLinea: [GaugeIcon, "regular"],
-  lavadora: [WashingMachineIcon, "regular"],
-  ventilador: [FanIcon, "regular"],
-  plancha: [TShirtIcon, "regular"],
-  microondas: [OvenIcon, "regular"],
-  bombillo: [LightbulbFilamentIcon, "regular"],
-  cargador: [PlugChargingIcon, "regular"],
-  termometro: [ThermometerIcon, "regular"],
-  etiqueta: [TagIcon, "regular"],
-  semaforo: [TrafficSignalIcon, "regular"],
-  conectado: [WifiHighIcon, "fill"],
-  tv: [TelevisionSimpleIcon, "fill"],
-  celular: [BatteryChargingIcon, "fill"],
-  hamburguesa: [HamburgerIcon, "fill"],
-  leche: [DropIcon, "fill"],
-  // Phosphor no tiene nevera: esta viene de Material Design Icons, de trazo parecido.
-  nevera: ["mci", "regular"],
-} as const satisfies Record<string, readonly [IconoPhosphor | "mci", PesoIcono]>;
+  inicioLinea: [HouseIcon, "light"],
+  explorarLinea: [SquaresFourIcon, "light"],
+  avisosLinea: [BellIcon, "light"],
+  ajustesLinea: [GearSixIcon, "light"],
+  casa: [HouseIcon, "light"],
+  casas: [BuildingsIcon, "light"],
+  enchufe: [PlugIcon, "light"],
+  agente: [LaptopIcon, "light"],
+  rutina: [AlarmIcon, "light"],
+  factura: [ReceiptIcon, "light"],
+  medidor: [GaugeIcon, "light"],
+  prepago: [WalletIcon, "light"],
+  consejo: [LightbulbIcon, "light"],
+  simulador: [ArrowsLeftRightIcon, "regular"],
+  ayuda: [QuestionIcon, "light"],
+  instrucciones: [BookOpenIcon, "light"],
+  cuenta: [UserCircleIcon, "light"],
+  salir: [SignOutIcon, "light"],
+  correo: [EnvelopeIcon, "light"],
+  ubicacion: [MapPinIcon, "light"],
+  tarifa: [LightningIcon, "light"],
+  mas: [PlusCircleIcon, "light"],
+  ok: [CheckCircleIcon, "light"],
+  info: [InfoIcon, "light"],
+  cerrar: [XIcon, "light"],
+  adelante: [CaretRightIcon, "light"],
+  abajo: [CaretDownIcon, "light"],
+  editar: [PencilSimpleIcon, "light"],
+  borrar: [TrashIcon, "light"],
+  atras: [CaretLeftIcon, "light"],
+  rayo: [LightningIcon, "light"],
+  reloj: [ClockIcon, "light"],
+  grafica: [ChartBarIcon, "light"],
+  tendenciaArriba: [TrendUpIcon, "light"],
+  tendenciaAbajo: [TrendDownIcon, "light"],
+  candado: [LockIcon, "light"],
+  escudo: [ShieldCheckIcon, "light"],
+  calendario: [CalendarBlankIcon, "light"],
+  dinero: [MoneyIcon, "light"],
+  hoja: [LeafIcon, "light"],
+  alerta: [WarningCircleIcon, "light"],
+  alertaLinea: [WarningCircleIcon, "light"],
+  infoLinea: [InfoIcon, "light"],
+  okLinea: [CheckCircleIcon, "light"],
+  marca: [CheckIcon, "regular"],
+  luna: [MoonIcon, "light"],
+  sol: [SunIcon, "light"],
+  chispa: [SparkleIcon, "light"],
+  estrella: [StarIcon, "light"],
+  copiar: [CopyIcon, "light"],
+  compartir: [ExportIcon, "light"],
+  llave: [KeyIcon, "light"],
+  nube: [CloudIcon, "light"],
+  telefono: [DeviceMobileIcon, "light"],
+  menos: [MinusCircleIcon, "light"],
+  flechaArriba: [ArrowUpIcon, "light"],
+  flechaAbajo: [ArrowDownIcon, "light"],
+  flechaDerecha: [ArrowRightIcon, "light"],
+  apagar: [PowerIcon, "regular"],
+  ojo: [EyeIcon, "light"],
+  ojoCerrado: [EyeSlashIcon, "light"],
+  buscar: [MagnifyingGlassIcon, "light"],
+  filtro: [SlidersHorizontalIcon, "light"],
+  refrescar: [ArrowClockwiseIcon, "light"],
+  enchufeLinea: [PlugIcon, "light"],
+  agenteLinea: [LaptopIcon, "light"],
+  rutinaLinea: [AlarmIcon, "light"],
+  facturaLinea: [ReceiptIcon, "light"],
+  prepagoLinea: [WalletIcon, "light"],
+  consejoLinea: [LightbulbIcon, "light"],
+  casaLinea: [HouseIcon, "light"],
+  medidorLinea: [GaugeIcon, "light"],
+  lavadora: [WashingMachineIcon, "light"],
+  ventilador: [FanIcon, "light"],
+  plancha: [TShirtIcon, "light"],
+  microondas: [OvenIcon, "light"],
+  bombillo: [LightbulbFilamentIcon, "light"],
+  cargador: [PlugChargingIcon, "light"],
+  termometro: [ThermometerIcon, "light"],
+  etiqueta: [TagIcon, "light"],
+  semaforo: [TrafficSignalIcon, "light"],
+  conectado: [WifiHighIcon, "light"],
+  tv: [TelevisionSimpleIcon, "light"],
+  celular: [BatteryChargingIcon, "light"],
+  hamburguesa: [HamburgerIcon, "light"],
+  leche: [DropIcon, "light"],
+  // Phosphor no tiene nevera: se dibuja aquí con su misma retícula y su mismo trazo.
+  nevera: ["nevera", "light"],
+} as const satisfies Record<string, readonly [IconoPhosphor | "nevera", PesoIcono]>;
 
 export type NombreIcono = keyof typeof ICONOS;
-
-/** Glifos de solo líneas, sin zona que rellenar: en duotono se verían raros (el WiFi queda como un abanico), así que van en trazo fino. */
-const SIN_DUOTONO: ReadonlySet<NombreIcono> = new Set<NombreIcono>(["conectado", "marca", "cerrar", "adelante", "abajo", "atras", "flechaArriba", "flechaAbajo", "flechaDerecha", "simulador", "tendenciaArriba", "tendenciaAbajo", "refrescar"]);
 
 type Props = { nombre: NombreIcono; tamano?: number; color?: string; peso?: PesoIcono };
 
 export function Icono({ nombre, tamano = 24, color = colores.texto, peso }: Props) {
   const [Componente, pesoPorOmision] = ICONOS[nombre];
   // Decorativo: el texto de al lado dice lo mismo, así que el lector de pantalla lo salta.
-  if (Componente === "mci") return <MaterialCommunityIcons name="fridge-outline" size={tamano} color={color} aria-hidden />;
+  if (Componente === "nevera") return <Nevera tamano={tamano} color={color} peso={peso ?? pesoPorOmision} />;
   return (
     <View aria-hidden pointerEvents="none">
-      <Componente size={tamano} color={color} weight={peso === "duotone" && SIN_DUOTONO.has(nombre) ? "regular" : (peso ?? pesoPorOmision)} duotoneOpacity={0.22} />
+      <Componente size={tamano} color={color} weight={peso ?? pesoPorOmision} />
+    </View>
+  );
+}
+
+/** Nevera con la retícula de Phosphor (256 × 256): cuerpo redondeado, división del congelador y dos manijas. */
+function Nevera({ tamano, color, peso }: { tamano: number; color: string; peso: PesoIcono }) {
+  const trazo = { thin: 8, light: 12, regular: 16, bold: 24, fill: 16, duotone: 16 }[peso];
+  const lleno = peso === "fill";
+  return (
+    <View aria-hidden pointerEvents="none">
+      <Svg width={tamano} height={tamano} viewBox="0 0 256 256" fill="none" stroke={lleno ? "none" : color} strokeWidth={trazo} strokeLinecap="round" strokeLinejoin="round">
+        {lleno ? (
+          <Path fill={color} d="M184 24H72a24 24 0 0 0-24 24v160a24 24 0 0 0 24 24h112a24 24 0 0 0 24-24V48a24 24 0 0 0-24-24ZM96 76a8 8 0 0 1-16 0V64a8 8 0 0 1 16 0Zm0 72a8 8 0 0 1-16 0v-24a8 8 0 0 1 16 0Zm96-48H64V48a8 8 0 0 1 8-8h112a8 8 0 0 1 8 8Z" />
+        ) : (
+          <>
+            <Path d="M72 32h112a16 16 0 0 1 16 16v160a16 16 0 0 1-16 16H72a16 16 0 0 1-16-16V48a16 16 0 0 1 16-16Z" />
+            <Path d="M56 104h144" />
+            <Path d="M88 64v16" />
+            <Path d="M88 128v24" />
+          </>
+        )}
+      </Svg>
     </View>
   );
 }

@@ -24,7 +24,7 @@ function Acceso({ entrada, tono }: { entrada: Entrada; tono: Tono }) {
       {({ pressed }) => (
         <>
           <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: t.fondo, alignItems: "center", justifyContent: "center", opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] }}>
-            <Icono nombre={entrada.icono} tamano={28} color={t.tinta} peso="duotone" />
+            <Icono nombre={entrada.icono} tamano={28} color={t.tinta} />
           </View>
           <Texto variante="secundario" numberOfLines={2} style={{ textAlign: "center", fontWeight: "500", color: colores.texto }}>
             {entrada.titulo}

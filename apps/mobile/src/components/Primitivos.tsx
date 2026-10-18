@@ -41,8 +41,8 @@ export function EncabezadoSeccion({ titulo, detalle, accion }: { titulo: string;
 }
 
 /** Ícono dentro de un cuadrado redondeado con fondo de color suave (como los de Ajustes de iOS). */
-/** Ícono con fondo suave. Por omisión en duotono (trazo fino con un relleno tenue): el acabado de las apps financieras. */
-export function IconoEnCaja({ nombre, tono = "neutro", tamano = 40, peso = "duotone" }: { nombre: NombreIcono; tono?: Tono; tamano?: number; peso?: PesoIcono }) {
+/** Ícono con fondo suave, en el trazo fino de la app. */
+export function IconoEnCaja({ nombre, tono = "neutro", tamano = 40, peso }: { nombre: NombreIcono; tono?: Tono; tamano?: number; peso?: PesoIcono }) {
   const t = TONOS[tono];
   return (
     <View style={{ width: tamano, height: tamano, borderRadius: Math.round(tamano * 0.3), backgroundColor: t.fondo, alignItems: "center", justifyContent: "center" }}>
