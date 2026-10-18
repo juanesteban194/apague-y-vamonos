@@ -3,15 +3,16 @@ import { View } from "react-native";
 
 import { ErrorApi } from "@/api/cliente";
 import { iniciarSesionConGoogle } from "@/api/google";
-import { espacio, colores } from "@/theme";
+import { espacio } from "@/theme";
 
 import { Boton } from "./Boton";
+import { CuentaAviso } from "./CuentaPiezas";
 import { LogoGoogle } from "./Icono";
-import { Texto } from "./Texto";
 
 type Props = { titulo?: string };
 
-/** Entra o crea la cuenta con Google. Al terminar, el cambio de sesión lleva solo a la pantalla que toca. */
+/** Entra o crea la cuenta con Google. Al terminar, el cambio de sesión lleva solo a la pantalla que toca.
+ *  Blanco con borde de un pelo, como lo piden las guías de marca de Google: no compite con el botón principal. */
 export function BotonGoogle({ titulo = "Continuar con Google" }: Props) {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,13 +30,9 @@ export function BotonGoogle({ titulo = "Continuar con Google" }: Props) {
   }
 
   return (
-    <View style={{ gap: espacio.s }}>
-      <Boton titulo={titulo} variante="secundario" onPress={entrar} cargando={cargando} icono={<LogoGoogle />} />
-      {error && (
-        <Texto accessibilityRole="alert" variante="secundario" color={colores.rojo} style={{ fontWeight: "600" }}>
-          {error}
-        </Texto>
-      )}
+    <View style={{ gap: espacio.m }}>
+      <Boton titulo={titulo} variante="contorno" onPress={entrar} cargando={cargando} icono={<LogoGoogle tamano={20} />} />
+      {error && <CuentaAviso texto={error} />}
     </View>
   );
 }

@@ -1,4 +1,4 @@
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 
@@ -7,10 +7,12 @@ import { Boton } from "@/components/Boton";
 import { BotonGoogle } from "@/components/BotonGoogle";
 import { Campo } from "@/components/Campo";
 import { Casilla } from "@/components/Casilla";
+import { CuentaAviso, CuentaCampoContrasena, CuentaEncabezado, CuentaEnlace, CuentaRequisito, CuentaSeparador } from "@/components/CuentaPiezas";
 import { PantallaFormulario } from "@/components/PantallaCompleta";
-import { Texto } from "@/components/Texto";
+import { FilaLista, Separador } from "@/components/Primitivos";
+import { Tarjeta } from "@/components/Tarjeta";
 import { TEXTO_CONSENTIMIENTO } from "@/lib/textos";
-import { AREA_TOQUE_MIN, colores, espacio } from "@/theme";
+import { espacio } from "@/theme";
 
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -28,6 +30,7 @@ export default function Registro() {
     contrasena.length < 8 && "La contraseña debe tener al menos 8 caracteres.",
     !acepta && "Debes aceptar el tratamiento de datos para crear la cuenta.",
   ].filter(Boolean) as string[];
+  const empezo = Boolean(nombre || email || contrasena); // la pista sale solo cuando ya empezaste a llenar
 
   async function crear() {
     setError(null);
@@ -42,45 +45,48 @@ export default function Registro() {
 
   return (
     <PantallaFormulario>
-      <Texto variante="titulo">Crear cuenta</Texto>
+      <CuentaEncabezado marca titulo="Crea tu cuenta" subtitulo="Así ves desde cualquier celular cuánto gasta tu casa." />
 
-      <View style={{ gap: espacio.m }}>
-        <Campo etiqueta="Nombre" autoComplete="name" textContentType="name" value={nombre} onChangeText={setNombre} />
-        <Campo etiqueta="Correo" autoCapitalize="none" autoComplete="email" keyboardType="email-address" textContentType="emailAddress" value={email} onChangeText={setEmail} />
+      <BotonGoogle titulo="Registrarme con Google" />
+      <CuentaSeparador texto="o con tu correo" />
+
+      <View style={{ gap: espacio.l }}>
+        <Campo etiqueta="Nombre" placeholder="Ana Restrepo" autoComplete="name" textContentType="name" value={nombre} onChangeText={setNombre} />
         <Campo
-          etiqueta="Contraseña"
-          ayuda="Mínimo 8 caracteres."
-          secureTextEntry
-          autoComplete="new-password"
-          textContentType="newPassword"
-          value={contrasena}
-          onChangeText={setContrasena}
+          etiqueta="Correo"
+          placeholder="tucorreo@ejemplo.com"
+          autoCapitalize="none"
+          autoComplete="email"
+          keyboardType="email-address"
+          textContentType="emailAddress"
+          value={email}
+          onChangeText={setEmail}
         />
+        <View style={{ gap: espacio.s }}>
+          <CuentaCampoContrasena etiqueta="Contraseña" autoComplete="new-password" textContentType="newPassword" value={contrasena} onChangeText={setContrasena} />
+          <CuentaRequisito texto="Mínimo 8 caracteres" cumplido={contrasena.length >= 8} />
+        </View>
       </View>
 
-      <Casilla marcada={acepta} alCambiar={setAcepta} texto={TEXTO_CONSENTIMIENTO} />
-      <Boton titulo="Leer la política de tratamiento de datos" variante="secundario" onPress={() => router.push("/politica")} />
+      <Tarjeta style={{ padding: 0, gap: 0 }}>
+        <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+          <Casilla marcada={acepta} alCambiar={setAcepta} texto={TEXTO_CONSENTIMIENTO} />
+        </View>
+        <Separador sangria={16} />
+        <FilaLista
+          icono="escudo"
+          titulo="Leer la política"
+          detalle="Qué datos usamos y para qué"
+          etiquetaAccesible="Leer la política de tratamiento de datos"
+          alPulsar={() => router.push("/politica")}
+        />
+      </Tarjeta>
 
-      {error && (
-        <Texto accessibilityRole="alert" color={colores.rojo} style={{ fontWeight: "600" }}>
-          {error}
-        </Texto>
-      )}
-      {problemas.length > 0 && (nombre || email || contrasena) && (
-        <Texto variante="secundario" color={colores.textoSecundario}>
-          {problemas[0]}
-        </Texto>
-      )}
+      {error && <CuentaAviso texto={error} />}
+      {problemas.length > 0 && empezo && <CuentaAviso tono="info" icono="infoLinea" texto={problemas[0]} />}
       <Boton titulo="Crear cuenta" onPress={crear} cargando={cargando} deshabilitado={problemas.length > 0} />
 
-      <Texto variante="secundario" color={colores.textoSecundario} style={{ textAlign: "center" }}>
-        o
-      </Texto>
-      <BotonGoogle titulo="Registrarme con Google" />
-
-      <Link href="/login" accessibilityRole="link" style={{ minHeight: AREA_TOQUE_MIN, textAlign: "center", paddingVertical: 12, fontSize: 17, fontWeight: "600", color: colores.primario }}>
-        ¿Ya tienes cuenta? Entrar
-      </Link>
+      <CuentaEnlace href="/login" pregunta="¿Ya tienes cuenta?" texto="Entrar" />
     </PantallaFormulario>
   );
 }

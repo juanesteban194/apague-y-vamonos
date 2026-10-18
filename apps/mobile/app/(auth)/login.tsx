@@ -1,4 +1,3 @@
-import { Link } from "expo-router";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 
@@ -6,9 +5,10 @@ import { ErrorApi, iniciarSesion } from "@/api/cliente";
 import { Boton } from "@/components/Boton";
 import { BotonGoogle } from "@/components/BotonGoogle";
 import { Campo } from "@/components/Campo";
+import { CuentaAviso, CuentaCampoContrasena, CuentaEnlace, CuentaSeparador } from "@/components/CuentaPiezas";
+import { MarcaEncabezado } from "@/components/MarcaApague";
 import { PantallaFormulario } from "@/components/PantallaCompleta";
-import { Texto } from "@/components/Texto";
-import { AREA_TOQUE_MIN, colores, espacio } from "@/theme";
+import { espacio } from "@/theme";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -37,51 +37,44 @@ export default function Login() {
 
   return (
     <PantallaFormulario>
-      <View style={{ gap: espacio.s }}>
-        <Texto variante="titulo">Apague y vámonos</Texto>
-        <Texto color={colores.textoSecundario}>Mira cuánto gasta cada dispositivo de tu casa, en pesos.</Texto>
+      <MarcaEncabezado lema="Lo que gasta cada dispositivo, en pesos. Para que pagues menos que tu promedio." />
+
+      <View style={{ gap: espacio.l, marginTop: espacio.l }}>
+        <BotonGoogle />
+        <CuentaSeparador texto="o con tu correo" />
+
+        <View style={{ gap: espacio.l }}>
+          <Campo
+            etiqueta="Correo"
+            placeholder="tucorreo@ejemplo.com"
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <View>
+            <CuentaCampoContrasena
+              etiqueta="Contraseña"
+              autoComplete="password"
+              textContentType="password"
+              value={contrasena}
+              onChangeText={setContrasena}
+              onSubmitEditing={entrar}
+            />
+            <CuentaEnlace href="/recuperar" texto="¿Olvidaste tu contraseña?" alinear="flex-end" discreto />
+          </View>
+        </View>
+
+        {error && <CuentaAviso texto={error} />}
+        {tardando && <CuentaAviso tono="info" texto="Estamos despertando el servidor. Puede tardar hasta un minuto." />}
+        <Boton titulo="Entrar" onPress={entrar} cargando={cargando} deshabilitado={!email || !contrasena} />
       </View>
 
-      <BotonGoogle />
-      <Texto variante="secundario" color={colores.textoSecundario} style={{ textAlign: "center" }}>
-        o con tu correo
-      </Texto>
-
-      <View style={{ gap: espacio.m }}>
-        <Campo
-          etiqueta="Correo"
-          autoCapitalize="none"
-          autoComplete="email"
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <Campo
-          etiqueta="Contraseña"
-          secureTextEntry
-          autoComplete="password"
-          textContentType="password"
-          value={contrasena}
-          onChangeText={setContrasena}
-          onSubmitEditing={entrar}
-        />
+      <View style={{ marginTop: espacio.s }}>
+        <CuentaEnlace href="/registro" pregunta="¿No tienes cuenta?" texto="Crear cuenta" />
       </View>
-      {error && (
-        <Texto accessibilityRole="alert" color={colores.rojo} style={{ fontWeight: "600" }}>
-          {error}
-        </Texto>
-      )}
-      {tardando && <Texto variante="secundario" color={colores.textoSecundario}>Despertando el servidor, puede tardar hasta un minuto…</Texto>}
-      <Boton titulo="Entrar" onPress={entrar} cargando={cargando} deshabilitado={!email || !contrasena} />
-
-      <Link href="/recuperar" accessibilityRole="link" style={{ minHeight: AREA_TOQUE_MIN, textAlign: "center", paddingVertical: 12, fontSize: 17, fontWeight: "600", color: colores.textoSecundario }}>
-        ¿Olvidaste tu contraseña?
-      </Link>
-
-      <Link href="/registro" accessibilityRole="link" style={{ minHeight: AREA_TOQUE_MIN, textAlign: "center", paddingVertical: 12, fontSize: 17, fontWeight: "600", color: colores.primario }}>
-        ¿No tienes cuenta? Crear cuenta
-      </Link>
     </PantallaFormulario>
   );
 }

@@ -52,6 +52,9 @@ export const PANTALLAS = [
   // Estados: la app con la casa recién creada (sin datos) y sin facturas anotadas
   { nombre: "inicio-vacio", ruta: "/", rutas: { "GET /hogares/h1/resumen": { ...RUTAS["GET /hogares/h1/resumen"], dispositivos: [], equivalencias: [], costo_hoy_cop: 0, costo_mes_cop: 0, semaforo: { estado: "sin_historial", nivel: null, titulo: "Falta tu histórico", mensaje: "Anota los meses de tu factura de EPM para saber si vas por encima o por debajo de lo normal.", promedio_kwh: null, proyeccion_kwh: null, diferencia_cop: null } } } },
   { nombre: "inicio-verde", ruta: "/", rutas: { "GET /hogares/h1/resumen": { ...RUTAS["GET /hogares/h1/resumen"], semaforo: { ...RUTAS["GET /hogares/h1/resumen"].semaforo, nivel: "verde", titulo: "Vas bien", mensaje: "Si sigues así, este mes pagas unos $12.300 menos que tu promedio.", diferencia_cop: -12300 } } } },
+  // Entrada: cuenta nueva de Google sin consentimiento y primera casa
+  { nombre: "consentimiento", ruta: "/consentimiento", rutas: { "GET /auth/yo": { ...RUTAS["GET /auth/yo"], tiene_consentimiento: false } } },
+  { nombre: "onboarding-hogar", ruta: "/hogar", rutas: { "GET /hogares": [] } },
 ];
 
 const JWT = (segundos) => `cabecera.${Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + segundos })).toString("base64url")}.firma`;
