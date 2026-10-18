@@ -1,27 +1,36 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { View } from "react-native";
 
 import { cerrarSesion, crearHogar } from "@/api/cliente";
 import { Boton } from "@/components/Boton";
+import { CuentaEncabezado } from "@/components/CuentaPiezas";
 import { FormularioHogar } from "@/components/FormularioHogar";
 import { PantallaFormulario } from "@/components/PantallaCompleta";
-import { Texto } from "@/components/Texto";
-import { colores } from "@/theme";
+import { exito } from "@/lib/haptica";
+import { espacio } from "@/theme";
 
-/** Primer uso: crear el hogar. El estrato define la tarifa que se aplica a los costos. */
+/** Primer uso: crear la casa. El estrato define la tarifa que se aplica a los costos. */
 export default function CrearHogar() {
   const cliente = useQueryClient();
   return (
     <PantallaFormulario>
-      <Texto variante="titulo">Tu casa</Texto>
-      <Texto color={colores.textoSecundario}>Con el estrato calculamos cuánto pagas por la energía.</Texto>
-      <FormularioHogar
-        etiquetaBoton="Crear casa"
-        alEnviar={async (datos) => {
-          await crearHogar(datos);
-          await cliente.invalidateQueries({ queryKey: ["hogares"] }); // la navegación pasa sola a Inicio
-        }}
+      <CuentaEncabezado
+        icono="casaLinea"
+        etiqueta="Último paso"
+        titulo="Cuéntanos de tu casa"
+        subtitulo="Con el estrato sabemos cuánto te cobra EPM por la energía. Puedes cambiarlo cuando quieras."
       />
-      <Boton titulo="Cerrar sesión" variante="secundario" onPress={() => void cerrarSesion()} />
+      <View style={{ gap: espacio.l }}>
+        <FormularioHogar
+          etiquetaBoton="Crear casa"
+          alEnviar={async (datos) => {
+            await crearHogar(datos);
+            exito();
+            await cliente.invalidateQueries({ queryKey: ["hogares"] }); // la navegación pasa sola a Inicio
+          }}
+        />
+      </View>
+      <Boton titulo="Cerrar sesión" variante="texto" onPress={() => void cerrarSesion()} />
     </PantallaFormulario>
   );
 }
