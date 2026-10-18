@@ -7,11 +7,14 @@ import { useHogarActual } from "@/api/hogar";
 import type { SimuladorResultado } from "@/api/tipos";
 import { Boton } from "@/components/Boton";
 import { Campo } from "@/components/Campo";
+import { ConsejoVeredicto } from "@/components/ConsejoVeredicto";
 import { PantallaFormulario } from "@/components/PantallaCompleta";
+import { Icono } from "@/components/Icono";
 import { SugerenciaAyuda } from "@/components/SugerenciaAyuda";
 import { Tarjeta } from "@/components/Tarjeta";
 import { Texto } from "@/components/Texto";
-import { formatoCOP, formatoNumero, leerPesos } from "@/lib/formato";
+import { exito } from "@/lib/haptica";
+import { leerPesos } from "@/lib/formato";
 import { colores, espacio } from "@/theme";
 
 // Supuestos que la persona puede cambiar. Son del equipo de desarrollo, no de una norma: por eso se muestran y se explican.
@@ -23,7 +26,7 @@ const leerNumero = (t: string) => {
   return t.trim() !== "" && Number.isFinite(n) ? n : null;
 };
 
-/** ¿Le conviene cambiar el dispositivo? (HU-05). Compara lo que gasta hoy (lo mide el enchufe) con lo que dice la etiqueta RETIQ del nuevo. */
+/** ¿Te conviene cambiar el dispositivo? (HU-05). Compara lo que gasta hoy (lo mide el enchufe) con lo que dice la etiqueta RETIQ del nuevo. */
 export default function Simulador() {
   const { kwh: kwhMedido } = useLocalSearchParams<{ dispositivo?: string; kwh?: string }>();
   const { hogar } = useHogarActual();
@@ -54,8 +57,9 @@ export default function Simulador() {
           anios: Math.round(valores.anios!),
         }),
       );
+      exito();
     } catch (e) {
-      setError(e instanceof ErrorApi ? e.message : "No se pudo calcular. Intenta de nuevo.");
+      setError(e instanceof ErrorApi ? e.message : "No pudimos calcular. Revisa tu conexión e intenta de nuevo.");
     } finally {
       setCargando(false);
     }
@@ -66,79 +70,71 @@ export default function Simulador() {
   const costoNuevo = r?.precio_kwh_usado != null ? valores.nuevo! * r.precio_kwh_usado : null;
 
   return (
-    <PantallaFormulario>
+    <PantallaFormulario centrado={false}>
       <SugerenciaAyuda tema="simulador" />
-      <Texto variante="titulo">¿Le conviene cambiarlo?</Texto>
-      <Texto color={colores.textoSecundario}>Comparamos lo que gasta hoy con lo que gastaría uno nuevo, usando la etiqueta de eficiencia (RETIQ) que traen los electrodomésticos en Colombia.</Texto>
-
-      <Campo
-        etiqueta="Lo que gasta hoy (kWh al mes)"
-        keyboardType="decimal-pad"
-        value={actual}
-        onChangeText={setActual}
-        ayuda={kwhMedido ? "Lo midió su enchufe en los últimos días." : "Búsquelo en la etiqueta del dispositivo actual."}
-      />
-      <Campo etiqueta="Lo que gastaría el nuevo (kWh al mes)" keyboardType="decimal-pad" value={nuevo} onChangeText={setNuevo} ayuda="Está impreso en la etiqueta de eficiencia del dispositivo nuevo (si dice por año, divídalo en 12)." />
-      <Campo etiqueta="Precio del dispositivo nuevo" keyboardType="number-pad" placeholder="$1.200.000" value={precio} onChangeText={setPrecio} />
-
-      <Tarjeta style={{ gap: espacio.s }}>
-        <Texto variante="subtitulo" style={{ fontWeight: "800" }}>
-          Supuestos (puede cambiarlos)
+      <View style={{ gap: 6 }}>
+        <Texto variante="tituloGrande" accessibilityRole="header">
+          ¿Te conviene cambiarlo?
         </Texto>
-        <Campo etiqueta="Tasa anual para descontar el dinero (%)" keyboardType="decimal-pad" value={tasa} onChangeText={setTasa} ayuda="Cuánto rendiría el mismo dinero si no lo gastara en el dispositivo." />
-        <Campo etiqueta="Años que cuenta el ahorro" keyboardType="number-pad" value={anios} onChangeText={setAnios} ayuda="Cuántos años cree que le dura el dispositivo nuevo." />
+        <Texto color={colores.textoSecundario}>Compara lo que gasta hoy con lo que gastaría uno nuevo, según su etiqueta de eficiencia (RETIQ).</Texto>
+      </View>
+
+      <Tarjeta style={{ padding: 18, gap: espacio.l }}>
+        <Campo
+          etiqueta="Lo que gasta hoy (kWh al mes)"
+          keyboardType="decimal-pad"
+          value={actual}
+          onChangeText={setActual}
+          ayuda={kwhMedido ? "Lo midió tu enchufe en los últimos días." : "Búscalo en la etiqueta del dispositivo que tienes."}
+        />
+        <Campo
+          etiqueta="Lo que gastaría el nuevo (kWh al mes)"
+          keyboardType="decimal-pad"
+          value={nuevo}
+          onChangeText={setNuevo}
+          ayuda="Viene en su etiqueta de eficiencia. Si dice por año, divídelo entre 12."
+        />
+        <Campo etiqueta="Precio del dispositivo nuevo" keyboardType="number-pad" placeholder="$1.200.000" value={precio} onChangeText={setPrecio} />
       </Tarjeta>
 
       {error && (
-        <Texto accessibilityRole="alert" color={colores.rojo} style={{ fontWeight: "600" }}>
-          {error}
-        </Texto>
+        <Tarjeta variante="rojo" style={{ flexDirection: "row", alignItems: "center", gap: espacio.s }}>
+          <Icono nombre="alertaLinea" tamano={20} color={colores.rojo} />
+          <Texto accessibilityRole="alert" color={colores.rojo} style={{ fontWeight: "500", flex: 1 }}>
+            {error}
+          </Texto>
+        </Tarjeta>
       )}
       <Boton titulo="Calcular" onPress={calcular} cargando={cargando} deshabilitado={!completo} />
 
-      {r && (
-        <View accessibilityLiveRegion="polite" style={{ backgroundColor: colores.texto, borderRadius: 24, padding: 22, gap: 10 }}>
-          <Texto variante="secundario" color="#B9B3A6" style={{ fontWeight: "700", textTransform: "uppercase", letterSpacing: 1 }}>
-            {r.conviene ? "Sí le conviene" : "No le conviene"}
+      {r && <ConsejoVeredicto resultado={r} costoActual={costoActual} costoNuevo={costoNuevo} anios={Math.round(valores.anios ?? 0)} />}
+
+      <Tarjeta variante="plana" style={{ padding: 18, gap: espacio.l, marginTop: espacio.s }}>
+        <View style={{ gap: 2 }}>
+          <Texto variante="subtitulo" accessibilityRole="header">
+            Supuestos del cálculo
           </Texto>
-          {r.precio_kwh_usado == null ? (
-            <Texto color={colores.sobrePrimario}>Aún no hay tarifa cargada para su estrato, así que no podemos pasar el ahorro a pesos.</Texto>
-          ) : (
-            <>
-              <View style={{ flexDirection: "row", gap: 10 }}>
-                <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 18, padding: 15 }}>
-                  <Texto variante="secundario" color="#B9B3A6" style={{ fontWeight: "700" }}>La que tiene</Texto>
-                  <Texto variante="cifraMedia" color={colores.sobrePrimario}>{formatoCOP(costoActual)}</Texto>
-                  <Texto variante="secundario" color="#B9B3A6">al mes</Texto>
-                </View>
-                <View style={{ flex: 1, backgroundColor: colores.verdeFondo, borderRadius: 18, padding: 15 }}>
-                  <Texto variante="secundario" color={colores.verde} style={{ fontWeight: "700" }}>Una nueva</Texto>
-                  <Texto variante="cifraMedia" color="#12261B">{formatoCOP(costoNuevo)}</Texto>
-                  <Texto variante="secundario" color={colores.verde}>al mes</Texto>
-                </View>
-              </View>
-              {r.ahorro_cop_mes > 0 ? (
-                <>
-                  <Texto color={colores.sobrePrimario} style={{ fontSize: 18 }}>
-                    Se ahorraría cerca de <Texto color={colores.sobrePrimario} style={{ fontWeight: "800", fontSize: 18 }}>{formatoCOP(r.ahorro_cop_mes)} cada mes</Texto>.
-                    {r.texto_recuperacion ? ` Si la nueva cuesta ${formatoCOP(valores.precio)}, se paga sola en ${r.texto_recuperacion}.` : ""}
-                  </Texto>
-                  <Texto variante="secundario" color="#C9C3B6">
-                    Contando {Math.round(valores.anios!)} años y descontando el valor del dinero, el balance es de {r.vpn_cop != null && r.vpn_cop >= 0 ? "+" : "−"}{formatoCOP(Math.abs(r.vpn_cop ?? 0))}
-                    {r.vpn_cop != null && r.vpn_cop < 0 ? ": no alcanza a pagarse." : "."}
-                  </Texto>
-                </>
-              ) : (
-                <Texto color={colores.sobrePrimario}>El dispositivo nuevo no gastaría menos que el actual: no hay ahorro que pague la compra.</Texto>
-              )}
-              <Texto variante="secundario" color="#B9B3A6">
-                Cada kWh se valora a {formatoCOP(r.precio_kwh_usado)}; si pasó la línea de subsistencia, a la tarifa más alta.
-                {` (${formatoNumero(r.ahorro_kwh_mes)} kWh de ahorro al mes)`}
-              </Texto>
-            </>
-          )}
+          <Texto variante="secundario" color={colores.textoSecundario}>
+            Puedes cambiarlos. Si lo haces, toca «Calcular» otra vez.
+          </Texto>
         </View>
-      )}
+        <Campo
+          etiqueta="Tasa anual para descontar el dinero (%)"
+          keyboardType="decimal-pad"
+          value={tasa}
+          onChangeText={setTasa}
+          ayuda="Lo que te rendiría la misma plata si no la gastaras en el dispositivo."
+          style={{ backgroundColor: colores.tarjeta }}
+        />
+        <Campo
+          etiqueta="Años que cuenta el ahorro"
+          keyboardType="number-pad"
+          value={anios}
+          onChangeText={setAnios}
+          ayuda="Cuántos años crees que te dura el dispositivo nuevo."
+          style={{ backgroundColor: colores.tarjeta }}
+        />
+      </Tarjeta>
     </PantallaFormulario>
   );
 }

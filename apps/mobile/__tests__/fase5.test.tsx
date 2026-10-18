@@ -193,7 +193,7 @@ describe("Simulador de reemplazo", () => {
     api({ "POST /simulador/retiq": () => respuestaJson(RESULTADO) });
     await renderizar(<Simulador />);
     expect((await screen.findByLabelText("Lo que gasta hoy (kWh al mes)")).props.value).toBe("72");
-    expect(screen.getByText("Lo midió su enchufe en los últimos días.")).toBeTruthy();
+    expect(screen.getByText("Lo midió tu enchufe en los últimos días.")).toBeTruthy();
     expect(screen.getByLabelText("Tasa anual para descontar el dinero (%)").props.value).toBe("12");
     expect(screen.getByLabelText("Años que cuenta el ahorro").props.value).toBe("10");
     await llenar();
@@ -207,9 +207,9 @@ describe("Simulador de reemplazo", () => {
     await renderizar(<Simulador />);
     await llenar();
     await fireEvent.press(screen.getByRole("button", { name: "Calcular" }));
-    expect(await screen.findByText("Sí le conviene")).toBeTruthy();
+    expect(await screen.findByText("Sí te conviene")).toBeTruthy();
     expect(screen.getByText(/\$32\.585 cada mes/)).toBeTruthy();
-    expect(screen.getByText(/se paga sola en 3 años y 1 mes/)).toBeTruthy();
+    expect(screen.getByText(/se paga solo en 3 años y 1 mes/i)).toBeTruthy();
     expect(screen.getByText(/el balance es de \+\$330\.000\./)).toBeTruthy();
     expect(screen.getByText("$57.024")).toBeTruthy(); // 70 kWh × $814,63 lo que gasta hoy
     expect(screen.getByText("$24.439")).toBeTruthy(); // 30 kWh × $814,63 el nuevo
@@ -221,7 +221,7 @@ describe("Simulador de reemplazo", () => {
     await fireEvent.changeText(await screen.findByLabelText("Lo que gasta hoy (kWh al mes)"), "70");
     await llenar();
     await fireEvent.press(screen.getByRole("button", { name: "Calcular" }));
-    expect(await screen.findByText("No le conviene")).toBeTruthy();
+    expect(await screen.findByText("No te conviene")).toBeTruthy();
     expect(screen.getByText(/el balance es de −\$1\.500\.000: no alcanza a pagarse\./)).toBeTruthy();
   });
 
