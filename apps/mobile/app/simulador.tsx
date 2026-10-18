@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from "expo-router";
-import { useState } from "react";
-import { View } from "react-native";
+import { useRef, useState } from "react";
+import { ScrollView, View } from "react-native";
 
 import { ErrorApi, simularRetiq } from "@/api/cliente";
 import { useHogarActual } from "@/api/hogar";
@@ -38,6 +38,9 @@ export default function Simulador() {
   const [resultado, setResultado] = useState<SimuladorResultado | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Al calcular, la pantalla baja sola hasta el veredicto: queda debajo del botón y, si no, habría que buscarlo.
+  const desplazamiento = useRef<ScrollView>(null);
+  const bajarAlResultado = useRef(false);
 
   const valores = { actual: leerNumero(actual), nuevo: leerNumero(nuevo), precio: leerPesos(precio), tasa: leerNumero(tasa), anios: leerNumero(anios) };
   const completo = Object.values(valores).every((v) => v != null) && (valores.anios as number) >= 1 && (valores.anios as number) <= 30 && (valores.tasa as number) >= 0 && (valores.tasa as number) <= 100;
@@ -57,6 +60,7 @@ export default function Simulador() {
           anios: Math.round(valores.anios!),
         }),
       );
+      bajarAlResultado.current = true;
       exito();
     } catch (e) {
       setError(e instanceof ErrorApi ? e.message : "No pudimos calcular. Revisa tu conexión e intenta de nuevo.");
@@ -70,7 +74,7 @@ export default function Simulador() {
   const costoNuevo = r?.precio_kwh_usado != null ? valores.nuevo! * r.precio_kwh_usado : null;
 
   return (
-    <PantallaFormulario centrado={false}>
+    <PantallaFormulario centrado={false} refDesplazamiento={desplazamiento}>
       <SugerenciaAyuda tema="simulador" />
       <View style={{ gap: 6 }}>
         <Texto variante="tituloGrande" accessibilityRole="header">
@@ -107,7 +111,17 @@ export default function Simulador() {
       )}
       <Boton titulo="Calcular" onPress={calcular} cargando={cargando} deshabilitado={!completo} />
 
-      {r && <ConsejoVeredicto resultado={r} costoActual={costoActual} costoNuevo={costoNuevo} anios={Math.round(valores.anios ?? 0)} />}
+      {r && (
+        <View
+          onLayout={(e) => {
+            if (!bajarAlResultado.current) return;
+            bajarAlResultado.current = false;
+            desplazamiento.current?.scrollTo({ y: Math.max(0, e.nativeEvent.layout.y - espacio.l), animated: true });
+          }}
+        >
+          <ConsejoVeredicto resultado={r} costoActual={costoActual} costoNuevo={costoNuevo} anios={Math.round(valores.anios ?? 0)} />
+        </View>
+      )}
 
       <Tarjeta variante="plana" style={{ padding: 18, gap: espacio.l, marginTop: espacio.s }}>
         <View style={{ gap: 2 }}>
