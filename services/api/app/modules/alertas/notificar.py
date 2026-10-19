@@ -81,3 +81,12 @@ def evaluar_anomalias_y_notificar(db: Session, ahora: datetime) -> int:
     nuevas = anomalias.evaluar_consumo_anomalo(db, ahora)
     notificar(db, nuevas)
     return len(nuevas)
+
+
+def evaluar_otro_dispositivo_y_notificar(db: Session, ahora: datetime) -> int:
+    """Tarea de cada minuto: ¿la corriente de algún enchufe se salió mucho de lo normal de su dispositivo? Una vez al día por enchufe."""
+    from app.modules.alertas import otro_dispositivo
+
+    nuevas = otro_dispositivo.evaluar_otro_dispositivo(db, ahora)
+    notificar(db, nuevas)
+    return len(nuevas)

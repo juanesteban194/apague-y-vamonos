@@ -32,7 +32,8 @@ def cada_20_segundos(ahora: datetime | None = None) -> None:
 
 
 def cada_minuto(ahora: datetime | None = None) -> None:
-    """Ejecutar las rutinas que vencen (tolerancia de 5 minutos: no necesitan más frecuencia)."""
+    """Ejecutar las rutinas que vencen (tolerancia de 5 minutos: no necesitan más frecuencia) y revisar si la corriente de algún
+    enchufe se salió de lo normal (mira 15 minutos seguidos: no hace falta más frecuencia)."""
     for nombre, trabajo in TAREAS_MINUTO:
         _ejecutar(nombre, trabajo, ahora)
 
@@ -63,6 +64,7 @@ def _registrar() -> None:
 
     TAREAS_20S.append(("alertas", notificar.evaluar_y_notificar))
     TAREAS_MINUTO.append(("rutinas", lambda db, ahora: ejecucion.ejecutar_vencidas(db, ahora)))
+    TAREAS_MINUTO.append(("otro_dispositivo", notificar.evaluar_otro_dispositivo_y_notificar))
 
 
 _registrar()

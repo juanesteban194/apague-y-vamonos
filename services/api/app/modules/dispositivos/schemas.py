@@ -1,4 +1,5 @@
 import uuid
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -41,3 +42,14 @@ class CalibracionOut(BaseModel):
     referencia_w: float
     lectura_antes_w: float  # lo que leía el enchufe antes del ajuste (promedio de los últimos segundos)
     lectura_despues_w: float  # lo que leerá con el ajuste: debe coincidir con la referencia
+
+
+class CorrienteOut(BaseModel):
+    """Corriente habitual del dispositivo (rango del percentil 10 al 90 de sus últimos 7 días consumiendo) y la de ahora."""
+
+    estado: Literal["aprendiendo", "apagado", "normal", "alta", "baja"]
+    normal_ma: float | None
+    bajo_ma: float | None
+    alto_ma: float | None
+    ahora_ma: float | None
+    dias: int
