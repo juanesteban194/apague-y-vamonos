@@ -39,6 +39,25 @@ def marcar_leida(hogar_id: uuid.UUID, alerta_id: uuid.UUID, db: Session = Depend
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+# «leidas» va antes que «{alerta_id}» para que la ruta fija no se lea como un id.
+@router.delete("/alertas/leidas", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_leidas(hogar_id: uuid.UUID, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)):
+    exigir_miembro(db, usuario_id, hogar_id)
+    service.eliminar_leidas(db, hogar_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.delete("/alertas/{alerta_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar(hogar_id: uuid.UUID, alerta_id: uuid.UUID, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)):
+    exigir_miembro(db, usuario_id, hogar_id)
+    resultado = service.eliminar(db, hogar_id, alerta_id)
+    if resultado == "no_existe":
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No encontramos ese aviso.")
+    if resultado == "sin_leer":
+        raise HTTPException(status.HTTP_409_CONFLICT, "Primero lee el aviso; después lo puedes eliminar.")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @router.get("/preferencias-alertas", response_model=PreferenciasAlertas)
 def leer_preferencias(hogar_id: uuid.UUID, db: Session = Depends(get_db), usuario_id: uuid.UUID = Depends(usuario_con_consentimiento)):
     exigir_miembro(db, usuario_id, hogar_id)

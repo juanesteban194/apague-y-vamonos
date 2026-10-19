@@ -22,6 +22,9 @@ class Alerta(Base):
     mensaje: Mapped[str] = mapped_column(Text)
     fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     leida: Mapped[bool] = mapped_column(Boolean, server_default=false(), default=False)
+    # Eliminada por la persona: deja de verse en la app, pero sigue contando para no repetir el mismo aviso
+    # (por ejemplo, la subsistencia una vez por mes). Por eso no se borra la fila.
+    eliminada: Mapped[bool] = mapped_column(Boolean, server_default=false(), default=False)
 
 
 class PreferenciaAlertas(Base):

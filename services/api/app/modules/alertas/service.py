@@ -84,7 +84,7 @@ def listar(db: Session, hogar_id: uuid.UUID, solo_no_leidas: bool = False, limit
     consulta = (
         select(Alerta, Dispositivo.nombre)
         .outerjoin(Dispositivo, Dispositivo.id == Alerta.dispositivo_id)
-        .where(Alerta.hogar_id == hogar_id)
+        .where(Alerta.hogar_id == hogar_id, Alerta.eliminada.is_(False))
         .order_by(Alerta.fecha.desc())
         .limit(limite)
     )
@@ -97,6 +97,27 @@ def marcar_leida(db: Session, hogar_id: uuid.UUID, alerta_id: uuid.UUID) -> bool
     resultado = db.execute(update(Alerta).where(Alerta.id == alerta_id, Alerta.hogar_id == hogar_id).values(leida=True))
     db.commit()
     return resultado.rowcount > 0
+
+
+def eliminar(db: Session, hogar_id: uuid.UUID, alerta_id: uuid.UUID) -> str:
+    """Esconde un aviso ya leído. Devuelve "ok", "no_existe" o "sin_leer" (los sin leer no se eliminan: primero hay que verlos)."""
+    alerta = db.scalar(select(Alerta).where(Alerta.id == alerta_id, Alerta.hogar_id == hogar_id, Alerta.eliminada.is_(False)))
+    if alerta is None:
+        return "no_existe"
+    if not alerta.leida:
+        return "sin_leer"
+    alerta.eliminada = True
+    db.commit()
+    return "ok"
+
+
+def eliminar_leidas(db: Session, hogar_id: uuid.UUID) -> int:
+    """Esconde todos los avisos ya leídos de la casa; los sin leer se quedan."""
+    n = db.execute(
+        update(Alerta).where(Alerta.hogar_id == hogar_id, Alerta.leida.is_(True), Alerta.eliminada.is_(False)).values(eliminada=True)
+    ).rowcount
+    db.commit()
+    return n
 
 
 def marcar_todas_leidas(db: Session, hogar_id: uuid.UUID) -> int:
