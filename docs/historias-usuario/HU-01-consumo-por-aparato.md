@@ -2,7 +2,7 @@
 
 Prioridad **alta** · Pantallas: Inicio, Dispositivo · Módulos: ingesta, consumo, tarifas · En la demo: sí
 
-## Criterios de aceptación (de CLAUDE.md)
+## Criterios de aceptación (de los requisitos del proyecto)
 | Criterio | Meta | Estado |
 | --- | --- | --- |
 | Latencia | Lectura visible en la app ≤ 5 s después de medida | Medido: máx 0,44 s (ADR 0003) |

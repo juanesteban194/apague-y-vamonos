@@ -1,6 +1,6 @@
 # apps/mobile
 
-App Expo SDK 57 (React Native, TypeScript estricto, Expo Router). Ver **App móvil** en [CLAUDE.md](../../CLAUDE.md).
+App Expo SDK 57 (React Native, TypeScript estricto, Expo Router). Ver **App móvil** en [guía del producto](../../docs/guia-del-producto.md).
 La app nunca habla con Tuya: solo con la API (REST + WebSocket).
 
 ## Correrla (Expo Go, sin compilar nada)

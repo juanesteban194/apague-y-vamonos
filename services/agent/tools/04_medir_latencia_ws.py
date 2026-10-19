@@ -1,6 +1,6 @@
 """Fase 2 (prueba): mide el retraso entre que el agente lee el enchufe y la app recibe el evento `lectura` por WebSocket.
 
-Criterio (CLAUDE.md): ≤ 5 s. Hace de agente (usa el lector del agente y envía a la API) y de app (login + WebSocket) a la vez,
+Criterio (requisitos del proyecto): ≤ 5 s. Hace de agente (usa el lector del agente y envía a la API) y de app (login + WebSocket) a la vez,
 en la misma máquina, así que no hay desfase de relojes. Requiere AGENT_API_URL, AGENT_TOKEN (en .env) y
 DEMO_EMAIL, DEMO_PASSWORD, DEMO_HOGAR_ID (en .env.demo).
 

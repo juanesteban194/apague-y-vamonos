@@ -2,7 +2,7 @@
 
 Prioridad **alta** · Pantallas: Avisos, notificación · Módulos: alertas, dispositivos · En la demo: sí (push solo en Android)
 
-## Criterios de aceptación (de CLAUDE.md)
+## Criterios de aceptación (de los requisitos del proyecto)
 | Criterio | Meta |
 | --- | --- |
 | Alertas | Aviso ≤ 60 s después de cruzar el umbral |

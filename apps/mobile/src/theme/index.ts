@@ -1,7 +1,7 @@
 /**
  * Sistema de diseño de «Apague y vámonos».
  *
- * Reglas de accesibilidad (CLAUDE.md): texto ≥ 15 px y áreas de toque ≥ 44 px (una prueba lo vigila).
+ * Reglas de accesibilidad (requisitos del proyecto): texto ≥ 15 px y áreas de toque ≥ 44 px (una prueba lo vigila).
  * Lenguaje visual: papel cálido de fondo, tarjetas blancas con borde de un pelo y sombra apenas perceptible, tinta casi negra para las
  * acciones y el semáforo como único color vivo. Tipografía Inter (la de los productos digitales de referencia) con interletrado negativo
  * en los tamaños grandes, como en los sistemas de Apple. Peso máximo 700: nada se ve «gritado».

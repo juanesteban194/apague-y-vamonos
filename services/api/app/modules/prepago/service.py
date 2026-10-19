@@ -1,5 +1,5 @@
 """Saldo prepago (HU-03). El medidor prepago no se puede leer: la persona registra su saldo de vez en cuando y la proyección sale de
-cuánto bajó entre registros (CLAUDE.md: promedio de 3 días; alerta roja con menos de 48 h)."""
+cuánto bajó entre registros (requisito: promedio de 3 días; alerta roja con menos de 48 h)."""
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta

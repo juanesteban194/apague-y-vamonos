@@ -1,4 +1,4 @@
-"""Respaldo por la API de Tuya Cloud: solo para comandos cuando el agente local no responde. Nunca para leer (cuota: CLAUDE.md).
+"""Respaldo por la API de Tuya Cloud: solo para comandos cuando el agente local no responde. Nunca para leer (cuota limitada).
 
 Firma HMAC-SHA256 de Tuya OpenAPI. El token de acceso (≈ 2 h) se guarda en memoria, así cada comando cuesta 1 llamada. Hay un tope
 mensual de llamadas por proceso para que un fallo del agente no gaste la cuota de prueba antes de la sustentación."""

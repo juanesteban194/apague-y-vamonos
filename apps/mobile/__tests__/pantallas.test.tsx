@@ -45,7 +45,7 @@ describe("Inicio", () => {
     expect(screen.getByText("Enchufe BSD04")).toBeTruthy();
     expect(screen.getByText(/27 W ahora/)).toBeTruthy();
     expect(screen.getByText("Con la tarifa de septiembre de 2026.")).toBeTruthy();
-    expect(screen.queryByText(/kWh/)).toBeNull(); // CLAUDE.md: no mostrar kWh fuera de configuración
+    expect(screen.queryByText(/kWh/)).toBeNull(); // requisito: no mostrar kWh fuera de configuración
   });
 
   it("autentica el WebSocket en el primer mensaje y actualiza la potencia en vivo", async () => {

@@ -69,7 +69,7 @@ def notificar(db: Session, alertas: list[Alerta]) -> None:
 
 
 def evaluar_y_notificar(db: Session, ahora: datetime) -> int:
-    """Tarea de cada minuto (CLAUDE.md: el aviso debe llegar ≤ 60 s después de cruzar el umbral)."""
+    """Tarea de cada minuto (requisito: el aviso debe llegar ≤ 60 s después de cruzar el umbral)."""
     nuevas = reglas.evaluar_todo(db, ahora)
     notificar(db, nuevas)
     return len(nuevas)

@@ -1,6 +1,6 @@
 # ADR 0006 — Fase 5: semáforo, equivalencias, consejos y simulador RETIQ
 
-Objetivo del producto (CLAUDE.md): que la familia **pague menos que su promedio mensual de las facturas de EPM**. Todo lo de esta fase gira en torno a ese número.
+Objetivo del producto (requisitos del proyecto): que la familia **pague menos que su promedio mensual de las facturas de EPM**. Todo lo de esta fase gira en torno a ese número.
 
 ## "Lo normal" = el promedio de la factura
 La persona anota los 6 meses del cuadro "Histórico de consumos" de su factura (`PUT /hogares/{id}/historial-consumo`, kWh y, opcional, lo pagado). El promedio son los 6 meses

@@ -12,7 +12,7 @@ from app.modules.consumo.energia import BOGOTA, energia_hibrida, inicio_mes_bogo
 from app.modules.dispositivos.models import Dispositivo
 from app.modules.hogares.models import Hogar, LecturaMedidor
 
-UMBRAL_AMARILLO = 0.8  # CLAUDE.md: alerta al 80 % del límite
+UMBRAL_AMARILLO = 0.8  # requisito: alerta al 80 % del límite
 
 
 @dataclass(frozen=True)

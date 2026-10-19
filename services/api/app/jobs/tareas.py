@@ -1,4 +1,4 @@
-"""Tareas programadas (CLAUDE.md): cada minuto alertas y rutinas, cada hora el consolidado, cada día prepago y purga.
+"""Tareas programadas (requisitos del proyecto): cada minuto alertas y rutinas, cada hora el consolidado, cada día prepago y purga.
 
 Cada tarea abre su propia sesión y nunca deja escapar una excepción: un fallo se registra y la siguiente pasada lo reintenta,
 sin tumbar el planificador. En Render gratuito la API duerme sin tráfico; mientras el agente envía lecturas está despierta."""
@@ -25,7 +25,7 @@ def _ejecutar(nombre: str, trabajo: Callable[[Session, datetime], object], ahora
 
 
 def cada_20_segundos(ahora: datetime | None = None) -> None:
-    """Evaluar las reglas de avisos. Con una pasada por minuto el aviso podía tardar casi 60 s tras cruzar el umbral (CLAUDE.md
+    """Evaluar las reglas de avisos. Con una pasada por minuto el aviso podía tardar casi 60 s tras cruzar el umbral (requisito
     pide ≤ 60 s): cada 20 s el retraso máximo queda en ~20 s."""
     for nombre, trabajo in TAREAS_20S:
         _ejecutar(nombre, trabajo, ahora)

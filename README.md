@@ -635,7 +635,6 @@ Fuera de alcance: **HU-06 excedentes solares** (no hay datos de inversor).
 | 🎨 [Manual de diseño](docs/diseno.md) | Voz y tono, color, tipografía, componentes |
 | 🧭 [Decisiones (ADR)](docs/decisiones/) | 12 decisiones con su porqué |
 | 📋 [Historias de usuario](docs/historias-usuario/) | HU-01 a HU-08 con criterios de aceptación |
-| 🧠 [CLAUDE.md](CLAUDE.md) | Contexto permanente del proyecto y plan por fases |
 | Por carpeta | [App](apps/mobile/README.md) · [Servidor](services/api/README.md) · [Agente](services/agent/README.md) |
 
 <div align="center">

@@ -3,7 +3,7 @@
 ## Tareas programadas (APScheduler dentro de la API)
 | Cada | Qué | Por qué esa frecuencia |
 | --- | --- | --- |
-| 20 s | Reglas de avisos (alto riesgo, subsistencia, prepago) | CLAUDE.md pide aviso ≤ 60 s tras cruzar el umbral: con una pasada por minuto el peor caso rozaba los 60 s. Medido: 15 s |
+| 20 s | Reglas de avisos (alto riesgo, subsistencia, prepago) | Los requisitos piden aviso ≤ 60 s tras cruzar el umbral: con una pasada por minuto el peor caso rozaba los 60 s. Medido: 15 s |
 | 1 min | Rutinas que vencen | Tienen 5 min de tolerancia; no necesitan más |
 | 1 h (minuto 5) | Consolida `consumo_horario` de las últimas 48 h | Upsert: corrige lecturas que el agente reenvía tarde |
 | 1 día (03:10) | Consolida 29 días y purga lecturas crudas de más de 30 días | Primero consolida, después borra, y solo horas completas |

@@ -1,6 +1,6 @@
 # Verificación de los criterios de calidad (Fase 6)
 
-Estado de cada criterio de `CLAUDE.md`, con la evidencia y qué falta. **Última revisión: 2026-10-15.**
+Estado de cada criterio de calidad del proyecto, con la evidencia y qué falta. **Última revisión: 2026-10-15.**
 Leyenda: ✅ verificado · 🟡 verificado en parte · ⏳ pendiente (necesita el enchufe o el teléfono).
 
 | Atributo | Criterio | Estado | Evidencia | Qué falta |

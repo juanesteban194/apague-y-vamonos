@@ -1,4 +1,4 @@
-/** Criterio de calidad «Accesibilidad» (CLAUDE.md): texto ≥ 15 px y áreas de toque ≥ 44 px.
+/** Criterio de calidad «Accesibilidad» (requisitos del proyecto): texto ≥ 15 px y áreas de toque ≥ 44 px.
  *  Revisa el código fuente: si alguien escribe un tamaño menor, esta prueba falla antes de que llegue a un teléfono. */
 import { readdirSync, readFileSync, statSync } from "fs";
 import { join } from "path";

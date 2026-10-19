@@ -2,7 +2,7 @@
 
 Agente local que corre en la casa: lee el enchufe BSD04 por LAN con TinyTuya, guarda en cola SQLite sin internet y recibe comandos por WSS.
 `devices.json` (con la clave local) está en .gitignore.
-Ver **Hardware verificado**, **Vías hacia el enchufe** y **Plan de construcción** en [CLAUDE.md](../../CLAUDE.md).
+Ver **Hardware verificado**, **Vías hacia el enchufe** y **Plan de construcción** en [guía del producto](../../docs/guia-del-producto.md).
 
 ## Correrlo
 ```

@@ -10,8 +10,8 @@
 ## Lo que el texto afirma y de dónde sale (para revisarlo)
 | Afirmación | Fuente |
 | --- | --- |
-| Contraseñas con Argon2, HTTPS, claves de enchufes cifradas | CLAUDE.md (Seguridad), ADR 0008 |
-| Lecturas detalladas 30 días, resumen por hora siempre | CLAUDE.md (Modelo de datos), tarea diaria de purga |
+| Contraseñas con Argon2, HTTPS, claves de enchufes cifradas | Requisitos de seguridad, ADR 0008 |
+| Lecturas detalladas 30 días, resumen por hora siempre | Modelo de datos, tarea diaria de purga |
 | Servidores fuera de Colombia | Render (Oregón) y Neon; la región exacta de Neon no está en el repositorio |
 | Terceros: servidor y base, notificaciones, Google, Tuya | Despliegue y arquitectura |
 | No se venden datos ni hay publicidad | Decisión del producto (no hay nada de eso en el código) |

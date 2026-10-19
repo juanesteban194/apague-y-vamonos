@@ -1,6 +1,6 @@
 # Historias de usuario
 
-Resumen de HU-01 a HU-08 con sus criterios de aceptación. **Todo sale de [CLAUDE.md](../../CLAUDE.md)** (tabla de historias,
+Resumen de HU-01 a HU-08 con sus criterios de aceptación. **Todo sale de los requisitos del proyecto; ver la [guía del producto](../guia-del-producto.md)** (tabla de historias,
 requisitos de calidad y reglas de cobertura parcial); lo que ese archivo no define está marcado como *por definir* y se pregunta al equipo.
 
 | HU | Historia | Prioridad | Pantalla | Demo | Estado |

@@ -1,6 +1,6 @@
 """Canal de comandos con la API: recibe órdenes de encender/apagar por WebSocket y las ejecuta en el enchufe por LAN.
 
-Es la vía principal (CLAUDE.md): rápida y sin gastar la cuota de Tuya Cloud. Reconecta solo con espera creciente."""
+Es la vía principal (requisitos del proyecto): rápida y sin gastar la cuota de Tuya Cloud. Reconecta solo con espera creciente."""
 import json
 import logging
 import threading

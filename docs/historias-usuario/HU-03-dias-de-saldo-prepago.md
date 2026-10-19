@@ -2,7 +2,7 @@
 
 Prioridad **media** · Pantallas: Inicio y Saldo prepago · Módulos: prepago, alertas · En la demo: sí
 
-## Criterios de aceptación (de CLAUDE.md)
+## Criterios de aceptación (de los requisitos del proyecto)
 | Criterio | Meta |
 | --- | --- |
 | Prepago | Proyección con promedio de 3 días; alerta roja < 48 h |

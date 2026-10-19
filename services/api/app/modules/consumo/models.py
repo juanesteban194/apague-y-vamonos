@@ -42,7 +42,7 @@ class Equivalencia(Base):
 
 
 class HistorialFactura(Base):
-    """Un mes del histórico de consumo que EPM imprime en la factura (CLAUDE.md: objetivo del producto). El promedio de estos meses es el
+    """Un mes del histórico de consumo que EPM imprime en la factura (requisito: objetivo del producto). El promedio de estos meses es el
     "consumo normal" contra el que se mide el ahorro."""
 
     __tablename__ = "historial_facturas"

@@ -2,7 +2,7 @@
 
 Prioridad **alta** · Pantalla: Consejos · Módulo: retiq · En la demo: sí
 
-## Criterios de aceptación (de CLAUDE.md)
+## Criterios de aceptación (de los requisitos del proyecto)
 | Criterio | Meta |
 | --- | --- |
 | Precisión de costo | Igual al cálculo manual kWh × tarifa vigente |

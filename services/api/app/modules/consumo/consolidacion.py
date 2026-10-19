@@ -1,4 +1,4 @@
-"""Consolidado por hora y purga de lecturas crudas (CLAUDE.md: crudas 30 días; `consumo_horario` se guarda siempre).
+"""Consolidado por hora y purga de lecturas crudas (requisito: crudas 30 días; `consumo_horario` se guarda siempre).
 
 Se recalcula una ventana hacia atrás en cada pasada (con upsert) en vez de solo "lo nuevo": si el agente estuvo sin internet y
 reenvía lecturas de horas ya consolidadas, la siguiente pasada las corrige. La purga solo borra horas completas."""

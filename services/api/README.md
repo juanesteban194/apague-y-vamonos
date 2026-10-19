@@ -1,7 +1,7 @@
 # services/api
 
 Backend FastAPI (Python 3.12): módulos de dominio, migraciones Alembic, seeds y pruebas.
-Ver las secciones **Backend**, **Modelo de datos** y **Seguridad** de [CLAUDE.md](../../CLAUDE.md).
+Ver las secciones **Backend**, **Modelo de datos** y **Seguridad** de [guía del producto](../../docs/guia-del-producto.md).
 Cada módulo: `router.py`, `schemas.py`, `models.py`, `service.py`.
 
 ## Desarrollo local

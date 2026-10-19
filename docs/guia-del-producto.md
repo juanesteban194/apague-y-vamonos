@@ -212,7 +212,6 @@ También tiene 33 pantallas, 53 rutas en el servidor, 19 tablas y 12 migraciones
 ```
 .
 ├── README.md                      Entrada al proyecto
-├── CLAUDE.md                      Contexto permanente: decisiones, requisitos, plan por fases
 ├── render.yaml                    Cómo se despliega el servidor en Render
 ├── .env.example                   Lista de variables de configuración (sin valores secretos)
 ├── docs/
@@ -541,4 +540,3 @@ Antes de la demo, despierta el servidor de Render 2 minutos antes. Si la WiFi de
 - Historias de usuario: [historias-usuario/](historias-usuario/)
 - Verificación de calidad: [verificacion-calidad.md](verificacion-calidad.md)
 - Manual de diseño: [diseno.md](diseno.md)
-- Contexto completo del proyecto: [CLAUDE.md](../CLAUDE.md)

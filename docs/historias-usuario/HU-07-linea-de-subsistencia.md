@@ -2,7 +2,7 @@
 
 Prioridad **media** · Pantallas: Inicio, Dispositivo · Módulos: consumo, alertas · En la demo: sí
 
-## Criterios de aceptación (de CLAUDE.md)
+## Criterios de aceptación (de los requisitos del proyecto)
 | Criterio | Meta |
 | --- | --- |
 | Subsistencia | Alerta al 80 % de 130 kWh/mes (Medellín, ≥ 1.000 msnm; Res. UPME 355/2004) |

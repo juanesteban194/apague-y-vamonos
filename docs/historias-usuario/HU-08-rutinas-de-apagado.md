@@ -2,7 +2,7 @@
 
 Prioridad **alta** · Pantalla: Explorar › Rutinas · Módulos: rutinas, agente · En la demo: sí
 
-## Criterios de aceptación (de CLAUDE.md)
+## Criterios de aceptación (de los requisitos del proyecto)
 | Criterio | Meta |
 | --- | --- |
 | Control remoto | Cambio de estado ≤ 10 s después del toque |

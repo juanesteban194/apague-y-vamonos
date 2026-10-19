@@ -7,4 +7,4 @@
 `historias-usuario/`: HU-01 … HU-08 con criterios de aceptación.
 `diseno.md`: manual de diseño (voz y tono, color, tipografía, componentes y la vitrina de capturas).
 `verificacion-calidad.md`: cada criterio de calidad con su evidencia y lo que falta.
-Ver las secciones **Historias de usuario** y **Requisitos de calidad** de [CLAUDE.md](../CLAUDE.md).
+Ver las secciones **Historias de usuario** y **Requisitos de calidad** de [guía del producto](guia-del-producto.md).

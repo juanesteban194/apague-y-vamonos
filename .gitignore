@@ -41,3 +41,8 @@ lecturas_fase0*.csv
 
 build/
 *.spec.bak
+
+# Solo locales: contexto del asistente y copias generadas al instalar el paquete de Python
+CLAUDE.md
+.claude/
+build/
