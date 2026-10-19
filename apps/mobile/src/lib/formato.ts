@@ -13,6 +13,12 @@ export function formatoPotencia(vatios: number): string {
   return `${texto} W`;
 }
 
+/** Miliamperios a amperios: 820 → "0,82 A"; 2.040 → "2,0 A". */
+export function formatoAmperios(ma: number): string {
+  const a = ma / 1000;
+  return `${(a < 1 ? a.toFixed(2) : a.toFixed(1)).replace(".", ",")} A`;
+}
+
 export function formatoTarifa(copPorKwh: number): string {
   return `$${copPorKwh.toFixed(2).replace(".", ",")} por kWh`;
 }

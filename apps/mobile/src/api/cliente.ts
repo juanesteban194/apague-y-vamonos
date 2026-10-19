@@ -16,6 +16,7 @@ import type {
   Sensibilidad,
   AgenteConCodigo,
   Calibracion,
+  Corriente,
   AgenteCreado,
   Consumo,
   Dispositivo,
@@ -129,6 +130,7 @@ export const actualizarDispositivo = (hogarId: string, id: string, cambios: Disp
   api<Dispositivo>(`/hogares/${hogarId}/dispositivos/${id}`, "PATCH", cambios);
 export const calibrarDispositivo = (hogarId: string, id: string, referenciaW: number) =>
   api<Calibracion>(`/hogares/${hogarId}/dispositivos/${id}/calibrar`, "POST", { referencia_w: referenciaW });
+export const obtenerCorriente = (hogarId: string, id: string) => api<Corriente>(`/hogares/${hogarId}/dispositivos/${id}/corriente`);
 export const quitarCalibracion = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/dispositivos/${id}/calibracion`, "DELETE");
 export const borrarDispositivo = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/dispositivos/${id}`, "DELETE");
 export const listarAgentes = (hogarId: string) => api<Agente[]>(`/hogares/${hogarId}/agentes`);

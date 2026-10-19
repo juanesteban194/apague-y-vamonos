@@ -10,6 +10,7 @@ import { Boton } from "@/components/Boton";
 import { iconoDelDispositivo, Introduccion } from "@/components/GestionPiezas";
 import { Icono } from "@/components/Icono";
 import { TarjetaCalibracion } from "@/components/TarjetaCalibracion";
+import { TarjetaCorriente } from "@/components/TarjetaCorriente";
 import { FormularioEnchufe } from "@/components/FormularioEnchufe";
 import { PantallaFormulario } from "@/components/PantallaCompleta";
 import { Texto } from "@/components/Texto";
@@ -61,6 +62,9 @@ export default function EditarEnchufe() {
           router.back();
         }}
       />
+      <View style={{ marginTop: espacio.l }}>
+        <TarjetaCorriente hogarId={hogar.id} dispositivoId={dispositivo.id} />
+      </View>
       <View style={{ marginTop: espacio.l }}>
         <TarjetaCalibracion hogarId={hogar.id} dispositivo={dispositivo} lecturaActualW={lecturaActualW} />
       </View>

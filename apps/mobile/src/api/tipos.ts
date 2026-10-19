@@ -33,3 +33,13 @@ export type Historial = components["schemas"]["HistorialOut"];
 export type MesFactura = components["schemas"]["MesFactura"];
 export type SimuladorDatos = components["schemas"]["SimuladorIn"];
 export type SimuladorResultado = components["schemas"]["SimuladorOut"];
+
+/** Corriente habitual de un dispositivo (GET /hogares/{id}/dispositivos/{id}/corriente). */
+export type Corriente = {
+  estado: "aprendiendo" | "apagado" | "normal" | "alta" | "baja";
+  normal_ma: number | null;
+  bajo_ma: number | null;
+  alto_ma: number | null;
+  ahora_ma: number | null;
+  dias: number;
+};

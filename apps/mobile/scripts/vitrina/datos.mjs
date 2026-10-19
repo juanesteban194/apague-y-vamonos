@@ -133,6 +133,7 @@ export const SIMULACION = (() => {
 })();
 
 export const RUTAS = {
+  "GET /hogares/h1/dispositivos/d1/corriente": { estado: "normal", normal_ma: 760, bajo_ma: 690, alto_ma: 840, ahora_ma: 770, dias: 6 },
   "GET /auth/yo": PERFIL,
   "GET /hogares": [HOGAR, HOGAR_2],
   "GET /hogares/h1/resumen": RESUMEN,

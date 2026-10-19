@@ -25,6 +25,7 @@ const ICONO_DEL_TIPO: Record<string, NombreIcono> = {
   consumo_anomalo: "tendenciaArriba",
   subsistencia: "medidorLinea",
   prepago: "prepagoLinea",
+  otro_dispositivo: "enchufeLinea",
 };
 
 type Props = {
