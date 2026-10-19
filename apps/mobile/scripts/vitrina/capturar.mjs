@@ -60,6 +60,24 @@ export const PANTALLAS = [
   // Avisos sin nada pendiente y sin ningún aviso
   { nombre: "avisos-al-dia", ruta: "/avisos", rutas: { "GET /hogares/h1/alertas": RUTAS["GET /hogares/h1/alertas"].map((a) => ({ ...a, leida: true })) } },
   { nombre: "avisos-vacio", ruta: "/avisos", rutas: { "GET /hogares/h1/alertas": [] } },
+  // Un aviso leído deslizado a la izquierda: deja ver «Eliminar»
+  {
+    nombre: "avisos-deslizar",
+    ruta: "/avisos",
+    rutas: { "GET /hogares/h1/alertas": RUTAS["GET /hogares/h1/alertas"].map((a) => ({ ...a, leida: true })) },
+    accion: async (pagina) => {
+      const fila = await pagina.$('[data-testid^="aviso-"]');
+      await fila.evaluate((el) => el.scrollIntoView({ block: "center" }));
+      await esperar(300);
+      const caja = await fila.boundingBox();
+      const y = caja.y + caja.height / 2;
+      await pagina.mouse.move(caja.x + caja.width - 30, y);
+      await pagina.mouse.down();
+      for (let i = 1; i <= 12; i++) await pagina.mouse.move(caja.x + caja.width - 30 - i * 10, y);
+      await pagina.mouse.up();
+      await esperar(700);
+    },
+  },
   // Simulador con el resultado: llena los campos y toca «Calcular» (la respuesta es la que daría la API para estos datos)
   {
     nombre: "simulador-resultado",

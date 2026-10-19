@@ -150,6 +150,9 @@ export const apagarDispositivo = (id: string) => api<ResultadoComando>(`/disposi
 export const obtenerAlertas = (hogarId: string) => api<Alerta[]>(`/hogares/${hogarId}/alertas`);
 export const marcarAlertaLeida = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/alertas/${id}/leida`, "POST");
 export const marcarAlertasLeidas = (hogarId: string) => api<void>(`/hogares/${hogarId}/alertas/leidas`, "POST");
+/** Eliminar esconde el aviso (ya leído) de la app; el servidor lo sigue recordando para no repetirlo. */
+export const eliminarAlerta = (hogarId: string, id: string) => api<void>(`/hogares/${hogarId}/alertas/${id}`, "DELETE");
+export const eliminarAlertasLeidas = (hogarId: string) => api<void>(`/hogares/${hogarId}/alertas/leidas`, "DELETE");
 export const obtenerPreferencias = (hogarId: string) => api<{ sensibilidad: Sensibilidad }>(`/hogares/${hogarId}/preferencias-alertas`);
 export const guardarPreferencias = (hogarId: string, sensibilidad: Sensibilidad) =>
   api<{ sensibilidad: Sensibilidad }>(`/hogares/${hogarId}/preferencias-alertas`, "PUT", { sensibilidad });

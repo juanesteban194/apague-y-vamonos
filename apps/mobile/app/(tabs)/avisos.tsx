@@ -2,10 +2,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Fragment } from "react";
 import { Pressable, View } from "react-native";
 
-import { guardarPreferencias, marcarAlertaLeida, marcarAlertasLeidas } from "@/api/cliente";
+import { eliminarAlerta, eliminarAlertasLeidas, guardarPreferencias, marcarAlertaLeida, marcarAlertasLeidas } from "@/api/cliente";
 import { useHogarActual } from "@/api/hogar";
-import type { Sensibilidad } from "@/api/tipos";
+import type { Alerta, Sensibilidad } from "@/api/tipos";
 import { BotonAyuda } from "@/components/BotonAyuda";
+import { FilaDeslizable } from "@/components/FilaDeslizable";
 import { OpcionRadio } from "@/components/OpcionRadio";
 import { Pantalla } from "@/components/Pantalla";
 import { EncabezadoSeccion, IconoEnCaja, Separador } from "@/components/Primitivos";
@@ -14,6 +15,8 @@ import { Tarjeta } from "@/components/Tarjeta";
 import { TarjetaAviso } from "@/components/TarjetaAviso";
 import { Texto } from "@/components/Texto";
 import { useAlertas, usePreferenciasAlertas } from "@/features/alertas/hooks";
+import { confirmar } from "@/lib/confirmar";
+import { aviso as vibrarAviso } from "@/lib/haptica";
 import { AREA_TOQUE_MIN, colores, espacio } from "@/theme";
 
 // «¿Cada cuánto te avisamos?» del mockup
@@ -41,6 +44,32 @@ export default function Avisos() {
     if (!hogar) return;
     await marcarAlertasLeidas(hogar.id).catch(() => {});
     await cliente.invalidateQueries({ queryKey: ["alertas", hogar.id] });
+  }
+  /** Quita de la lista al toque (la persona ve el efecto enseguida) y después lo confirma con el servidor; si falla, vuelve. */
+  async function quitarDeLaLista(quitar: (a: Alerta) => boolean, llamada: () => Promise<void>) {
+    if (!hogar) return;
+    const clave = ["alertas", hogar.id];
+    await cliente.cancelQueries({ queryKey: clave });
+    cliente.setQueryData<Alerta[]>(clave, (lista) => lista?.filter((a) => !quitar(a)));
+    await llamada().catch(() => {});
+    await cliente.invalidateQueries({ queryKey: clave });
+  }
+  async function eliminarUno(a: Alerta): Promise<boolean> {
+    if (!hogar) return false;
+    vibrarAviso();
+    const si = await confirmar("¿Eliminar este aviso?", `«${a.titulo}» deja de verse aquí. No se puede deshacer.`, "Eliminar");
+    if (si) await quitarDeLaLista((x) => x.id === a.id, () => eliminarAlerta(hogar.id, a.id));
+    return si;
+  }
+  async function eliminarLeidos() {
+    if (!hogar) return;
+    const n = anteriores.length;
+    const si = await confirmar(
+      n === 1 ? "¿Borrar el aviso leído?" : `¿Borrar los ${n} avisos leídos?`,
+      "Los avisos sin leer se quedan. No se puede deshacer.",
+      "Borrar",
+    );
+    if (si) await quitarDeLaLista((x) => x.leida, () => eliminarAlertasLeidas(hogar.id));
   }
   async function elegir(sensibilidad: Sensibilidad) {
     if (!hogar) return;
@@ -130,12 +159,18 @@ export default function Avisos() {
 
       {anteriores.length > 0 && (
         <View style={{ gap: espacio.m }}>
-          <EncabezadoSeccion titulo="Anteriores" />
-          <Tarjeta style={{ padding: 0, gap: 0 }}>
+          <EncabezadoSeccion
+            titulo="Anteriores"
+            detalle="Desliza un aviso a la izquierda para eliminarlo."
+            accion={{ texto: anteriores.length === 1 ? "Borrar" : "Borrar todos", alPulsar: () => void eliminarLeidos() }}
+          />
+          <Tarjeta style={{ padding: 0, gap: 0, overflow: "hidden" }}>
             {anteriores.map((a, i) => (
               <Fragment key={a.id}>
                 {i > 0 && <Separador sangria={66} />}
-                <TarjetaAviso variante="fila" aviso={a} alLeer={() => void leer(a.id)} />
+                <FilaDeslizable testID={`aviso-${a.id}`} etiquetaEliminar={`Eliminar el aviso «${a.titulo}»`} alEliminar={() => eliminarUno(a)}>
+                  <TarjetaAviso variante="fila" aviso={a} alLeer={() => void leer(a.id)} />
+                </FilaDeslizable>
               </Fragment>
             ))}
           </Tarjeta>
