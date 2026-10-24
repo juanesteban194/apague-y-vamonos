@@ -28,6 +28,19 @@ export const PANTALLAS = [
   { nombre: "consejos", ruta: "/consejos" },
   { nombre: "simulador", ruta: "/simulador?dispositivo=d1&kwh=26.3" },
   { nombre: "dispositivo", ruta: "/dispositivo/d1" },
+  // Tocar una barra de la gráfica: arriba dice qué hora es y cuánto costó
+  {
+    nombre: "dispositivo-tocar",
+    ruta: "/dispositivo/d1",
+    accion: async (pagina) => {
+      const capa = await pagina.$('[data-testid="barras-tactiles"]');
+      await capa.evaluate((el) => el.scrollIntoView({ block: "center" }));
+      await esperar(300);
+      const c = await capa.boundingBox();
+      await pagina.mouse.click(c.x + c.width * (10.5 / 24), c.y + c.height - 20);
+      await esperar(500);
+    },
+  },
   { nombre: "dispositivo-mes", ruta: "/dispositivo/d1", accion: async (pagina) => { await pagina.click('[aria-label="Mes"]'); await esperar(900); await pagina.evaluate(() => window.scrollTo(0, 0)); } },
   { nombre: "enchufes", ruta: "/enchufes" },
   { nombre: "enchufe", ruta: "/enchufe/d1" },

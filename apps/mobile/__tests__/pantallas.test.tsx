@@ -116,7 +116,7 @@ describe("Dispositivo", () => {
     expect(await screen.findByText("27 W")).toBeTruthy();
     expect((await screen.findAllByText("$8,15")).length).toBeGreaterThanOrEqual(3); // hoy, mes y total del periodo
     expect(await screen.findByText("Hoy")).toBeTruthy();
-    expect(screen.getByText("Costo en pesos por hora.")).toBeTruthy();
+    expect(screen.getByText("Costo en pesos por hora. Toca una barra para ver cuánto costó.")).toBeTruthy();
     expect(screen.queryByText(/kWh/)).toBeNull();
   });
 

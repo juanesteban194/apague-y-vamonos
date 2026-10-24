@@ -1,8 +1,10 @@
+import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 
 import type { Periodo, PuntoConsumo } from "@/api/tipos";
-import { etiquetaPunto, nombreMes } from "@/lib/fechas";
+import { detallePunto, etiquetaPunto, nombreMes } from "@/lib/fechas";
 import { formatoCOP } from "@/lib/formato";
+import { seleccionar } from "@/lib/haptica";
 import { BORDE_FINO, colores, espacio } from "@/theme";
 
 import { Texto } from "./Texto";
@@ -32,8 +34,14 @@ function pesosCortos(v: number): string {
 const mayuscula = (t: string) => (t ? t[0].toUpperCase() + t.slice(1) : t);
 
 /** Barras de costo (COP) por hora, por día de la semana o por mes (los últimos 12; el actual va hasta hoy). Dibujadas con vistas (sin librería de gráficas): se ven igual en iOS,
- *  Android y web y no dependen de medir el ancho. La barra más reciente con consumo va en tinta; las demás, en gris cálido. */
+ *  Android y web y no dependen de medir el ancho. La barra más reciente con consumo va en tinta; las demás, en gris cálido.
+ *  Al tocar una barra (o deslizar el dedo sobre la gráfica) se resalta y arriba dice qué momento es y cuánto costó. Con lector de pantalla,
+ *  la gráfica es «ajustable»: deslizar arriba o abajo recorre las barras. */
 export function BarrasConsumo({ serie, periodo }: Props) {
+  const [elegida, setElegida] = useState<number | null>(null);
+  const ancho = useRef(0);
+  useEffect(() => setElegida(null), [periodo, serie.length]); // otro periodo: vuelve a lo de siempre
+
   const valores = serie.map((p) => p.costo_cop ?? 0);
   const maximo = Math.max(0, ...valores);
   const tope = topeRedondo(maximo);
@@ -41,6 +49,7 @@ export function BarrasConsumo({ serie, periodo }: Props) {
   const ultimo = valores.reduce((acc, v, i) => (v > 0 ? i : acc), -1);
   // En «mes» se resalta siempre el mes actual (el último); en día y semana, la barra más reciente con consumo.
   const destacado = periodo === "mes" || ultimo < 0 ? serie.length - 1 : ultimo;
+  const resaltada = elegida ?? destacado;
   const etiquetas = serie.map((p) => mayuscula(etiquetaPunto(p.inicio, periodo)));
   const cada = CADA[periodo];
   const unidad = periodo === "dia" ? "hora" : periodo === "semana" ? "día" : "mes";
@@ -52,6 +61,7 @@ export function BarrasConsumo({ serie, periodo }: Props) {
     maximo > 0
       ? `Gráfica del costo por ${unidad}. Lo más alto: ${formatoCOP(maximo)} ${cuando(iMax)}. El último: ${formatoCOP(valores[destacado])} ${cuando(destacado)}.`
       : `Gráfica del costo por ${unidad}. Aún no hay consumo en este periodo.`;
+  const detalle = (i: number) => `${detallePunto(serie[i].inicio, periodo, ultimaIso)}: ${formatoCOP(valores[i])}`;
 
   const separacion = serie.length > 12 ? 2 : 8;
 
@@ -59,17 +69,43 @@ export function BarrasConsumo({ serie, periodo }: Props) {
   // En «mes» las etiquetas se cuentan desde el final, para que el mes actual siempre tenga la suya.
   const conEtiqueta = (i: number) => (periodo === "mes" ? (serie.length - 1 - i) % cada === 0 : i % cada === 0);
 
+  function elegir(i: number) {
+    const n = Math.max(0, Math.min(serie.length - 1, i));
+    if (n !== elegida) seleccionar();
+    setElegida(n);
+  }
+  const bajoElDedo = (x: number) => (ancho.current > 0 ? Math.floor((x / ancho.current) * serie.length) : null);
+  const tocar = (x: number) => {
+    const i = bajoElDedo(x);
+    if (i != null) elegir(i);
+  };
+
+  // Leyenda: la barra elegida con su momento completo; si no hay, la más reciente (en «mes» sobra: la pantalla ya muestra lo de este mes).
+  const leyenda = elegida != null ? { texto: detallePunto(serie[elegida].inicio, periodo, ultimaIso), valor: valores[elegida] } : periodo !== "mes" ? { texto: nombreDestacado, valor: valores[destacado] } : null;
+
   return (
-    <View accessible accessibilityRole="image" accessibilityLabel={resumen} style={{ gap: espacio.m }}>
-      {/* Leyenda de la barra resaltada (en «mes» sobra: la pantalla ya muestra lo de este mes como cifra) */}
-      {maximo > 0 && periodo !== "mes" && (
-        <View style={{ flexDirection: "row", alignItems: "center", gap: espacio.s }}>
+    <View
+      accessible
+      accessibilityRole="adjustable"
+      accessibilityLabel={resumen}
+      accessibilityHint={maximo > 0 ? "Desliza arriba o abajo para recorrer las barras." : undefined}
+      accessibilityValue={elegida != null ? { text: detalle(elegida) } : undefined}
+      accessibilityActions={maximo > 0 ? [{ name: "increment" }, { name: "decrement" }] : undefined}
+      onAccessibilityAction={(e) => {
+        const actual = elegida ?? destacado;
+        if (e.nativeEvent.actionName === "increment") elegir(actual + 1);
+        if (e.nativeEvent.actionName === "decrement") elegir(actual - 1);
+      }}
+      style={{ gap: espacio.m }}
+    >
+      {maximo > 0 && leyenda && (
+        <View style={{ flexDirection: "row", alignItems: "center", gap: espacio.s, minHeight: 21 }}>
           <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colores.primario }} />
-          <Texto variante="secundario" color={colores.textoSecundario}>
-            {nombreDestacado}
+          <Texto variante="secundario" color={colores.textoSecundario} style={{ flexShrink: 1 }}>
+            {leyenda.texto}
             <Texto variante="secundario" style={{ fontWeight: "600", fontVariant: ["tabular-nums"] }}>
               {"  "}
-              {formatoCOP(valores[destacado])}
+              {formatoCOP(leyenda.valor)}
             </Texto>
           </Texto>
         </View>
@@ -95,13 +131,26 @@ export function BarrasConsumo({ serie, periodo }: Props) {
                       borderTopRightRadius: 4,
                       borderBottomLeftRadius: 1,
                       borderBottomRightRadius: 1,
-                      backgroundColor: i === destacado && v > 0 ? colores.primario : colores.interruptorApagado,
+                      backgroundColor: i === resaltada && v > 0 ? colores.primario : colores.interruptorApagado,
                     }}
                   />
                 </View>
               );
             })}
           </View>
+          {/* Capa táctil encima de las barras: tocar o deslizar elige la barra que queda bajo el dedo. Cede el gesto si la persona
+              empieza a desplazar la pantalla hacia arriba o abajo. */}
+          {maximo > 0 && (
+            <View
+              testID="barras-tactiles"
+              onLayout={(e) => (ancho.current = e.nativeEvent.layout.width)}
+              onStartShouldSetResponder={() => true}
+              onResponderGrant={(e) => tocar(e.nativeEvent.locationX)}
+              onResponderMove={(e) => tocar(e.nativeEvent.locationX)}
+              onResponderTerminationRequest={() => true}
+              style={{ position: "absolute", top: 0, bottom: 0, left: 0, right: 0 }}
+            />
+          )}
         </View>
         {/* Eje de valores a la derecha, como en Salud de Apple */}
         <View style={{ width: anchoEje, marginLeft: espacio.s }}>
@@ -123,9 +172,9 @@ export function BarrasConsumo({ serie, periodo }: Props) {
       <View style={{ flexDirection: "row", marginRight: anchoEje + espacio.s, height: 22 }}>
         {etiquetas.map((e, i) => (
           <View key={i} style={{ flex: 1 }}>
-            {conEtiqueta(i) && (
+            {(conEtiqueta(i) || i === elegida) && (
               <View style={{ position: "absolute", width: 48, left: "50%", marginLeft: -24, alignItems: "center" }}>
-                <Texto variante="secundario" color={i === destacado ? colores.texto : colores.textoSecundario} numberOfLines={1} style={{ fontWeight: i === destacado ? "600" : "400" }}>
+                <Texto variante="secundario" color={i === resaltada ? colores.texto : colores.textoSecundario} numberOfLines={1} style={{ fontWeight: i === resaltada ? "600" : "400" }}>
                   {e}
                 </Texto>
               </View>

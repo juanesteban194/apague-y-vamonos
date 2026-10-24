@@ -14,7 +14,7 @@ describe("Gráfica de barras propia", () => {
   it("resume para el lector de pantalla el más alto y el último, sin kWh", async () => {
     const serie = Array.from({ length: 24 }, (_, h) => hora(h, h <= 15 ? [20, 30, 58, 41][h % 4] : 0));
     await render(<BarrasConsumo serie={serie} periodo="dia" />);
-    const grafica = screen.getByRole("image");
+    const grafica = screen.getByRole("adjustable");
     expect(grafica.props.accessibilityLabel).toMatch(/^Gráfica del costo por hora\. Lo más alto: \$58 a las 2:00\. El último: \$41 a las 15:00\.$/);
     expect(screen.getByText(/^Esta hora\s+\$41$/)).toBeTruthy(); // leyenda de la barra resaltada
     expect(screen.getByText("$60")).toBeTruthy(); // tope redondo del eje, justo por encima de $58
@@ -23,7 +23,7 @@ describe("Gráfica de barras propia", () => {
 
   it("sin consumo lo dice y no inventa una barra resaltada", async () => {
     await render(<BarrasConsumo serie={Array.from({ length: 7 }, (_, i) => ({ ...hora(0, 0), inicio: `2026-10-${12 + i}T00:00:00-05:00` }))} periodo="semana" />);
-    expect(screen.getByRole("image").props.accessibilityLabel).toBe("Gráfica del costo por día. Aún no hay consumo en este periodo.");
+    expect(screen.getByRole("adjustable").props.accessibilityLabel).toBe("Gráfica del costo por día. Aún no hay consumo en este periodo.");
     expect(screen.queryByText("Hoy")).toBeNull();
     expect(screen.getByText("Lun")).toBeTruthy(); // días con mayúscula inicial
   });

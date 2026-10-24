@@ -21,6 +21,23 @@ export function nombreMes(iso: string, referencia: string): string {
   return iso.slice(0, 4) === referencia.slice(0, 4) ? nombre : `${nombre} de ${iso.slice(0, 4)}`;
 }
 
+/** Qué momento es una barra, dicho completo: «De 14:00 a 15:00», «Lunes 19 de octubre» o «Septiembre» (con el año si no es el de `referencia`). */
+export function detallePunto(iso: string, periodo: Periodo, referencia: string): string {
+  const anio = Number(iso.slice(0, 4));
+  const mes = Number(iso.slice(5, 7));
+  const dia = Number(iso.slice(8, 10));
+  if (periodo === "dia") {
+    const h = Number(iso.slice(11, 13));
+    return `De ${h}:00 a ${(h + 1) % 24}:00`;
+  }
+  if (periodo === "semana") {
+    const nombre = DIAS_COMPLETOS[new Date(Date.UTC(anio, mes - 1, dia)).getUTCDay()];
+    return `${nombre[0].toUpperCase()}${nombre.slice(1)} ${dia} de ${MESES[mes - 1]}`;
+  }
+  const m = nombreMes(iso, referencia);
+  return m[0].toUpperCase() + m.slice(1);
+}
+
 /** "2026-09-01" → "septiembre de 2026" */
 export function mesDeTarifa(fecha: string): string {
   return `${MESES[Number(fecha.slice(5, 7)) - 1]} de ${fecha.slice(0, 4)}`;

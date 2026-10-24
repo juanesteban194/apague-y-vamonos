@@ -12,7 +12,7 @@ const serie = MESES.map((m, i) => ({ inicio: `${m}-01T00:00:00-05:00`, kwh: COST
 describe("Consumo por meses", () => {
   it("la gráfica resalta el mes actual y lo dice por su nombre", async () => {
     await render(<BarrasConsumo serie={serie} periodo="mes" />);
-    expect(screen.getByRole("image").props.accessibilityLabel).toBe(
+    expect(screen.getByRole("adjustable").props.accessibilityLabel).toBe(
       "Gráfica del costo por mes. Lo más alto: $27.900 en agosto. El último: $21.400 en octubre.",
     );
     expect(screen.queryByText(/^Este mes/)).toBeNull(); // sin leyenda: la pantalla ya muestra lo de este mes como cifra

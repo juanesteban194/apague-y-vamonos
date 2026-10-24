@@ -132,7 +132,7 @@ export default function Dispositivo() {
             </View>
             <BarrasConsumo serie={consumo.serie} periodo={periodo} />
             <Texto variante="secundario" color={colores.textoSecundario}>
-              {periodo === "mes" ? "Costo en pesos de cada mes, los últimos 12." : `Costo en pesos por ${periodo === "dia" ? "hora" : "día"}.`}
+              {periodo === "mes" ? "Costo en pesos de cada mes, los últimos 12." : `Costo en pesos por ${periodo === "dia" ? "hora" : "día"}.`} Toca una barra para ver cuánto costó.
             </Texto>
             {periodo === "mes" && <ConsumoMeses serie={consumo.serie} />}
           </>
