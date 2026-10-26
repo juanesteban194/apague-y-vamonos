@@ -598,8 +598,7 @@ El detalle y la evidencia de cada uno están en [docs/verificacion-calidad.md](d
 > [!WARNING]
 > **Antes de abrir la app a otras personas:**
 > 1. Poner `COMPARTIR_ENCHUFES=false` en Render.
-> 2. Rotar los secretos que quedaron expuestos en conversaciones: Neon, Tuya y el token del agente.
-> 3. Hacer revisar la política de datos por un abogado (hoy es un borrador).
+> 2. Hacer revisar la política de datos por un abogado (hoy es un borrador).
 
 ---
 
