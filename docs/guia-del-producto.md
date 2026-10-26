@@ -386,7 +386,6 @@ Un profesional valora que conozcas los límites de tu producto. Estos son los de
 | Push con la app cerrada | Hoy los avisos se ven con la app abierta | Fase 7: compilación de Android con Firebase; iPhone requiere cuenta de pago |
 | Tarifa de EPM manual | Cambia cada mes | Carga mensual; el mes de la tarifa se ve en Mis casas |
 | Modo de pruebas encendido (`COMPARTIR_ENCHUFES`) | Deja ver el mismo enchufe desde varias cuentas, útil con un solo enchufe | **Apagarlo antes de abrir la app a otras personas** |
-| Secretos expuestos en conversaciones | Riesgo de acceso indebido | Rotar la contraseña de Neon, el secreto de Tuya y el token del agente |
 | Política de datos en borrador | Requisito legal para operar | Revisión de un abogado |
 
 ---
@@ -443,8 +442,7 @@ Componentes del costo:
    - push con la app cerrada;
    - publicación en Google Play y App Store;
    - política de datos revisada;
-   - apagar el modo de pruebas;
-   - rotar los secretos.
+   - apagar el modo de pruebas.
 3. **Agente sin computador:** Windows, o un dispositivo dedicado de bajo costo.
 4. **Alta de enchufes sin Smart Life:** con el SDK de app de Tuya o un fabricante aliado.
 5. **Tarifas automáticas** por comercializadora y ciudad.
